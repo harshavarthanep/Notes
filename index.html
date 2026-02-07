@@ -246,18 +246,24 @@
 
         async function saveToDb() {
             if(!currentUser || !currentDocId) return;
+            
+            // ---------------------------------------------------------
+            // THE FIX: Convert Quill Object to Plain JSON before saving
+            // ---------------------------------------------------------
+            const rawContent = quill.getContents();
+            const cleanContent = JSON.parse(JSON.stringify(rawContent)); 
+
             try {
-                // Using set with merge is safer than update
                 await db.collection('users').doc(currentUser.uid).collection('docs').doc(currentDocId).set({
                     title: els.title.value || 'Untitled',
-                    content: quill.getContents(),
+                    content: cleanContent, // Sending the clean JSON now
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 setStatus('Saved', false);
             } catch(e) {
                 console.error(e);
                 setStatus('Error', false);
-                alert("Save Failed: " + e.message + "\n\nCHECK YOUR FIREBASE RULES.");
+                alert("Save Failed: " + e.message);
             }
         }
 
