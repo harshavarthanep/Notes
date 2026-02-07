@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZenDocs | Pro Editor</title>
+    <title>ZenDocs | Pro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -19,9 +19,8 @@
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     boxShadow: { 'paper': '0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15)' },
                     animation: {
-                        'fade-in-up': 'fadeInUp 0.5s ease-out',
-                        'fade-in': 'fadeIn 0.5s ease-out',
-                        'spin-slow': 'spin 2s linear infinite'
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                        'fade-in': 'fadeIn 0.8s ease-out forwards'
                     },
                     keyframes: {
                         fadeInUp: {
@@ -40,46 +39,67 @@
     
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
-        /* APP UTILITIES */
+        /* SCROLLBARS */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #1a73e8; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: inline-block; }
+        
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- EDITOR: CONTINUOUS PAGE STYLE --- */
+        /* --- EDITOR ENGINE --- */
         #editor-wrapper {
             background-color: #f0f2f5;
             padding: 40px 0;
             overflow-y: auto;
+            flex: 1;
             display: flex;
             justify-content: center;
-            /* No fixed height, let it grow and scroll parent */
-            flex: 1; 
+            align-items: flex-start; /* Align top to allow growth */
         }
         
         #paper-container {
-            width: 794px; /* Exact A4 Width */
-            min-height: 1123px; /* Start at A4 height but grow */
+            width: 794px; /* A4 Width */
+            min-height: 1123px; /* A4 Height */
             background: white;
             box-shadow: 0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15);
             margin-bottom: 40px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            /* CRITICAL FIX: Allow height to grow infinitely */
+            height: auto; 
         }
 
         .ql-container {
             font-size: 11pt;
             font-family: 'Times New Roman', serif;
-            flex-grow: 1;
-            height: 100%; /* Fill container */
+            height: auto !important; /* Allow growth */
+            overflow: visible !important;
         }
         
         .ql-editor {
             padding: 96px; /* 1 inch margins */
-            min-height: 100%;
-            line-height: 1.5;
+            min-height: 1123px;
+            height: auto !important; /* Allow growth */
+            overflow-y: visible !important; /* No scrollbars inside paper */
+            
+            /* Visual Page Breaks (Dotted Line Guide) */
+            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 100% 1123px; /* Repeats every A4 height */
+            background-position: 0 -1px;
+        }
+        
+        /* Page Break Text Label */
+        .ql-editor::after {
+            content: "Page Break";
+            position: absolute;
+            left: 10px;
+            top: 1123px;
+            font-size: 10px;
+            color: #ccc;
+            pointer-events: none;
         }
 
         /* Toolbar Styling */
@@ -96,7 +116,7 @@
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: white; }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px; }
+            .ql-editor { padding: 20px; background-image: none; }
             .ql-toolbar { margin: 0; border-radius: 0; overflow-x: auto; }
         }
 
@@ -107,45 +127,48 @@
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg">
 
-    <div id="loading-screen" class="absolute inset-0 z-[100] bg-[#f0f2f5] flex items-center justify-center">
-        <div class="loader border-t-accent h-12 w-12 border-4"></div>
+    <div id="loading-screen" class="absolute inset-0 z-[100] bg-[#f0f2f5] flex items-center justify-center transition-opacity duration-500">
+        <div class="flex flex-col items-center">
+            <div class="loader mb-2"></div>
+            <div class="text-sm text-gray-500 font-medium">Loading Workspace...</div>
+        </div>
     </div>
 
     <div id="app" class="flex-1 flex relative overflow-hidden">
 
         <div id="auth-screen" class="absolute inset-0 z-50 bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
-            <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 animate-fade-in-up">
+            <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0" id="auth-box">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
                 <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
                 
                 <form id="auth-form" class="space-y-4">
-                    <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none focus:ring-1 focus:ring-accent transition" placeholder="Email Address" required>
-                    <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none focus:ring-1 focus:ring-accent transition" placeholder="Password" required>
+                    <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Email Address" required>
+                    <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Password" required>
                     
-                    <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg">Sign In</button>
+                    <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg transform hover:scale-[1.02]">Sign In</button>
                     
                     <div class="flex justify-between items-center text-sm mt-4 pt-2 border-t border-gray-700">
-                        <button type="button" id="signup-btn" class="text-gray-400 hover:text-white">Create Account</button>
-                        <button type="button" onclick="showResetModal()" class="text-accent hover:text-blue-300">Forgot Password?</button>
+                        <button type="button" id="signup-btn" class="text-gray-400 hover:text-white transition">Create Account</button>
+                        <button type="button" onclick="showResetModal()" class="text-accent hover:text-blue-300 transition">Forgot Password?</button>
                     </div>
                     <p id="auth-error" class="text-danger text-xs text-center min-h-[1.5em] mt-2"></p>
                 </form>
             </div>
         </div>
 
-        <div id="reset-modal" class="absolute inset-0 z-[60] bg-black/80 hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl animate-fade-in">
+        <div id="reset-modal" class="absolute inset-0 z-[60] bg-black/80 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl animate-fade-in-up">
                 <h3 class="font-bold text-lg mb-2 text-gray-800">Reset Password</h3>
                 <p class="text-sm text-gray-600 mb-4">Enter your email. A reset link will be sent.</p>
                 <input type="email" id="reset-email" class="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:border-accent" placeholder="your@email.com">
                 <div class="flex justify-end gap-2">
-                    <button onclick="document.getElementById('reset-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
-                    <button onclick="sendResetLink()" class="px-4 py-2 bg-accent text-white rounded hover:bg-blue-600 shadow">Send Link</button>
+                    <button onclick="document.getElementById('reset-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition">Cancel</button>
+                    <button onclick="sendResetLink()" class="px-4 py-2 bg-accent text-white rounded hover:bg-blue-600 shadow transition">Send Link</button>
                 </div>
             </div>
         </div>
 
-        <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative animate-fade-in">
+        <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0" id="dashboard-container">
             <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
             <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
@@ -156,7 +179,7 @@
 
                 <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
                     <div class="space-y-1 mb-6">
-                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium"><span>📄</span> All Files</div>
+                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition"><span>📄</span> All Files</div>
                         <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition"><span>⭐</span> Important</div>
                     </div>
 
@@ -177,25 +200,26 @@
                         <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
                         <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
                     </div>
-                    <div class="text-[10px] text-gray-600 text-center mt-2 pt-2 border-t border-gray-800">Made with love ❤️ by Harsha Varthan E P</div>
+                    <div class="text-[10px] text-gray-600 text-center mt-2 pt-2 border-t border-gray-800 cursor-default">
+                        Made with love ❤️ by <span class="hover:text-gray-400 transition">Harsha Varthan E P</span>
+                    </div>
                 </div>
             </aside>
 
             <main class="flex-1 flex flex-col h-full relative w-full bg-[#f0f2f5]">
-                
                 <div class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0">
                     <div class="flex items-center gap-3 flex-1 overflow-hidden">
                         <button class="md:hidden text-gray-600 p-2 -ml-2" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                         </button>
                         <div class="flex flex-col w-full max-w-lg">
-                            <input type="text" id="doc-title" class="bg-transparent text-lg font-semibold text-gray-800 outline-none w-full placeholder-gray-400" placeholder="Untitled Document" disabled>
+                            <input type="text" id="doc-title" class="bg-transparent text-lg font-semibold text-gray-800 outline-none w-full placeholder-gray-400 truncate" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-gray-400 font-medium h-3"></span>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2 pl-2">
-                        <select id="folder-select" onchange="moveDoc()" class="hidden md:block text-xs bg-gray-100 border-none rounded p-2 text-gray-600 hover:bg-gray-200 outline-none cursor-pointer" disabled>
+                        <select id="folder-select" onchange="moveDoc()" class="hidden md:block text-xs bg-gray-100 border-none rounded p-2 text-gray-600 hover:bg-gray-200 outline-none cursor-pointer focus:ring-1 focus:ring-accent" disabled>
                             <option value="">No Folder</option>
                         </select>
                         <button id="fav-btn" onclick="toggleFavorite()" class="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gold transition disabled:opacity-50" disabled title="Mark Important">★</button>
@@ -223,7 +247,7 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
-        // --- CONFIG (ADD YOUR KEYS) ---
+        // --- CONFIGURATION ---
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
@@ -245,7 +269,9 @@
 
         const els = {
             loadingScreen: document.getElementById('loading-screen'),
-            authScreen: document.getElementById('auth-screen'), dashboard: document.getElementById('dashboard-screen'),
+            authScreen: document.getElementById('auth-screen'), 
+            authBox: document.getElementById('auth-box'),
+            dashboard: document.getElementById('dashboard-screen'),
             email: document.getElementById('email'), pass: document.getElementById('password'),
             authError: document.getElementById('auth-error'), docList: document.getElementById('doc-list'),
             folderList: document.getElementById('folder-list'), folderSelect: document.getElementById('folder-select'),
@@ -255,26 +281,29 @@
             userEmail: document.getElementById('user-email')
         };
 
-        // --- EDITOR INIT ---
+        // --- INIT EDITOR ---
         var quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'Start writing...',
             modules: { toolbar: [[{'header':[1,2,3,false]}], ['bold','italic','underline','strike', {'color':[]},{'background':[]}], [{'list':'ordered'},{'list':'bullet'},{'align':[]}], ['image','link','clean']] }
         });
 
-        // --- AUTH ---
+        // --- AUTH FLOW ---
         auth.onAuthStateChanged(u => {
-            // Hide loading screen once auth is determined
-            els.loadingScreen.classList.add('hidden');
-            
+            els.loadingScreen.classList.add('hidden'); // Stop loading
             state.user = u;
+            
             if(u) {
+                // Logged In
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.dashboard.classList.remove('hidden');
+                els.dashboard.classList.add('animate-fade-in'); // Trigger Anim
                 initData();
             } else {
+                // Logged Out
                 els.authScreen.classList.remove('hidden');
+                els.authBox.classList.add('animate-fade-in-up'); // Trigger Anim
                 els.dashboard.classList.add('hidden');
             }
         });
@@ -286,9 +315,14 @@
         document.getElementById('signup-btn').onclick = () => {
             auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
         };
-        document.getElementById('logout-btn').onclick = () => auth.signOut();
+        document.getElementById('logout-btn').onclick = () => {
+             // Reset animations for next login
+             els.dashboard.classList.remove('animate-fade-in');
+             els.authBox.classList.remove('animate-fade-in-up');
+             auth.signOut();
+        };
 
-        // --- FORGOT PASSWORD LOGIC ---
+        // --- PASSWORD RESET ---
         window.showResetModal = () => {
             document.getElementById('reset-modal').classList.remove('hidden');
             if(els.email.value) document.getElementById('reset-email').value = els.email.value; 
@@ -297,16 +331,15 @@
             const email = document.getElementById('reset-email').value;
             if(!email) return alert("Please enter email");
             
-            // Firebase send logic
             auth.sendPasswordResetEmail(email)
                 .then(() => { 
-                    alert("SUCCESS: A password reset link has been sent to " + email + ".\n\nNOTE: If you do not see it, check your SPAM folder. If the account does not exist, for security reasons, no email will be sent."); 
+                    alert("Link Sent!\n\nPlease check your email inbox (and SPAM folder)."); 
                     document.getElementById('reset-modal').classList.add('hidden'); 
                 })
                 .catch(e => alert("Error: " + e.message));
         };
 
-        // --- DATA & AUTO OPEN ---
+        // --- DATA ---
         function initData() {
             if(!state.user) return;
             const uid = state.user.uid;
@@ -326,7 +359,7 @@
             });
         }
 
-        // --- RENDERING ---
+        // --- RENDER UI ---
         function renderFolders() {
             els.folderList.innerHTML = '';
             state.folders.forEach(f => {
@@ -422,17 +455,10 @@
             } catch(e) { console.error(e); els.status.textContent = "Error"; }
         }
 
-        // --- EXPORT TO WORD (WITH PAGE BREAKS) ---
+        // --- WORD EXPORT ---
         window.downloadAsWord = () => {
             const title = els.title.value || "Document";
-            // @page CSS ensures margins and size match A4 in Word
-            const css = `
-                <style>
-                    @page { size: A4; margin: 1in; }
-                    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.5; }
-                    p { margin-bottom: 1em; }
-                </style>
-            `;
+            const css = `<style>@page{size:A4;margin:1in;}body{font-family:'Times New Roman',serif;font-size:11pt;line-height:1.5;}</style>`;
             const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title>${css}</head><body>${quill.root.innerHTML}</body></html>`;
             const blob = new Blob(['\ufeff', html], {type: 'application/msword'});
             const url = URL.createObjectURL(blob);
