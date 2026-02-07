@@ -17,7 +17,22 @@
                         accent: '#1a73e8', danger: '#d93025', gold: '#fbbc04'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    boxShadow: { 'paper': '0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15)' }
+                    boxShadow: { 'paper': '0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15)' },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'spin-slow': 'spin 2s linear infinite'
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
+                    }
                 }
             }
         }
@@ -33,57 +48,38 @@
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #1a73e8; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- VISUAL PAGINATION ENGINE --- */
+        /* --- EDITOR: CONTINUOUS PAGE STYLE --- */
         #editor-wrapper {
             background-color: #f0f2f5;
             padding: 40px 0;
             overflow-y: auto;
             display: flex;
             justify-content: center;
-            height: calc(100vh - 64px);
+            /* No fixed height, let it grow and scroll parent */
+            flex: 1; 
         }
         
         #paper-container {
-            width: 794px; /* Exact A4 Width in Pixels (96 DPI) */
-            min-height: 1123px; /* Exact A4 Height */
+            width: 794px; /* Exact A4 Width */
+            min-height: 1123px; /* Start at A4 height but grow */
             background: white;
             box-shadow: 0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15);
             margin-bottom: 40px;
             display: flex;
             flex-direction: column;
-            position: relative;
         }
 
-        /* The Editor */
         .ql-container {
             font-size: 11pt;
-            font-family: 'Times New Roman', serif; /* Classic Doc Font */
+            font-family: 'Times New Roman', serif;
             flex-grow: 1;
-            height: auto !important;
+            height: 100%; /* Fill container */
         }
         
-        /* This simulates the Pages */
         .ql-editor {
             padding: 96px; /* 1 inch margins */
-            min-height: 1123px;
-            /* Visual Page Break Guide */
-            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 1123px; /* Repeats every A4 height */
-            background-position: 0 -1px; /* Align to top */
+            min-height: 100%;
             line-height: 1.5;
-        }
-
-        /* Page Break Label */
-        .ql-editor::before {
-            content: "";
-            position: absolute;
-            top: 1123px;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            pointer-events: none;
-            /* Repeated via Shadow for multiple pages visually */
-            box-shadow: 0 1123px 0 0 #e5e7eb, 0 2246px 0 0 #e5e7eb, 0 3369px 0 0 #e5e7eb;
         }
 
         /* Toolbar Styling */
@@ -98,10 +94,9 @@
         
         /* Mobile */
         @media (max-width: 850px) {
-            #editor-wrapper { padding: 0; background: white; height: calc(100vh - 110px); }
+            #editor-wrapper { padding: 0; background: white; }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px; background-image: none; }
-            .ql-editor::before { content: none; }
+            .ql-editor { padding: 20px; }
             .ql-toolbar { margin: 0; border-radius: 0; overflow-x: auto; }
         }
 
@@ -112,10 +107,14 @@
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg">
 
+    <div id="loading-screen" class="absolute inset-0 z-[100] bg-[#f0f2f5] flex items-center justify-center">
+        <div class="loader border-t-accent h-12 w-12 border-4"></div>
+    </div>
+
     <div id="app" class="flex-1 flex relative overflow-hidden">
 
-        <div id="auth-screen" class="absolute inset-0 z-50 bg-[#1e1e1e] flex items-center justify-center p-4">
-            <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700">
+        <div id="auth-screen" class="absolute inset-0 z-50 bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
+            <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 animate-fade-in-up">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
                 <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
                 
@@ -135,7 +134,7 @@
         </div>
 
         <div id="reset-modal" class="absolute inset-0 z-[60] bg-black/80 hidden flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl">
+            <div class="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl animate-fade-in">
                 <h3 class="font-bold text-lg mb-2 text-gray-800">Reset Password</h3>
                 <p class="text-sm text-gray-600 mb-4">Enter your email. A reset link will be sent.</p>
                 <input type="email" id="reset-email" class="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:border-accent" placeholder="your@email.com">
@@ -146,7 +145,7 @@
             </div>
         </div>
 
-        <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative">
+        <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative animate-fade-in">
             <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
             <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
@@ -245,6 +244,7 @@
         };
 
         const els = {
+            loadingScreen: document.getElementById('loading-screen'),
             authScreen: document.getElementById('auth-screen'), dashboard: document.getElementById('dashboard-screen'),
             email: document.getElementById('email'), pass: document.getElementById('password'),
             authError: document.getElementById('auth-error'), docList: document.getElementById('doc-list'),
@@ -264,6 +264,9 @@
 
         // --- AUTH ---
         auth.onAuthStateChanged(u => {
+            // Hide loading screen once auth is determined
+            els.loadingScreen.classList.add('hidden');
+            
             state.user = u;
             if(u) {
                 els.userEmail.textContent = u.email;
