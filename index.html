@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZenDocs | Auto-Sync</title>
+    <title>ZenDocs | Pro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,11 +12,20 @@
             theme: {
                 extend: {
                     colors: {
-                        bg: '#0f0f0f', surface: '#181818', border: '#2a2a2a', 
-                        text: '#e0e0e0', muted: '#888888', accent: '#3b82f6', 
-                        danger: '#ef4444', gold: '#fbbf24'
+                        bg: '#f3f4f6',       // Light gray word-processor background
+                        surface: '#ffffff',  // Paper white
+                        sidebar: '#1e1e1e',  // Dark Sidebar
+                        border: '#e5e7eb',
+                        text: '#1f2937',     // Dark gray text
+                        muted: '#9ca3af',
+                        accent: '#3b82f6',   // Blue
+                        danger: '#ef4444',
+                        gold: '#fbbf24'
                     },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    boxShadow: {
+                        'paper': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0,0,0,0.05)'
+                    }
                 }
             }
         }
@@ -24,107 +33,184 @@
     
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f0f0f; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        /* SCROLLBARS */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* EDITOR: WORD PROCESSOR STYLE */
+        #editor-wrapper {
+            background-color: #f3f4f6; /* Gray background */
+            padding: 40px 20px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
         
-        /* Editor Customization */
-        .ql-toolbar { background: #181818; border-color: #2a2a2a !important; padding: 12px !important; }
-        .ql-container { background: #0f0f0f; border: none !important; color: #e0e0e0; font-size: 16px; flex-grow: 1; overflow: hidden; }
-        .ql-editor { height: 100%; overflow-y: auto; padding: 20px; }
-        .ql-snow .ql-picker { color: #888; }
-        .ql-snow .ql-stroke { stroke: #888; }
-        .ql-snow .ql-fill { fill: #888; }
+        #paper-container {
+            width: 100%;
+            max-width: 816px; /* A4 Width approx */
+            min-height: 1056px; /* A4 Height approx */
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .ql-container {
+            font-size: 16px;
+            font-family: 'Times New Roman', Times, serif; /* Word-like font */
+            flex-grow: 1;
+            height: auto !important;
+        }
         
-        body { background-color: #0f0f0f; color: #e0e0e0; }
-        .loader { border: 2px solid #333; border-top: 2px solid #3b82f6; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.8s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .ql-editor {
+            padding: 40px 50px; /* Print margins */
+            min-height: 1000px;
+        }
         
+        /* Hide Toolbar border */
+        .ql-toolbar {
+            border: none !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            background: white;
+            display: flex;
+            justify-content: center;
+            padding: 12px 0 !important;
+        }
+        
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            #editor-wrapper { padding: 0; background: white; }
+            #paper-container { box-shadow: none; max-width: 100%; min-height: 100vh; }
+            .ql-editor { padding: 20px; }
+        }
+
+        /* Sidebar Transition */
         .sidebar-transition { transition: transform 0.3s ease-in-out; }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col font-sans">
+<body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg">
 
     <div id="app" class="flex-1 flex relative overflow-hidden">
 
-        <div id="auth-screen" class="absolute inset-0 z-50 bg-bg flex items-center justify-center p-4">
-            <div class="w-full max-w-sm bg-surface p-8 rounded-2xl border border-border shadow-2xl">
+        <div id="auth-screen" class="absolute inset-0 z-50 bg-[#111] flex items-center justify-center p-4">
+            <div class="w-full max-w-sm bg-[#1e1e1e] p-8 rounded-2xl shadow-2xl border border-gray-800">
                 <h1 class="text-2xl font-bold text-white text-center mb-6">Zen<span class="text-accent">Docs</span></h1>
                 
                 <form id="auth-form" class="space-y-4">
-                    <input type="email" id="email" class="w-full bg-bg border border-border rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Email" required>
-                    <input type="password" id="password" class="w-full bg-bg border border-border rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Password" required>
+                    <input type="email" id="email" class="w-full bg-[#2a2a2a] border border-gray-700 rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Email Address" required>
+                    <input type="password" id="password" class="w-full bg-[#2a2a2a] border border-gray-700 rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Password" required>
                     
-                    <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition">Log In</button>
+                    <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg shadow-blue-900/20">Log In</button>
                     
-                    <div class="flex justify-between items-center text-sm mt-2">
-                        <button type="button" id="signup-btn" class="text-muted hover:text-white">Create Account</button>
-                        <button type="button" id="forgot-btn" class="text-accent hover:text-blue-400">Forgot Password?</button>
+                    <div class="flex justify-between items-center text-sm mt-4">
+                        <button type="button" id="signup-btn" class="text-gray-400 hover:text-white">Create Account</button>
+                        <button type="button" onclick="showResetModal()" class="text-accent hover:text-blue-300">Forgot Password?</button>
                     </div>
-                    
                     <p id="auth-error" class="text-danger text-xs text-center min-h-[1.5em] mt-2"></p>
-                    <p id="auth-success" class="text-green-400 text-xs text-center hidden mt-2"></p>
                 </form>
+            </div>
+        </div>
+
+        <div id="reset-modal" class="absolute inset-0 z-[60] bg-black/80 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg p-6 max-w-xs w-full">
+                <h3 class="font-bold text-lg mb-2">Reset Password</h3>
+                <p class="text-sm text-gray-600 mb-4">Enter your email to receive a reset link.</p>
+                <input type="email" id="reset-email" class="w-full border border-gray-300 rounded p-2 mb-4" placeholder="your@email.com">
+                <div class="flex justify-end gap-2">
+                    <button onclick="document.getElementById('reset-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                    <button onclick="sendResetLink()" class="px-4 py-2 bg-accent text-white rounded hover:bg-blue-600">Send Link</button>
+                </div>
             </div>
         </div>
 
         <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative">
             <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
-            <aside id="sidebar" class="w-72 bg-surface border-r border-border flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none">
-                <div class="p-4 border-b border-border flex justify-between items-center h-16">
-                    <span class="font-bold pl-2 tracking-wide">My Notes</span>
-                    <button id="new-doc-btn" class="bg-accent/10 text-accent px-3 py-1 rounded text-sm hover:bg-accent/20 transition">+ New</button>
+            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800">
+                
+                <div class="p-4 border-b border-gray-800 flex justify-between items-center h-16">
+                    <span class="font-bold text-white tracking-wide pl-1">My Workspace</span>
+                    <button onclick="createNewDoc()" class="bg-accent text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-blue-600 transition shadow text-xl leading-none pb-1">+</button>
                 </div>
-                
-                <div id="doc-list" class="flex-1 overflow-y-auto p-3 space-y-1"></div>
-                
-                <div class="p-4 border-t border-border bg-surface flex flex-col gap-3">
-                    <div class="flex justify-between items-center">
-                        <span id="user-email" class="text-xs text-muted truncate max-w-[150px]"></span>
-                        <button id="logout-btn" class="text-xs text-danger hover:text-red-400">Log Out</button>
+
+                <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                    
+                    <div class="space-y-1 mb-6">
+                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded flex items-center gap-3 bg-white/10 text-white font-medium">
+                            <span>📄</span> All Notes
+                        </div>
+                        <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded flex items-center gap-3 hover:bg-white/5">
+                            <span>⭐</span> Important
+                        </div>
                     </div>
-                    <div class="text-[10px] text-center text-muted border-t border-border pt-3">
-                        Made with love ❤️ by <br> <span class="text-gray-400 font-medium">Harsha Varthan E P</span>
+
+                    <div class="mb-2 px-2 flex justify-between items-center group">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
+                        <button onclick="createNewFolder()" class="text-gray-500 hover:text-white text-xs opacity-0 group-hover:opacity-100 transition">+ Add</button>
+                    </div>
+                    <div id="folder-list" class="space-y-1 mb-6">
+                        </div>
+
+                    <div class="mb-2 px-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Recent Notes</span>
+                    </div>
+                    <div id="doc-list" class="space-y-1">
+                        <div class="text-center text-xs text-gray-600 mt-4">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-[#181818] border-t border-gray-800">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex flex-col">
+                            <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
+                            <span class="text-[10px] text-gray-500">Pro Plan</span>
+                        </div>
+                        <button id="logout-btn" class="text-xs text-red-400 hover:text-white transition">Sign Out</button>
+                    </div>
+                    <div class="text-center">
+                         <span class="text-[10px] text-gray-600 hover:text-gray-500 cursor-default">Made with love ❤️ by Harsha Varthan E P</span>
                     </div>
                 </div>
             </aside>
 
-            <main class="flex-1 flex flex-col h-full relative bg-bg w-full">
-                <div class="h-16 border-b border-border flex items-center justify-between px-4 bg-surface z-10">
-                    <div class="flex items-center flex-1 gap-3 overflow-hidden">
-                        <button class="md:hidden text-muted hover:text-white" onclick="toggleSidebar()">
+            <main class="flex-1 flex flex-col h-full relative w-full bg-[#f3f4f6]">
+                
+                <div class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0">
+                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                        <button class="md:hidden text-gray-600" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                         </button>
-                        <input type="text" id="doc-title" class="bg-transparent text-lg font-bold text-white outline-none w-full placeholder-muted/50" placeholder="Select a note..." disabled>
+                        <input type="text" id="doc-title" class="bg-transparent text-lg font-semibold text-gray-800 outline-none w-full placeholder-gray-400" placeholder="Untitled Document" disabled>
                     </div>
-                    
-                    <div class="flex items-center gap-3 pl-2">
-                        <div id="status-indicator" class="flex items-center gap-2 opacity-0 transition-opacity hidden md:flex">
-                            <span class="loader hidden" id="save-loader"></span>
-                            <span id="save-text" class="text-xs text-muted font-bold uppercase tracking-wider">Saved</span>
+
+                    <div class="flex items-center gap-2 md:gap-4 pl-4">
+                        <span id="save-status" class="text-xs font-bold text-gray-400 uppercase hidden md:inline-block"></span>
+                        
+                        <div class="flex items-center bg-gray-100 rounded-lg p-1">
+                            <button id="fav-btn" onclick="toggleFavorite()" class="p-2 rounded text-gray-400 hover:text-gold transition disabled:opacity-50" disabled title="Mark Important">★</button>
+                            <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                            <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded text-gray-500 hover:text-blue-600 transition disabled:opacity-50" disabled title="Download Word Doc">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            </button>
+                            <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                            <button id="delete-btn" onclick="deleteCurrentDoc()" class="p-2 rounded text-gray-500 hover:text-red-500 transition disabled:opacity-50" disabled title="Delete">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
                         </div>
-                        
-                        <div class="h-6 w-px bg-border mx-1"></div>
-
-                        <button id="fav-btn" class="text-muted hover:text-gold p-2 transition disabled:opacity-30" disabled title="Mark as Important">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                        </button>
-
-                        <button id="download-btn" class="text-muted hover:text-accent p-2 transition disabled:opacity-30" disabled title="Download Note">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                        </button>
-                        
-                        <button id="delete-doc-btn" class="text-muted hover:text-danger p-2 transition disabled:opacity-30" disabled title="Delete">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                        </button>
                     </div>
                 </div>
-                
-                <div id="editor-wrapper" class="flex-1 overflow-hidden flex flex-col opacity-50 pointer-events-none transition-opacity">
-                    <div id="editor-container"></div>
+
+                <div id="editor-wrapper" class="opacity-50 pointer-events-none transition-opacity">
+                    <div id="paper-container">
+                        <div id="editor-container"></div>
+                    </div>
                 </div>
             </main>
         </div>
@@ -136,277 +222,310 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
-        // 1. CONFIGURATION
+        // --- 1. CONFIG ---
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
           projectId: "notes-b4daa",
           storageBucket: "notes-b4daa.firebasestorage.app",
           messagingSenderId: "372433592521",
-          appId: "1:372433592521:web:348b2558084299be1a6d18",
-          measurementId: "G-JKLMSFD0C2"
+          appId: "1:372433592521:web:348b2558084299be1a6d18"
         };
 
         try { firebase.initializeApp(firebaseConfig); } catch(e) { console.error(e); }
-
         const auth = firebase.auth();
         const db = firebase.firestore();
-        
-        // 2. STATE & REFS
+
+        // --- 2. STATE ---
+        let state = {
+            user: null,
+            docId: null,
+            activeFilter: 'all', // 'all', 'fav', or folderId
+            folders: [],
+            docs: [],
+            isFav: false,
+            saveTimer: null
+        };
+
         const els = {
             authScreen: document.getElementById('auth-screen'),
             dashboard: document.getElementById('dashboard-screen'),
             email: document.getElementById('email'),
             pass: document.getElementById('password'),
             authError: document.getElementById('auth-error'),
-            authSuccess: document.getElementById('auth-success'),
             docList: document.getElementById('doc-list'),
+            folderList: document.getElementById('folder-list'),
             title: document.getElementById('doc-title'),
-            editor: document.getElementById('editor-wrapper'),
-            status: document.getElementById('status-indicator'),
-            loader: document.getElementById('save-loader'),
-            statusText: document.getElementById('save-text'),
-            delBtn: document.getElementById('delete-doc-btn'),
+            editorWrapper: document.getElementById('editor-wrapper'),
+            status: document.getElementById('save-status'),
             favBtn: document.getElementById('fav-btn'),
+            delBtn: document.getElementById('delete-btn'),
             downBtn: document.getElementById('download-btn'),
             userEmail: document.getElementById('user-email')
         };
 
-        let currentUser = null;
-        let currentDocId = null;
-        let isCurrentFav = false;
-        let saveTimeout = null;
-
-        // 3. EDITOR INIT
+        // --- 3. EDITOR INIT ---
         var quill = new Quill('#editor-container', {
             theme: 'snow',
-            placeholder: 'Type your thoughts...',
-            modules: { toolbar: [[{'header':[1,2,false]}], ['bold','italic','underline','strike'], [{'list':'ordered'},{'list':'bullet'}], ['image','link']] }
+            placeholder: 'Start typing your document...',
+            modules: { toolbar: [[{'header':[1,2,3,false]}], ['bold','italic','underline','strike'], [{'color':[]},{'background':[]}], [{'list':'ordered'},{'list':'bullet'},{'align':[]}], ['image','link','clean']] }
         });
 
-        // 4. AUTH HANDLERS
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                els.userEmail.textContent = user.email;
+        // --- 4. AUTHENTICATION ---
+        auth.onAuthStateChanged(u => {
+            state.user = u;
+            if(u) {
+                els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.dashboard.classList.remove('hidden');
-                loadSidebar();
+                initData();
             } else {
-                currentUser = null;
                 els.authScreen.classList.remove('hidden');
                 els.dashboard.classList.add('hidden');
-                els.docList.innerHTML = '';
+                state.docs = []; state.folders = [];
             }
         });
 
         document.getElementById('auth-form').onsubmit = (e) => {
             e.preventDefault();
-            auth.signInWithEmailAndPassword(els.email.value, els.pass.value)
-                .catch(err => showAuthMsg(err.message, true));
+            auth.signInWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
         };
-        
         document.getElementById('signup-btn').onclick = () => {
-            auth.createUserWithEmailAndPassword(els.email.value, els.pass.value)
-                .catch(err => showAuthMsg(err.message, true));
+            auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
         };
-
-        // Forgot Password Logic
-        document.getElementById('forgot-btn').onclick = () => {
-            const email = els.email.value;
-            if(!email) {
-                showAuthMsg("Please enter your email above first.", true);
-                return;
-            }
-            auth.sendPasswordResetEmail(email)
-                .then(() => showAuthMsg("Reset link sent! Check your email inbox.", false))
-                .catch(err => showAuthMsg(err.message, true));
-        };
-
         document.getElementById('logout-btn').onclick = () => auth.signOut();
 
-        function showAuthMsg(msg, isError) {
-            if(isError) {
-                els.authError.textContent = msg;
-                els.authSuccess.classList.add('hidden');
-            } else {
-                els.authSuccess.textContent = msg;
-                els.authSuccess.classList.remove('hidden');
-                els.authError.textContent = "";
-            }
-        }
+        // Forgot Password Modal Logic
+        window.showResetModal = () => {
+            document.getElementById('reset-modal').classList.remove('hidden');
+            // Pre-fill if they typed it in login
+            document.getElementById('reset-email').value = els.email.value; 
+        };
+        
+        window.sendResetLink = () => {
+            const email = document.getElementById('reset-email').value;
+            if(!email) return alert("Please enter email");
+            auth.sendPasswordResetEmail(email)
+                .then(() => { alert("Check your email for the reset link!"); document.getElementById('reset-modal').classList.add('hidden'); })
+                .catch(e => alert(e.message));
+        };
 
-        // 5. DATA LOGIC
-        function loadSidebar() {
-            // Order by Favorite first, then Updated Date
-            db.collection('users').doc(currentUser.uid).collection('docs')
-            .orderBy('isFavorite', 'desc')
-            .orderBy('updatedAt', 'desc')
-            .onSnapshot(snap => {
-                els.docList.innerHTML = '';
-                if(snap.empty) els.docList.innerHTML = '<div class="text-center text-muted text-sm mt-4">No notes found.</div>';
-                
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const div = document.createElement('div');
-                    const isActive = doc.id === currentDocId;
-                    const isFav = data.isFavorite || false;
-                    
-                    div.className = `p-3 rounded mb-1 cursor-pointer flex justify-between items-center group transition ${isActive ? 'bg-accent/20 border border-accent/30' : 'hover:bg-white/5 border border-transparent'}`;
-                    
-                    div.innerHTML = `
-                        <div class="truncate pr-2">
-                            <div class="font-medium text-sm text-gray-200 ${isActive ? 'text-accent' : ''}">${data.title || 'Untitled'}</div>
-                            <div class="text-[10px] text-muted mt-0.5">${new Date(data.updatedAt?.toDate()).toLocaleDateString()}</div>
-                        </div>
-                        ${isFav ? '<span class="text-gold text-lg">★</span>' : ''}
-                    `;
-                    div.onclick = () => openDoc(doc.id, data);
-                    els.docList.appendChild(div);
-                });
+        // --- 5. DATA LOADING (The Fix for Empty Lists) ---
+        function initData() {
+            if(!state.user) return;
+            const uid = state.user.uid;
+
+            // 1. Load Folders
+            db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
+                state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderFolders();
+            });
+
+            // 2. Load Docs (SIMPLE QUERY - No Complex Indexes needed)
+            db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
+                state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderDocs(); // Filter active in render
             });
         }
 
-        function openDoc(id, data) {
-            currentDocId = id;
-            isCurrentFav = data.isFavorite || false;
+        // --- 6. RENDERING ---
+        function renderFolders() {
+            els.folderList.innerHTML = '';
+            state.folders.forEach(f => {
+                const div = document.createElement('div');
+                const isActive = state.activeFilter === f.id;
+                div.className = `cursor-pointer p-2 rounded flex items-center gap-3 text-sm ${isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5'}`;
+                div.innerHTML = `<span>${f.emoji}</span> ${f.name}`;
+                div.onclick = () => filterDocs(f.id);
+                els.folderList.appendChild(div);
+            });
+        }
+
+        function renderDocs() {
+            els.docList.innerHTML = '';
             
-            // Update UI
+            // In-Memory Filtering (Solves Index Issues)
+            let filtered = state.docs;
+            
+            if(state.activeFilter === 'fav') {
+                filtered = state.docs.filter(d => d.isFavorite);
+            } else if (state.activeFilter !== 'all') {
+                filtered = state.docs.filter(d => d.folderId === state.activeFilter);
+            }
+
+            if(filtered.length === 0) {
+                els.docList.innerHTML = '<div class="text-center text-xs text-gray-600 mt-4">No notes here.</div>';
+                return;
+            }
+
+            filtered.forEach(d => {
+                const div = document.createElement('div');
+                const isActive = d.id === state.docId;
+                div.className = `p-3 rounded mb-1 cursor-pointer transition border-l-2 ${isActive ? 'bg-[#2a2a2a] border-accent' : 'border-transparent hover:bg-[#2a2a2a]'}`;
+                div.innerHTML = `
+                    <div class="font-medium text-sm text-gray-200 truncate">${d.title || 'Untitled'}</div>
+                    <div class="text-[10px] text-gray-500 flex justify-between mt-1">
+                        <span>${new Date(d.updatedAt?.toDate()).toLocaleDateString()}</span>
+                        ${d.isFavorite ? '<span class="text-gold">★</span>' : ''}
+                    </div>
+                `;
+                div.onclick = () => openDoc(d.id, d);
+                els.docList.appendChild(div);
+            });
+        }
+
+        window.filterDocs = (filter) => {
+            state.activeFilter = filter;
+            // Update UI Highlight
+            document.querySelectorAll('#sidebar .bg-white\\/10').forEach(e => e.classList.remove('bg-white/10', 'text-white'));
+            if(filter === 'all') document.getElementById('filter-all').classList.add('bg-white/10', 'text-white');
+            else if(filter === 'fav') document.getElementById('filter-fav').classList.add('bg-white/10', 'text-white');
+            
+            renderFolders(); // Re-render to highlight active folder
+            renderDocs();
+        };
+
+        // --- 7. DOCUMENT OPERATIONS ---
+        
+        window.openDoc = (id, data) => {
+            state.docId = id;
+            state.isFav = data.isFavorite || false;
+
+            // UI
             els.title.value = data.title;
             els.title.disabled = false;
-            els.delBtn.disabled = false;
+            els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
+            
+            // Buttons
             els.favBtn.disabled = false;
+            els.delBtn.disabled = false;
             els.downBtn.disabled = false;
-            els.editor.classList.remove('opacity-50', 'pointer-events-none');
-            
-            // Update Favorite Icon Color
             updateFavIcon();
 
-            // Set Content
+            // Content
             quill.setContents(data.content, 'api');
-            
             if(window.innerWidth < 768) toggleSidebar(false);
-            setStatus('Loaded', false);
-        }
-
-        document.getElementById('new-doc-btn').onclick = async () => {
-            const ref = await db.collection('users').doc(currentUser.uid).collection('docs').add({
-                title: 'Untitled Note',
-                content: '',
-                isFavorite: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            openDoc(ref.id, {title:'Untitled Note', content:''});
         };
 
-        // Delete
-        els.delBtn.onclick = async () => {
-            if(confirm('Delete this note forever?')) {
-                await db.collection('users').doc(currentUser.uid).collection('docs').doc(currentDocId).delete();
-                resetUI();
-            }
-        };
-
-        // Favorites (Important) Toggle
-        els.favBtn.onclick = () => {
-            if(!currentDocId) return;
-            isCurrentFav = !isCurrentFav;
-            updateFavIcon();
-            triggerSave(true); // Save immediately
-        };
-
-        // Download Feature
-        els.downBtn.onclick = () => {
-            if(!currentDocId) return;
-            const title = els.title.value || 'note';
-            // Wrap in basic HTML for styling
-            const htmlContent = `
-                <html><head><title>${title}</title><style>body{font-family:sans-serif;padding:20px;line-height:1.6;}</style></head>
-                <body><h1>${title}</h1>${quill.root.innerHTML}</body></html>
-            `;
-            const blob = new Blob([htmlContent], {type: "text/html"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${title}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        };
-
-        // 6. SAVE LOGIC
-        quill.on('text-change', (delta, old, source) => { if(source === 'user') triggerSave(); });
-        els.title.oninput = () => triggerSave();
-
-        function triggerSave(immediate = false) {
-            if(!currentDocId) return;
-            setStatus('Syncing...', true);
-            if(saveTimeout) clearTimeout(saveTimeout);
+        window.createNewDoc = async () => {
+            if(!state.user) return;
+            const folderId = (state.activeFilter !== 'all' && state.activeFilter !== 'fav') ? state.activeFilter : null;
             
-            const saveFn = async () => {
-                if(!currentUser || !currentDocId) return;
-                const rawContent = quill.getContents();
-                // FIX: Clean JSON
-                const cleanContent = JSON.parse(JSON.stringify(rawContent)); 
-                
-                try {
-                    await db.collection('users').doc(currentUser.uid).collection('docs').doc(currentDocId).set({
-                        title: els.title.value || 'Untitled',
-                        content: cleanContent,
-                        isFavorite: isCurrentFav,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    setStatus('Saved', false);
-                } catch(e) {
-                    console.error(e);
-                    setStatus('Error', false);
-                }
-            };
+            try {
+                const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
+                    title: 'Untitled Document',
+                    content: '',
+                    isFavorite: false,
+                    folderId: folderId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                // openDoc is handled by snapshot? No, better active it actively.
+                openDoc(ref.id, {title: 'Untitled Document', content: '', isFavorite: false});
+            } catch(e) { alert("Error creating doc: " + e.message); }
+        };
 
-            if(immediate) saveFn();
-            else saveTimeout = setTimeout(saveFn, 1000);
-        }
-
-        // 7. UI HELPERS
-        function updateFavIcon() {
-            if(isCurrentFav) els.favBtn.classList.replace('text-muted', 'text-gold');
-            else els.favBtn.classList.replace('text-gold', 'text-muted');
-        }
-
-        function resetUI() {
-            currentDocId = null;
+        window.deleteCurrentDoc = async () => {
+            if(!confirm("Move to trash?")) return;
+            await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete();
+            state.docId = null;
             els.title.value = '';
             els.title.disabled = true;
-            els.delBtn.disabled = true;
-            els.favBtn.disabled = true;
-            els.downBtn.disabled = true;
-            els.favBtn.classList.replace('text-gold', 'text-muted');
             quill.setText('');
-            els.editor.classList.add('opacity-50', 'pointer-events-none');
+            els.editorWrapper.classList.add('opacity-50', 'pointer-events-none');
+        };
+
+        // --- 8. FOLDERS ---
+        window.createNewFolder = async () => {
+            const name = prompt("Folder Name:");
+            if(!name) return;
+            const emojis = ['📁', '📂', '📑', '📘', '📕', '📗'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            await db.collection('users').doc(state.user.uid).collection('folders').add({
+                name: name,
+                emoji: randomEmoji,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        };
+
+        // --- 9. SAVING & FEATURES ---
+        
+        // Auto Save
+        quill.on('text-change', (d, o, source) => { if(source === 'user') triggerSave(); });
+        els.title.oninput = () => triggerSave();
+
+        function triggerSave() {
+            if(!state.docId) return;
+            els.status.textContent = "Saving...";
+            if(state.saveTimer) clearTimeout(state.saveTimer);
+            state.saveTimer = setTimeout(saveToDb, 1000);
         }
 
-        function setStatus(msg, loading) {
-            els.status.classList.remove('opacity-0');
-            els.statusText.textContent = msg;
-            if(loading) {
-                els.loader.classList.remove('hidden');
-                els.statusText.classList.remove('text-accent');
-            } else {
-                els.loader.classList.add('hidden');
-                if(msg === 'Saved') {
-                    els.statusText.classList.add('text-accent');
-                    setTimeout(() => els.status.classList.add('opacity-0'), 2000);
-                }
+        async function saveToDb() {
+            if(!state.docId) return;
+            // Clean Data
+            const content = JSON.parse(JSON.stringify(quill.getContents()));
+            try {
+                await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).set({
+                    title: els.title.value || 'Untitled',
+                    content: content,
+                    isFavorite: state.isFav,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, {merge: true});
+                els.status.textContent = "Saved";
+                setTimeout(() => els.status.textContent = "", 2000);
+            } catch(e) {
+                console.error(e);
+                els.status.textContent = "Error";
             }
         }
 
+        // Features
+        window.toggleFavorite = () => {
+            state.isFav = !state.isFav;
+            updateFavIcon();
+            triggerSave();
+        };
+
+        function updateFavIcon() {
+            els.favBtn.className = `p-2 rounded transition ${state.isFav ? 'text-gold' : 'text-gray-400 hover:text-gold'}`;
+        }
+
+        window.downloadAsWord = () => {
+            const title = els.title.value || "Document";
+            // Create a specialized HTML structure that Word recognizes as a Doc
+            const contentHTML = quill.root.innerHTML;
+            
+            const preHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${title}</title><style>body{font-family:'Times New Roman', serif; font-size:12pt;}</style></head><body>`;
+            const postHtml = "</body></html>";
+            const html = preHtml + contentHTML + postHtml;
+
+            const blob = new Blob(['\ufeff', html], {
+                type: 'application/msword'
+            });
+            
+            // Download Link
+            const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+            const downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+            
+            if(navigator.msSaveOrOpenBlob){
+                navigator.msSaveOrOpenBlob(blob, title + ".doc");
+            } else {
+                downloadLink.href = url;
+                downloadLink.download = title + ".doc";
+                downloadLink.click();
+            }
+            document.body.removeChild(downloadLink);
+        };
+
+        // Mobile Sidebar
         window.toggleSidebar = (force) => {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('mobile-overlay');
             const isClosed = sb.classList.contains('sidebar-closed');
-            if(force === false || !isClosed) {
+            if (force === false || !isClosed) {
                 sb.classList.add('sidebar-closed');
                 sb.classList.remove('sidebar-open');
                 ov.classList.add('hidden');
