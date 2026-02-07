@@ -13,7 +13,8 @@
                 extend: {
                     colors: {
                         bg: '#0f0f0f', surface: '#181818', border: '#2a2a2a', 
-                        text: '#e0e0e0', muted: '#888888', accent: '#3b82f6', danger: '#ef4444'
+                        text: '#e0e0e0', muted: '#888888', accent: '#3b82f6', 
+                        danger: '#ef4444', gold: '#fbbf24'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
@@ -27,6 +28,7 @@
         ::-webkit-scrollbar-track { background: #0f0f0f; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         
+        /* Editor Customization */
         .ql-toolbar { background: #181818; border-color: #2a2a2a !important; padding: 12px !important; }
         .ql-container { background: #0f0f0f; border: none !important; color: #e0e0e0; font-size: 16px; flex-grow: 1; overflow: hidden; }
         .ql-editor { height: 100%; overflow-y: auto; padding: 20px; }
@@ -50,12 +52,20 @@
         <div id="auth-screen" class="absolute inset-0 z-50 bg-bg flex items-center justify-center p-4">
             <div class="w-full max-w-sm bg-surface p-8 rounded-2xl border border-border shadow-2xl">
                 <h1 class="text-2xl font-bold text-white text-center mb-6">Zen<span class="text-accent">Docs</span></h1>
+                
                 <form id="auth-form" class="space-y-4">
                     <input type="email" id="email" class="w-full bg-bg border border-border rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Email" required>
                     <input type="password" id="password" class="w-full bg-bg border border-border rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Password" required>
+                    
                     <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition">Log In</button>
-                    <button type="button" id="signup-btn" class="w-full bg-transparent border border-border text-muted hover:text-white py-3 rounded-lg">Create Account</button>
-                    <p id="auth-error" class="text-danger text-xs text-center min-h-[1.5em]"></p>
+                    
+                    <div class="flex justify-between items-center text-sm mt-2">
+                        <button type="button" id="signup-btn" class="text-muted hover:text-white">Create Account</button>
+                        <button type="button" id="forgot-btn" class="text-accent hover:text-blue-400">Forgot Password?</button>
+                    </div>
+                    
+                    <p id="auth-error" class="text-danger text-xs text-center min-h-[1.5em] mt-2"></p>
+                    <p id="auth-success" class="text-green-400 text-xs text-center hidden mt-2"></p>
                 </form>
             </div>
         </div>
@@ -65,13 +75,20 @@
 
             <aside id="sidebar" class="w-72 bg-surface border-r border-border flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none">
                 <div class="p-4 border-b border-border flex justify-between items-center h-16">
-                    <span class="font-bold pl-2">My Notes</span>
-                    <button id="new-doc-btn" class="bg-accent/10 text-accent px-3 py-1 rounded text-sm hover:bg-accent/20">+ New</button>
+                    <span class="font-bold pl-2 tracking-wide">My Notes</span>
+                    <button id="new-doc-btn" class="bg-accent/10 text-accent px-3 py-1 rounded text-sm hover:bg-accent/20 transition">+ New</button>
                 </div>
+                
                 <div id="doc-list" class="flex-1 overflow-y-auto p-3 space-y-1"></div>
-                <div class="p-4 border-t border-border flex justify-between items-center">
-                    <span id="user-email" class="text-xs text-muted truncate max-w-[150px]"></span>
-                    <button id="logout-btn" class="text-xs text-danger hover:text-red-400">Log Out</button>
+                
+                <div class="p-4 border-t border-border bg-surface flex flex-col gap-3">
+                    <div class="flex justify-between items-center">
+                        <span id="user-email" class="text-xs text-muted truncate max-w-[150px]"></span>
+                        <button id="logout-btn" class="text-xs text-danger hover:text-red-400">Log Out</button>
+                    </div>
+                    <div class="text-[10px] text-center text-muted border-t border-border pt-3">
+                        Made with love ❤️ by <br> <span class="text-gray-400 font-medium">Harsha Varthan E P</span>
+                    </div>
                 </div>
             </aside>
 
@@ -83,17 +100,30 @@
                         </button>
                         <input type="text" id="doc-title" class="bg-transparent text-lg font-bold text-white outline-none w-full placeholder-muted/50" placeholder="Select a note..." disabled>
                     </div>
-                    <div class="flex items-center gap-4 pl-2">
-                        <div id="status-indicator" class="flex items-center gap-2 opacity-0 transition-opacity">
+                    
+                    <div class="flex items-center gap-3 pl-2">
+                        <div id="status-indicator" class="flex items-center gap-2 opacity-0 transition-opacity hidden md:flex">
                             <span class="loader hidden" id="save-loader"></span>
                             <span id="save-text" class="text-xs text-muted font-bold uppercase tracking-wider">Saved</span>
                         </div>
-                        <button id="delete-doc-btn" class="text-muted hover:text-danger p-2" disabled title="Delete">
+                        
+                        <div class="h-6 w-px bg-border mx-1"></div>
+
+                        <button id="fav-btn" class="text-muted hover:text-gold p-2 transition disabled:opacity-30" disabled title="Mark as Important">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                        </button>
+
+                        <button id="download-btn" class="text-muted hover:text-accent p-2 transition disabled:opacity-30" disabled title="Download Note">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </button>
+                        
+                        <button id="delete-doc-btn" class="text-muted hover:text-danger p-2 transition disabled:opacity-30" disabled title="Delete">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
                         </button>
                     </div>
                 </div>
-                <div id="editor-wrapper" class="flex-1 overflow-hidden flex flex-col opacity-50 pointer-events-none">
+                
+                <div id="editor-wrapper" class="flex-1 overflow-hidden flex flex-col opacity-50 pointer-events-none transition-opacity">
                     <div id="editor-container"></div>
                 </div>
             </main>
@@ -106,6 +136,7 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
+        // 1. CONFIGURATION
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
@@ -116,20 +147,19 @@
           measurementId: "G-JKLMSFD0C2"
         };
 
-        try {
-            firebase.initializeApp(firebaseConfig);
-        } catch(e) { console.error(e); }
+        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.error(e); }
 
         const auth = firebase.auth();
         const db = firebase.firestore();
         
-        // UI Elements
+        // 2. STATE & REFS
         const els = {
             authScreen: document.getElementById('auth-screen'),
             dashboard: document.getElementById('dashboard-screen'),
             email: document.getElementById('email'),
             pass: document.getElementById('password'),
             authError: document.getElementById('auth-error'),
+            authSuccess: document.getElementById('auth-success'),
             docList: document.getElementById('doc-list'),
             title: document.getElementById('doc-title'),
             editor: document.getElementById('editor-wrapper'),
@@ -137,21 +167,24 @@
             loader: document.getElementById('save-loader'),
             statusText: document.getElementById('save-text'),
             delBtn: document.getElementById('delete-doc-btn'),
+            favBtn: document.getElementById('fav-btn'),
+            downBtn: document.getElementById('download-btn'),
             userEmail: document.getElementById('user-email')
         };
 
         let currentUser = null;
         let currentDocId = null;
+        let isCurrentFav = false;
         let saveTimeout = null;
 
-        // Editor Setup
+        // 3. EDITOR INIT
         var quill = new Quill('#editor-container', {
             theme: 'snow',
-            placeholder: 'Type something...',
-            modules: { toolbar: [[{'header':[1,2,false]}], ['bold','italic','underline'], [{'list':'ordered'},{'list':'bullet'}], ['image','link']] }
+            placeholder: 'Type your thoughts...',
+            modules: { toolbar: [[{'header':[1,2,false]}], ['bold','italic','underline','strike'], [{'list':'ordered'},{'list':'bullet'}], ['image','link']] }
         });
 
-        // Auth Listener
+        // 4. AUTH HANDLERS
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
@@ -167,104 +200,191 @@
             }
         });
 
-        // Login/Signup
         document.getElementById('auth-form').onsubmit = (e) => {
             e.preventDefault();
-            auth.signInWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
+            auth.signInWithEmailAndPassword(els.email.value, els.pass.value)
+                .catch(err => showAuthMsg(err.message, true));
         };
+        
         document.getElementById('signup-btn').onclick = () => {
-            auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
+            auth.createUserWithEmailAndPassword(els.email.value, els.pass.value)
+                .catch(err => showAuthMsg(err.message, true));
         };
+
+        // Forgot Password Logic
+        document.getElementById('forgot-btn').onclick = () => {
+            const email = els.email.value;
+            if(!email) {
+                showAuthMsg("Please enter your email above first.", true);
+                return;
+            }
+            auth.sendPasswordResetEmail(email)
+                .then(() => showAuthMsg("Reset link sent! Check your email inbox.", false))
+                .catch(err => showAuthMsg(err.message, true));
+        };
+
         document.getElementById('logout-btn').onclick = () => auth.signOut();
 
-        // Load Sidebar
+        function showAuthMsg(msg, isError) {
+            if(isError) {
+                els.authError.textContent = msg;
+                els.authSuccess.classList.add('hidden');
+            } else {
+                els.authSuccess.textContent = msg;
+                els.authSuccess.classList.remove('hidden');
+                els.authError.textContent = "";
+            }
+        }
+
+        // 5. DATA LOGIC
         function loadSidebar() {
-            db.collection('users').doc(currentUser.uid).collection('docs').orderBy('updatedAt', 'desc')
+            // Order by Favorite first, then Updated Date
+            db.collection('users').doc(currentUser.uid).collection('docs')
+            .orderBy('isFavorite', 'desc')
+            .orderBy('updatedAt', 'desc')
             .onSnapshot(snap => {
                 els.docList.innerHTML = '';
-                if(snap.empty) els.docList.innerHTML = '<div class="text-center text-muted text-sm mt-4">No notes.</div>';
+                if(snap.empty) els.docList.innerHTML = '<div class="text-center text-muted text-sm mt-4">No notes found.</div>';
+                
                 snap.forEach(doc => {
                     const data = doc.data();
                     const div = document.createElement('div');
                     const isActive = doc.id === currentDocId;
-                    div.className = `p-3 rounded mb-1 cursor-pointer ${isActive ? 'bg-accent/20 text-accent' : 'hover:bg-white/5'}`;
-                    div.innerHTML = `<div class="font-medium text-sm truncate">${data.title || 'Untitled'}</div>`;
+                    const isFav = data.isFavorite || false;
+                    
+                    div.className = `p-3 rounded mb-1 cursor-pointer flex justify-between items-center group transition ${isActive ? 'bg-accent/20 border border-accent/30' : 'hover:bg-white/5 border border-transparent'}`;
+                    
+                    div.innerHTML = `
+                        <div class="truncate pr-2">
+                            <div class="font-medium text-sm text-gray-200 ${isActive ? 'text-accent' : ''}">${data.title || 'Untitled'}</div>
+                            <div class="text-[10px] text-muted mt-0.5">${new Date(data.updatedAt?.toDate()).toLocaleDateString()}</div>
+                        </div>
+                        ${isFav ? '<span class="text-gold text-lg">★</span>' : ''}
+                    `;
                     div.onclick = () => openDoc(doc.id, data);
                     els.docList.appendChild(div);
                 });
             });
         }
 
-        // Open Doc
         function openDoc(id, data) {
             currentDocId = id;
+            isCurrentFav = data.isFavorite || false;
+            
+            // Update UI
             els.title.value = data.title;
             els.title.disabled = false;
             els.delBtn.disabled = false;
+            els.favBtn.disabled = false;
+            els.downBtn.disabled = false;
             els.editor.classList.remove('opacity-50', 'pointer-events-none');
+            
+            // Update Favorite Icon Color
+            updateFavIcon();
+
+            // Set Content
             quill.setContents(data.content, 'api');
             
-            // UI Reset
             if(window.innerWidth < 768) toggleSidebar(false);
             setStatus('Loaded', false);
         }
 
-        // New Doc
         document.getElementById('new-doc-btn').onclick = async () => {
             const ref = await db.collection('users').doc(currentUser.uid).collection('docs').add({
                 title: 'Untitled Note',
                 content: '',
+                isFavorite: false,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             openDoc(ref.id, {title:'Untitled Note', content:''});
         };
 
-        // Delete Doc
+        // Delete
         els.delBtn.onclick = async () => {
-            if(confirm('Delete this note?')) {
+            if(confirm('Delete this note forever?')) {
                 await db.collection('users').doc(currentUser.uid).collection('docs').doc(currentDocId).delete();
-                currentDocId = null;
-                els.title.value = '';
-                els.title.disabled = true;
-                els.delBtn.disabled = true;
-                quill.setText('');
-                els.editor.classList.add('opacity-50', 'pointer-events-none');
+                resetUI();
             }
         };
 
-        // --- SAVE LOGIC ---
+        // Favorites (Important) Toggle
+        els.favBtn.onclick = () => {
+            if(!currentDocId) return;
+            isCurrentFav = !isCurrentFav;
+            updateFavIcon();
+            triggerSave(true); // Save immediately
+        };
+
+        // Download Feature
+        els.downBtn.onclick = () => {
+            if(!currentDocId) return;
+            const title = els.title.value || 'note';
+            // Wrap in basic HTML for styling
+            const htmlContent = `
+                <html><head><title>${title}</title><style>body{font-family:sans-serif;padding:20px;line-height:1.6;}</style></head>
+                <body><h1>${title}</h1>${quill.root.innerHTML}</body></html>
+            `;
+            const blob = new Blob([htmlContent], {type: "text/html"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${title}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // 6. SAVE LOGIC
         quill.on('text-change', (delta, old, source) => { if(source === 'user') triggerSave(); });
         els.title.oninput = () => triggerSave();
 
-        function triggerSave() {
+        function triggerSave(immediate = false) {
             if(!currentDocId) return;
             setStatus('Syncing...', true);
             if(saveTimeout) clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveToDb, 1000); // 1 second debounce
+            
+            const saveFn = async () => {
+                if(!currentUser || !currentDocId) return;
+                const rawContent = quill.getContents();
+                // FIX: Clean JSON
+                const cleanContent = JSON.parse(JSON.stringify(rawContent)); 
+                
+                try {
+                    await db.collection('users').doc(currentUser.uid).collection('docs').doc(currentDocId).set({
+                        title: els.title.value || 'Untitled',
+                        content: cleanContent,
+                        isFavorite: isCurrentFav,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    setStatus('Saved', false);
+                } catch(e) {
+                    console.error(e);
+                    setStatus('Error', false);
+                }
+            };
+
+            if(immediate) saveFn();
+            else saveTimeout = setTimeout(saveFn, 1000);
         }
 
-        async function saveToDb() {
-            if(!currentUser || !currentDocId) return;
-            
-            // ---------------------------------------------------------
-            // THE FIX: Convert Quill Object to Plain JSON before saving
-            // ---------------------------------------------------------
-            const rawContent = quill.getContents();
-            const cleanContent = JSON.parse(JSON.stringify(rawContent)); 
+        // 7. UI HELPERS
+        function updateFavIcon() {
+            if(isCurrentFav) els.favBtn.classList.replace('text-muted', 'text-gold');
+            else els.favBtn.classList.replace('text-gold', 'text-muted');
+        }
 
-            try {
-                await db.collection('users').doc(currentUser.uid).collection('docs').doc(currentDocId).set({
-                    title: els.title.value || 'Untitled',
-                    content: cleanContent, // Sending the clean JSON now
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                setStatus('Saved', false);
-            } catch(e) {
-                console.error(e);
-                setStatus('Error', false);
-                alert("Save Failed: " + e.message);
-            }
+        function resetUI() {
+            currentDocId = null;
+            els.title.value = '';
+            els.title.disabled = true;
+            els.delBtn.disabled = true;
+            els.favBtn.disabled = true;
+            els.downBtn.disabled = true;
+            els.favBtn.classList.replace('text-gold', 'text-muted');
+            quill.setText('');
+            els.editor.classList.add('opacity-50', 'pointer-events-none');
         }
 
         function setStatus(msg, loading) {
