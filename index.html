@@ -12,20 +12,12 @@
             theme: {
                 extend: {
                     colors: {
-                        bg: '#f0f2f5',       // Google Docs gray background
-                        surface: '#ffffff', 
-                        sidebar: '#1e1e1e',  
-                        border: '#e5e7eb',
-                        text: '#1f2937',     
-                        muted: '#9ca3af',
-                        accent: '#1a73e8',   // Google Blue
-                        danger: '#d93025',
-                        gold: '#fbbc04'
+                        bg: '#f0f2f5', surface: '#ffffff', sidebar: '#1e1e1e',  
+                        border: '#e5e7eb', text: '#1f2937', muted: '#9ca3af',
+                        accent: '#1a73e8', danger: '#d93025', gold: '#fbbc04'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    boxShadow: {
-                        'paper': '0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15)'
-                    }
+                    boxShadow: { 'paper': '0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15)' }
                 }
             }
         }
@@ -33,45 +25,67 @@
     
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
-        /* SCROLLBARS */
+        /* APP UTILITIES */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #1a73e8; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* EDITOR: PAGE VIEW STYLE */
+        /* --- VISUAL PAGINATION ENGINE --- */
         #editor-wrapper {
             background-color: #f0f2f5;
-            padding: 24px 0;
+            padding: 40px 0;
             overflow-y: auto;
             display: flex;
             justify-content: center;
-            height: calc(100vh - 64px); /* Full height minus toolbar */
+            height: calc(100vh - 64px);
         }
         
         #paper-container {
-            width: 816px; /* A4 Width */
-            min-height: 1056px; /* A4 Height */
+            width: 794px; /* Exact A4 Width in Pixels (96 DPI) */
+            min-height: 1123px; /* Exact A4 Height */
             background: white;
             box-shadow: 0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15);
-            margin-bottom: 24px;
+            margin-bottom: 40px;
             display: flex;
             flex-direction: column;
             position: relative;
         }
 
+        /* The Editor */
         .ql-container {
-            font-size: 11pt; /* Standard Doc Size */
-            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            font-family: 'Times New Roman', serif; /* Classic Doc Font */
             flex-grow: 1;
             height: auto !important;
         }
         
+        /* This simulates the Pages */
         .ql-editor {
             padding: 96px; /* 1 inch margins */
-            min-height: 1056px;
+            min-height: 1123px;
+            /* Visual Page Break Guide */
+            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 100% 1123px; /* Repeats every A4 height */
+            background-position: 0 -1px; /* Align to top */
+            line-height: 1.5;
         }
-        
+
+        /* Page Break Label */
+        .ql-editor::before {
+            content: "";
+            position: absolute;
+            top: 1123px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            pointer-events: none;
+            /* Repeated via Shadow for multiple pages visually */
+            box-shadow: 0 1123px 0 0 #e5e7eb, 0 2246px 0 0 #e5e7eb, 0 3369px 0 0 #e5e7eb;
+        }
+
         /* Toolbar Styling */
         .ql-toolbar {
             border: none !important;
@@ -82,11 +96,12 @@
             margin: 8px 16px;
         }
         
-        /* Mobile Optimization */
+        /* Mobile */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: white; height: calc(100vh - 110px); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px; }
+            .ql-editor { padding: 20px; background-image: none; }
+            .ql-editor::before { content: none; }
             .ql-toolbar { margin: 0; border-radius: 0; overflow-x: auto; }
         }
 
@@ -102,7 +117,7 @@
         <div id="auth-screen" class="absolute inset-0 z-50 bg-[#1e1e1e] flex items-center justify-center p-4">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
-                <p class="text-gray-400 text-center text-sm mb-8">Secure Cloud Workspace</p>
+                <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
                 
                 <form id="auth-form" class="space-y-4">
                     <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none focus:ring-1 focus:ring-accent transition" placeholder="Email Address" required>
@@ -122,7 +137,7 @@
         <div id="reset-modal" class="absolute inset-0 z-[60] bg-black/80 hidden flex items-center justify-center p-4">
             <div class="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl">
                 <h3 class="font-bold text-lg mb-2 text-gray-800">Reset Password</h3>
-                <p class="text-sm text-gray-600 mb-4">Enter your registered email. We will send you a secure link.</p>
+                <p class="text-sm text-gray-600 mb-4">Enter your email. A reset link will be sent.</p>
                 <input type="email" id="reset-email" class="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:border-accent" placeholder="your@email.com">
                 <div class="flex justify-end gap-2">
                     <button onclick="document.getElementById('reset-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
@@ -135,47 +150,35 @@
             <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
             <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
-                
                 <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
                     <span class="font-bold text-white tracking-wide pl-1 text-lg">My Drive</span>
                     <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1" title="New Note">+</button>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
-                    
                     <div class="space-y-1 mb-6">
-                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium">
-                            <span>📄</span> All Files
-                        </div>
-                        <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition">
-                            <span>⭐</span> Important
-                        </div>
+                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium"><span>📄</span> All Files</div>
+                        <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition"><span>⭐</span> Important</div>
                     </div>
 
                     <div class="mb-2 px-2 flex justify-between items-center group">
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
                         <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
                     </div>
-                    <div id="folder-list" class="space-y-1 mb-6">
-                        </div>
+                    <div id="folder-list" class="space-y-1 mb-6"></div>
 
                     <div class="mb-2 px-2 border-t border-gray-700 pt-4">
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Recent</span>
                     </div>
-                    <div id="doc-list" class="space-y-1">
-                        </div>
+                    <div id="doc-list" class="space-y-1"></div>
                 </div>
 
                 <div class="p-4 bg-[#181818] border-t border-gray-800">
                     <div class="flex items-center justify-between mb-2">
-                        <div class="flex flex-col">
-                            <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
-                        </div>
+                        <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
                         <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
                     </div>
-                    <div class="text-[10px] text-gray-600 text-center mt-2 pt-2 border-t border-gray-800">
-                         Made with love ❤️ by <span class="hover:text-gray-400 transition cursor-default">Harsha Varthan E P</span>
-                    </div>
+                    <div class="text-[10px] text-gray-600 text-center mt-2 pt-2 border-t border-gray-800">Made with love ❤️ by Harsha Varthan E P</div>
                 </div>
             </aside>
 
@@ -186,7 +189,6 @@
                         <button class="md:hidden text-gray-600 p-2 -ml-2" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                         </button>
-                        
                         <div class="flex flex-col w-full max-w-lg">
                             <input type="text" id="doc-title" class="bg-transparent text-lg font-semibold text-gray-800 outline-none w-full placeholder-gray-400" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-gray-400 font-medium h-3"></span>
@@ -197,13 +199,10 @@
                         <select id="folder-select" onchange="moveDoc()" class="hidden md:block text-xs bg-gray-100 border-none rounded p-2 text-gray-600 hover:bg-gray-200 outline-none cursor-pointer" disabled>
                             <option value="">No Folder</option>
                         </select>
-
                         <button id="fav-btn" onclick="toggleFavorite()" class="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gold transition disabled:opacity-50" disabled title="Mark Important">★</button>
-                        
                         <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-accent transition disabled:opacity-50" disabled title="Download Word Doc">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                         </button>
-                        
                         <button id="delete-btn" onclick="deleteCurrentDoc()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-danger transition disabled:opacity-50" disabled title="Delete">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
@@ -225,7 +224,7 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
-        // --- 1. CONFIGURATION (Replace with YOUR KEYS if needed) ---
+        // --- CONFIG (ADD YOUR KEYS) ---
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
@@ -239,69 +238,54 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- 2. STATE ---
+        // --- STATE ---
         let state = {
-            user: null,
-            docId: null,
-            activeFilter: 'all', 
-            folders: [],
-            docs: [],
-            isFav: false,
-            saveTimer: null,
-            firstLoad: true // To trigger auto-open
+            user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
+            isFav: false, saveTimer: null, firstLoad: true
         };
 
         const els = {
-            authScreen: document.getElementById('auth-screen'),
-            dashboard: document.getElementById('dashboard-screen'),
-            email: document.getElementById('email'),
-            pass: document.getElementById('password'),
-            authError: document.getElementById('auth-error'),
-            docList: document.getElementById('doc-list'),
-            folderList: document.getElementById('folder-list'),
-            folderSelect: document.getElementById('folder-select'),
-            title: document.getElementById('doc-title'),
-            editorWrapper: document.getElementById('editor-wrapper'),
-            status: document.getElementById('save-status'),
-            favBtn: document.getElementById('fav-btn'),
-            delBtn: document.getElementById('delete-btn'),
-            downBtn: document.getElementById('download-btn'),
+            authScreen: document.getElementById('auth-screen'), dashboard: document.getElementById('dashboard-screen'),
+            email: document.getElementById('email'), pass: document.getElementById('password'),
+            authError: document.getElementById('auth-error'), docList: document.getElementById('doc-list'),
+            folderList: document.getElementById('folder-list'), folderSelect: document.getElementById('folder-select'),
+            title: document.getElementById('doc-title'), editorWrapper: document.getElementById('editor-wrapper'),
+            status: document.getElementById('save-status'), favBtn: document.getElementById('fav-btn'),
+            delBtn: document.getElementById('delete-btn'), downBtn: document.getElementById('download-btn'),
             userEmail: document.getElementById('user-email')
         };
 
-        // --- 3. EDITOR INIT ---
+        // --- EDITOR INIT ---
         var quill = new Quill('#editor-container', {
             theme: 'snow',
-            placeholder: 'Type @ to insert...',
+            placeholder: 'Start writing...',
             modules: { toolbar: [[{'header':[1,2,3,false]}], ['bold','italic','underline','strike', {'color':[]},{'background':[]}], [{'list':'ordered'},{'list':'bullet'},{'align':[]}], ['image','link','clean']] }
         });
 
-        // --- 4. AUTH & STARTUP ---
+        // --- AUTH ---
         auth.onAuthStateChanged(u => {
             state.user = u;
             if(u) {
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.dashboard.classList.remove('hidden');
-                initData(); // Load data
+                initData();
             } else {
                 els.authScreen.classList.remove('hidden');
                 els.dashboard.classList.add('hidden');
-                state.docs = []; state.folders = [];
             }
         });
 
-        // Login Logic
         document.getElementById('auth-form').onsubmit = (e) => {
             e.preventDefault();
-            auth.signInWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = "Invalid email or password.");
+            auth.signInWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = "Check email or password.");
         };
         document.getElementById('signup-btn').onclick = () => {
             auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
         };
         document.getElementById('logout-btn').onclick = () => auth.signOut();
 
-        // Password Reset (Standard Security)
+        // --- FORGOT PASSWORD LOGIC ---
         window.showResetModal = () => {
             document.getElementById('reset-modal').classList.remove('hidden');
             if(els.email.value) document.getElementById('reset-email').value = els.email.value; 
@@ -310,264 +294,166 @@
             const email = document.getElementById('reset-email').value;
             if(!email) return alert("Please enter email");
             
-            // Note: Firebase does not reveal if email is registered (Security)
+            // Firebase send logic
             auth.sendPasswordResetEmail(email)
                 .then(() => { 
-                    alert("If an account exists for " + email + ", a reset link has been sent."); 
+                    alert("SUCCESS: A password reset link has been sent to " + email + ".\n\nNOTE: If you do not see it, check your SPAM folder. If the account does not exist, for security reasons, no email will be sent."); 
                     document.getElementById('reset-modal').classList.add('hidden'); 
                 })
-                .catch(e => alert(e.message));
+                .catch(e => alert("Error: " + e.message));
         };
 
-        // --- 5. DATA LOADING & AUTO OPEN ---
+        // --- DATA & AUTO OPEN ---
         function initData() {
             if(!state.user) return;
             const uid = state.user.uid;
 
-            // Load Folders
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderFolders();
-                updateFolderSelect();
+                renderFolders(); updateFolderSelect();
             });
 
-            // Load Docs & Auto Open
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderDocs();
-                
-                // AUTO OPEN FEATURE
                 if (state.firstLoad) {
                     state.firstLoad = false;
-                    if(state.docs.length > 0) {
-                        openDoc(state.docs[0].id, state.docs[0]); // Open most recent
-                    } else {
-                        createNewDoc(); // Or create new if none exist
-                    }
+                    state.docs.length > 0 ? openDoc(state.docs[0].id, state.docs[0]) : createNewDoc();
                 }
             });
         }
 
-        // --- 6. FOLDERS UI ---
+        // --- RENDERING ---
         function renderFolders() {
             els.folderList.innerHTML = '';
             state.folders.forEach(f => {
                 const div = document.createElement('div');
                 const isActive = state.activeFilter === f.id;
                 div.className = `flex justify-between items-center group p-2 rounded cursor-pointer transition ${isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-gray-400'}`;
-                
-                div.innerHTML = `
-                    <div class="flex items-center gap-2" onclick="filterDocs('${f.id}')">
-                        <span>${f.emoji}</span> <span class="text-sm">${f.name}</span>
-                    </div>
-                    <button onclick="deleteFolder('${f.id}')" class="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-1">×</button>
-                `;
+                div.innerHTML = `<div class="flex items-center gap-2" onclick="filterDocs('${f.id}')"><span>${f.emoji}</span> <span class="text-sm">${f.name}</span></div><button onclick="deleteFolder('${f.id}')" class="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-1">×</button>`;
                 els.folderList.appendChild(div);
             });
         }
-
         function updateFolderSelect() {
-            // Update the Move-To dropdown
             els.folderSelect.innerHTML = '<option value="">No Folder (Root)</option>';
             state.folders.forEach(f => {
                 const opt = document.createElement('option');
-                opt.value = f.id;
-                opt.textContent = `${f.emoji} ${f.name}`;
+                opt.value = f.id; opt.textContent = `${f.emoji} ${f.name}`;
                 els.folderSelect.appendChild(opt);
             });
         }
-
-        window.createNewFolder = async () => {
-            // Custom Emoji Logic
-            const emojis = ['📁', '📂', '📑', '📘', '📕', '💡', '🚀', '💼'];
-            const autoEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-            
-            let name = prompt("Folder Name:");
-            if(!name) return;
-            
-            // Allow user to override emoji in prompt? Simple hack:
-            // Asking user for emoji is complex UI, so we stick to auto but let them know.
-            let emoji = prompt("Enter an emoji for this folder (or leave blank for auto):", autoEmoji);
-            if(!emoji) emoji = autoEmoji;
-
-            await db.collection('users').doc(state.user.uid).collection('folders').add({
-                name: name,
-                emoji: emoji,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        };
-
-        window.deleteFolder = async (id) => {
-            if(!confirm("Delete this folder? Notes inside will move to 'All Files'.")) return;
-            // 1. Delete Folder
-            await db.collection('users').doc(state.user.uid).collection('folders').doc(id).delete();
-            // 2. Reset docs in that folder (Optional cleanup, but good UX)
-            // (We skip complex batch updates for single-file simplicity, docs just become 'root')
-            if(state.activeFilter === id) filterDocs('all');
-        };
-
-        // --- 7. DOCS UI ---
         function renderDocs() {
             els.docList.innerHTML = '';
             let filtered = state.docs;
-            
             if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
             else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
-
-            if(filtered.length === 0) {
-                els.docList.innerHTML = '<div class="text-center text-[10px] text-gray-500 mt-4 italic">Empty</div>';
-                return;
-            }
 
             filtered.forEach(d => {
                 const div = document.createElement('div');
                 const isActive = d.id === state.docId;
                 div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
-                div.innerHTML = `
-                    <div class="font-medium text-xs truncate">${d.title || 'Untitled'}</div>
-                    <div class="text-[9px] opacity-60 flex justify-between mt-1">
-                        <span>${new Date(d.updatedAt?.toDate()).toLocaleDateString()}</span>
-                        ${d.isFavorite ? '<span class="text-gold">★</span>' : ''}
-                    </div>
-                `;
+                div.innerHTML = `<div class="font-medium text-xs truncate">${d.title || 'Untitled'}</div><div class="text-[9px] opacity-60 flex justify-between mt-1"><span>${new Date(d.updatedAt?.toDate()).toLocaleDateString()}</span>${d.isFavorite ? '<span class="text-gold">★</span>' : ''}</div>`;
                 div.onclick = () => openDoc(d.id, d);
                 els.docList.appendChild(div);
             });
         }
 
-        window.filterDocs = (filter) => {
-            state.activeFilter = filter;
-            // Highlight
-            document.querySelectorAll('#sidebar .bg-white\\/10').forEach(e => e.classList.remove('bg-white/10', 'text-white'));
-            if(filter === 'all') document.getElementById('filter-all').classList.add('bg-white/10', 'text-white');
-            else if(filter === 'fav') document.getElementById('filter-fav').classList.add('bg-white/10', 'text-white');
-            
-            renderFolders();
-            renderDocs();
-            if(window.innerWidth < 768) toggleSidebar(false);
-        };
-
-        // --- 8. OPEN & EDIT ---
+        // --- ACTIONS ---
         window.openDoc = (id, data) => {
-            state.docId = id;
-            state.isFav = data.isFavorite || false;
-
-            // UI Updates
-            els.title.value = data.title;
-            els.title.disabled = false;
+            state.docId = id; state.isFav = data.isFavorite || false;
+            els.title.value = data.title; els.title.disabled = false;
             els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
-            els.favBtn.disabled = false;
-            els.delBtn.disabled = false;
-            els.downBtn.disabled = false;
-            els.folderSelect.disabled = false;
-            els.folderSelect.value = data.folderId || "";
-
+            els.favBtn.disabled = false; els.delBtn.disabled = false; els.downBtn.disabled = false;
+            els.folderSelect.disabled = false; els.folderSelect.value = data.folderId || "";
             updateFavIcon();
-
-            // Load Content
             quill.setContents(data.content, 'api');
             els.status.textContent = "Synced";
-            
-            // Mobile: Close sidebar
             if(window.innerWidth < 768) toggleSidebar(false);
         };
 
         window.createNewDoc = async () => {
             if(!state.user) return;
-            // Add to current folder if selected
             const folderId = (state.activeFilter !== 'all' && state.activeFilter !== 'fav') ? state.activeFilter : null;
-            
             try {
                 const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
-                    title: 'Untitled Document',
-                    content: '',
-                    isFavorite: false,
-                    folderId: folderId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    title: 'Untitled Document', content: '', isFavorite: false, folderId: folderId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 openDoc(ref.id, {title: 'Untitled Document', content: '', isFavorite: false, folderId: folderId});
             } catch(e) { alert("Error: " + e.message); }
         };
 
-        // --- 9. SAVING & ACTIONS ---
+        window.createNewFolder = async () => {
+            const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)];
+            let name = prompt("Folder Name:"); if(!name) return;
+            await db.collection('users').doc(state.user.uid).collection('folders').add({ name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        };
+        window.deleteFolder = async (id) => {
+            if(confirm("Delete folder? Notes will move to All Files.")) await db.collection('users').doc(state.user.uid).collection('folders').doc(id).delete();
+        };
+        window.deleteCurrentDoc = async () => {
+            if(confirm("Delete this note?")) {
+                await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete();
+                state.docId = null; els.title.value = ''; els.title.disabled = true; quill.setText(''); els.editorWrapper.classList.add('opacity-50', 'pointer-events-none');
+            }
+        };
+
+        // --- SAVE LOGIC ---
         quill.on('text-change', (d, o, source) => { if(source === 'user') triggerSave(); });
         els.title.oninput = () => triggerSave();
-
         function triggerSave() {
             if(!state.docId) return;
             els.status.textContent = "Saving...";
             if(state.saveTimer) clearTimeout(state.saveTimer);
             state.saveTimer = setTimeout(saveToDb, 1000);
         }
-
         async function saveToDb() {
             if(!state.docId) return;
-            const content = JSON.parse(JSON.stringify(quill.getContents()));
             try {
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).set({
-                    title: els.title.value || 'Untitled',
-                    content: content,
-                    isFavorite: state.isFav,
-                    folderId: els.folderSelect.value || null,
+                    title: els.title.value || 'Untitled', content: JSON.parse(JSON.stringify(quill.getContents())),
+                    isFavorite: state.isFav, folderId: els.folderSelect.value || null,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, {merge: true});
-                els.status.textContent = "Saved to Cloud";
-            } catch(e) {
-                console.error(e);
-                els.status.textContent = "Error Saving";
-            }
+                els.status.textContent = "Saved";
+            } catch(e) { console.error(e); els.status.textContent = "Error"; }
         }
 
-        window.moveDoc = () => {
-            triggerSave(); // Dropdown change triggers save with new folderId
-        };
-
-        window.toggleFavorite = () => {
-            state.isFav = !state.isFav;
-            updateFavIcon();
-            triggerSave();
-        };
-
-        function updateFavIcon() {
-            els.favBtn.className = `p-2 rounded-full transition ${state.isFav ? 'text-gold' : 'text-gray-400 hover:text-gold'}`;
-        }
-
-        window.deleteCurrentDoc = async () => {
-            if(!confirm("Move note to Trash?")) return;
-            await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete();
-            state.docId = null;
-            els.title.value = '';
-            els.title.disabled = true;
-            quill.setText('');
-            els.editorWrapper.classList.add('opacity-50', 'pointer-events-none');
-        };
-
+        // --- EXPORT TO WORD (WITH PAGE BREAKS) ---
         window.downloadAsWord = () => {
             const title = els.title.value || "Document";
-            const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title></head><body>${quill.root.innerHTML}</body></html>`;
+            // @page CSS ensures margins and size match A4 in Word
+            const css = `
+                <style>
+                    @page { size: A4; margin: 1in; }
+                    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.5; }
+                    p { margin-bottom: 1em; }
+                </style>
+            `;
+            const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title>${css}</head><body>${quill.root.innerHTML}</body></html>`;
             const blob = new Blob(['\ufeff', html], {type: 'application/msword'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url; a.download = title + ".doc"; a.click();
         };
 
-        // Mobile Sidebar Toggle
-        window.toggleSidebar = (force) => {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('mobile-overlay');
-            const isClosed = sb.classList.contains('sidebar-closed');
-            if (force === false || !isClosed) {
-                sb.classList.add('sidebar-closed'); sb.classList.remove('sidebar-open'); ov.classList.add('hidden');
-            } else {
-                sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden');
-            }
+        // Helpers
+        window.toggleSidebar = (f) => {
+            const sb = document.getElementById('sidebar'), ov = document.getElementById('mobile-overlay');
+            if(f===false || !sb.classList.contains('sidebar-closed')) { sb.classList.add('sidebar-closed'); sb.classList.remove('sidebar-open'); ov.classList.add('hidden'); }
+            else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden'); }
         };
-        
-        // Focus helper
-        window.focusEditor = () => {
-             if(state.docId) quill.focus();
+        window.moveDoc = () => triggerSave();
+        window.toggleFavorite = () => { state.isFav = !state.isFav; updateFavIcon(); triggerSave(); };
+        function updateFavIcon() { els.favBtn.className = `p-2 rounded-full transition ${state.isFav ? 'text-gold' : 'text-gray-400 hover:text-gold'}`; }
+        window.filterDocs = (f) => {
+            state.activeFilter = f;
+            document.querySelectorAll('#sidebar .bg-white\\/10').forEach(e => e.classList.remove('bg-white/10', 'text-white'));
+            if(f==='all') document.getElementById('filter-all').classList.add('bg-white/10', 'text-white');
+            else if(f==='fav') document.getElementById('filter-fav').classList.add('bg-white/10', 'text-white');
+            renderFolders(); renderDocs(); if(window.innerWidth < 768) toggleSidebar(false);
         };
+        window.focusEditor = () => { if(state.docId) quill.focus(); };
     </script>
 </body>
 </html>
