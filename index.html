@@ -56,7 +56,7 @@
             flex: 1;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Align top to allow growth */
+            align-items: flex-start;
         }
         
         #paper-container {
@@ -68,30 +68,26 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            /* CRITICAL FIX: Allow height to grow infinitely */
             height: auto; 
         }
 
         .ql-container {
             font-size: 11pt;
             font-family: 'Times New Roman', serif;
-            height: auto !important; /* Allow growth */
+            height: auto !important;
             overflow: visible !important;
         }
         
         .ql-editor {
-            padding: 96px; /* 1 inch margins */
+            padding: 96px;
             min-height: 1123px;
-            height: auto !important; /* Allow growth */
-            overflow-y: visible !important; /* No scrollbars inside paper */
-            
-            /* Visual Page Breaks (Dotted Line Guide) */
+            height: auto !important;
+            overflow-y: visible !important;
             background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 1123px; /* Repeats every A4 height */
+            background-size: 100% 1123px;
             background-position: 0 -1px;
         }
         
-        /* Page Break Text Label */
         .ql-editor::after {
             content: "Page Break";
             position: absolute;
@@ -102,7 +98,7 @@
             pointer-events: none;
         }
 
-        /* Toolbar Styling */
+        /* --- TOOLBAR STYLING --- */
         .ql-toolbar {
             border: none !important;
             background: #edf2fa;
@@ -112,12 +108,50 @@
             margin: 8px 16px;
         }
         
-        /* Mobile */
+        /* --- MOBILE OPTIMIZATIONS --- */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: white; }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
             .ql-editor { padding: 20px; background-image: none; }
-            .ql-toolbar { margin: 0; border-radius: 0; overflow-x: auto; }
+            
+            /* 1. Horizontal Scroll Toolbar (Looks like a line) */
+            .ql-toolbar { 
+                margin: 0; 
+                border-radius: 0; 
+                display: flex;
+                flex-wrap: nowrap; /* Forces single line */
+                overflow-x: auto; /* Horizontal scroll */
+                gap: 8px;
+                padding: 10px 8px !important;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none; /* Firefox hide scrollbar */
+                -ms-overflow-style: none; /* IE hide scrollbar */
+            }
+            .ql-toolbar::-webkit-scrollbar { display: none; /* Chrome hide scrollbar */ }
+            
+            /* Ensure formats don't wrap */
+            .ql-formats { 
+                display: flex !important; 
+                flex-shrink: 0; 
+                margin-right: 0 !important;
+            }
+
+            /* 2. Fix Hidden Dropdowns in Scrollable Toolbar */
+            /* We force the dropdown options to appear fixed in the center of the screen on mobile */
+            .ql-picker-options {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                min-width: 250px !important;
+                max-height: 50vh !important;
+                background: white !important;
+                border: 1px solid #e5e7eb !important;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+                border-radius: 12px !important;
+                z-index: 9999 !important;
+                overflow-y: auto !important;
+            }
         }
 
         .sidebar-transition { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -140,13 +174,10 @@
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0" id="auth-box">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
                 <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
-                
                 <form id="auth-form" class="space-y-4">
                     <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Email Address" required>
                     <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Password" required>
-                    
                     <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg transform hover:scale-[1.02]">Sign In</button>
-                    
                     <div class="flex justify-between items-center text-sm mt-4 pt-2 border-t border-gray-700">
                         <button type="button" id="signup-btn" class="text-gray-400 hover:text-white transition">Create Account</button>
                         <button type="button" onclick="showResetModal()" class="text-accent hover:text-blue-300 transition">Forgot Password?</button>
@@ -171,13 +202,13 @@
         <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0" id="dashboard-container">
             <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
-            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
-                <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
-                    <span class="font-bold text-white tracking-wide pl-1 text-lg">My Drive</span>
+            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-[100dvh] md:h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
+                <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525] flex-shrink-0">
+                    <span class="font-bold text-white tracking-wide pl-1 text-lg">ZenDocs</span>
                     <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1" title="New Note">+</button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                <div class="flex-1 overflow-y-auto p-3 custom-scrollbar min-h-0">
                     <div class="space-y-1 mb-6">
                         <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition"><span>📄</span> All Files</div>
                         <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition"><span>⭐</span> Important</div>
@@ -195,7 +226,7 @@
                     <div id="doc-list" class="space-y-1"></div>
                 </div>
 
-                <div class="p-4 bg-[#181818] border-t border-gray-800">
+                <div class="p-4 bg-[#181818] border-t border-gray-800 flex-shrink-0">
                     <div class="flex items-center justify-between mb-2">
                         <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
                         <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
@@ -207,18 +238,17 @@
             </aside>
 
             <main class="flex-1 flex flex-col h-full relative w-full bg-[#f0f2f5]">
-                <div class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0">
-                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                <div class="bg-white border-b border-gray-200 flex flex-col md:flex-row items-center justify-between px-4 z-10 shadow-sm flex-shrink-0 md:h-16 py-2 md:py-0">
+                    <div class="flex items-center gap-3 w-full md:w-auto overflow-hidden mb-2 md:mb-0">
                         <button class="md:hidden text-gray-600 p-2 -ml-2" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                         </button>
-                        <div class="flex flex-col w-full max-w-lg">
+                        <div class="flex flex-col w-full">
                             <input type="text" id="doc-title" class="bg-transparent text-lg font-semibold text-gray-800 outline-none w-full placeholder-gray-400 truncate" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-gray-400 font-medium h-3"></span>
                         </div>
                     </div>
-
-                    <div class="flex items-center gap-2 pl-2">
+                    <div class="flex items-center gap-2 pl-2 w-full md:w-auto justify-end">
                         <select id="folder-select" onchange="moveDoc()" class="hidden md:block text-xs bg-gray-100 border-none rounded p-2 text-gray-600 hover:bg-gray-200 outline-none cursor-pointer focus:ring-1 focus:ring-accent" disabled>
                             <option value="">No Folder</option>
                         </select>
@@ -290,20 +320,17 @@
 
         // --- AUTH FLOW ---
         auth.onAuthStateChanged(u => {
-            els.loadingScreen.classList.add('hidden'); // Stop loading
+            els.loadingScreen.classList.add('hidden'); 
             state.user = u;
-            
             if(u) {
-                // Logged In
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.dashboard.classList.remove('hidden');
-                els.dashboard.classList.add('animate-fade-in'); // Trigger Anim
+                els.dashboard.classList.add('animate-fade-in');
                 initData();
             } else {
-                // Logged Out
                 els.authScreen.classList.remove('hidden');
-                els.authBox.classList.add('animate-fade-in-up'); // Trigger Anim
+                els.authBox.classList.add('animate-fade-in-up');
                 els.dashboard.classList.add('hidden');
             }
         });
@@ -316,13 +343,11 @@
             auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
         };
         document.getElementById('logout-btn').onclick = () => {
-             // Reset animations for next login
              els.dashboard.classList.remove('animate-fade-in');
              els.authBox.classList.remove('animate-fade-in-up');
              auth.signOut();
         };
 
-        // --- PASSWORD RESET ---
         window.showResetModal = () => {
             document.getElementById('reset-modal').classList.remove('hidden');
             if(els.email.value) document.getElementById('reset-email').value = els.email.value; 
@@ -330,7 +355,6 @@
         window.sendResetLink = () => {
             const email = document.getElementById('reset-email').value;
             if(!email) return alert("Please enter email");
-            
             auth.sendPasswordResetEmail(email)
                 .then(() => { 
                     alert("Link Sent!\n\nPlease check your email inbox (and SPAM folder)."); 
@@ -343,12 +367,10 @@
         function initData() {
             if(!state.user) return;
             const uid = state.user.uid;
-
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderFolders(); updateFolderSelect();
             });
-
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderDocs();
@@ -383,7 +405,6 @@
             let filtered = state.docs;
             if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
             else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
-
             filtered.forEach(d => {
                 const div = document.createElement('div');
                 const isActive = d.id === state.docId;
@@ -406,7 +427,6 @@
             els.status.textContent = "Synced";
             if(window.innerWidth < 768) toggleSidebar(false);
         };
-
         window.createNewDoc = async () => {
             if(!state.user) return;
             const folderId = (state.activeFilter !== 'all' && state.activeFilter !== 'fav') ? state.activeFilter : null;
@@ -418,7 +438,6 @@
                 openDoc(ref.id, {title: 'Untitled Document', content: '', isFavorite: false, folderId: folderId});
             } catch(e) { alert("Error: " + e.message); }
         };
-
         window.createNewFolder = async () => {
             const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)];
             let name = prompt("Folder Name:"); if(!name) return;
