@@ -149,19 +149,29 @@
                 margin-right: 12px !important;
             }
 
-            /* FIX: Dropdowns (Position below option, not centered modal) */
+            /* FIX: Dropdowns (Position BELOW toolbar, Visible) */
             /* We use fixed positioning to escape the scroll container clipping */
             .ql-toolbar .ql-picker-options {
                 position: fixed !important;
-                top: auto !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                bottom: 0 !important; /* Slide up from bottom is safest on mobile to avoid clipping */
-                width: 100% !important;
-                max-height: 40vh !important;
-                border-radius: 12px 12px 0 0 !important;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
-                border: 1px solid #eee !important;
+                
+                /* Position approx 120px from top (Header 64px + Toolbar 40-50px + Padding) */
+                top: 120px !important; 
+                left: 12px !important;
+                right: 12px !important;
+                width: auto !important;
+                
+                bottom: auto !important; /* Not at bottom */
+                transform: none !important;
+                
+                max-height: 250px !important;
+                overflow-y: auto !important;
+                
+                /* Visuals */
+                background: white;
+                border: 1px solid #e5e7eb !important;
+                border-radius: 8px !important;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15) !important;
+                z-index: 10000 !important; /* Very high to ensure visibility */
             }
             
             /* Hide page break line on mobile */
