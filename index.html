@@ -56,7 +56,7 @@
             flex: 1;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Align top to allow growth */
+            align-items: flex-start;
         }
         
         #paper-container {
@@ -68,30 +68,28 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            /* CRITICAL FIX: Allow height to grow infinitely */
             height: auto; 
         }
 
         .ql-container {
             font-size: 11pt;
             font-family: 'Times New Roman', serif;
-            height: auto !important; /* Allow growth */
+            height: auto !important; 
             overflow: visible !important;
         }
         
         .ql-editor {
             padding: 96px; /* 1 inch margins */
             min-height: 1123px;
-            height: auto !important; /* Allow growth */
-            overflow-y: visible !important; /* No scrollbars inside paper */
+            height: auto !important;
+            overflow-y: visible !important;
             
-            /* Visual Page Breaks (Dotted Line Guide) */
+            /* Visual Page Breaks */
             background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 1123px; /* Repeats every A4 height */
+            background-size: 100% 1123px;
             background-position: 0 -1px;
         }
         
-        /* Page Break Text Label */
         .ql-editor::after {
             content: "Page Break";
             position: absolute;
@@ -118,17 +116,52 @@
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
             .ql-editor { padding: 20px; background-image: none; }
             
-            /* FIX: Horizontal Scroll for Toolbar (Single Line) */
+            /* FIX: Horizontal Scroll for Toolbar (Single Line, Neat & Clean) */
             .ql-toolbar { 
-                margin: 0; 
-                border-radius: 0; 
+                margin: 0 !important; 
+                width: 100% !important;
+                border-radius: 0 !important; 
+                background: #fff !important;
+                
+                /* Layout */
                 display: flex !important;
                 flex-wrap: nowrap !important; /* Force single line */
-                overflow-x: auto !important; /* Enable horizontal scroll */
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
+                gap: 8px;
                 padding: 12px 10px !important;
-                gap: 5px;
+                
+                /* Scrolling */
+                overflow-x: auto !important; 
+                white-space: nowrap !important;
+                -webkit-overflow-scrolling: touch;
+                
+                /* Hide Scrollbar for cleaner look */
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .ql-toolbar::-webkit-scrollbar { 
+                display: none; 
+            }
+            
+            /* Ensure items don't shrink */
+            .ql-formats {
+                display: flex !important;
+                flex-shrink: 0 !important;
+                margin-right: 12px !important;
+            }
+
+            /* FIX: Dropdowns (Position below option, not centered modal) */
+            /* We use fixed positioning to escape the scroll container clipping */
+            .ql-toolbar .ql-picker-options {
+                position: fixed !important;
+                top: auto !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                bottom: 0 !important; /* Slide up from bottom is safest on mobile to avoid clipping */
+                width: 100% !important;
+                max-height: 40vh !important;
+                border-radius: 12px 12px 0 0 !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+                border: 1px solid #eee !important;
             }
             
             /* Hide page break line on mobile */
@@ -308,7 +341,6 @@
             status: document.getElementById('save-status'), favBtn: document.getElementById('fav-btn'),
             delBtn: document.getElementById('delete-btn'), downBtn: document.getElementById('download-btn'),
             userEmail: document.getElementById('user-email'),
-            // New Mobile Elements
             mobileFolderBtn: document.getElementById('mobile-folder-btn'),
             mobileFolderMenu: document.getElementById('mobile-folder-menu'),
             mobileFolderListItems: document.getElementById('mobile-folder-list-items')
@@ -323,20 +355,18 @@
 
         // --- AUTH FLOW ---
         auth.onAuthStateChanged(u => {
-            els.loadingScreen.classList.add('hidden'); // Stop loading
+            els.loadingScreen.classList.add('hidden'); 
             state.user = u;
             
             if(u) {
-                // Logged In
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.dashboard.classList.remove('hidden');
-                els.dashboard.classList.add('animate-fade-in'); // Trigger Anim
+                els.dashboard.classList.add('animate-fade-in'); 
                 initData();
             } else {
-                // Logged Out
                 els.authScreen.classList.remove('hidden');
-                els.authBox.classList.add('animate-fade-in-up'); // Trigger Anim
+                els.authBox.classList.add('animate-fade-in-up'); 
                 els.dashboard.classList.add('hidden');
             }
         });
@@ -349,7 +379,6 @@
             auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
         };
         document.getElementById('logout-btn').onclick = () => {
-             // Reset animations for next login
              els.dashboard.classList.remove('animate-fade-in');
              els.authBox.classList.remove('animate-fade-in-up');
              auth.signOut();
@@ -405,14 +434,12 @@
         }
 
         function updateFolderSelect() {
-            // Desktop Select
             els.folderSelect.innerHTML = '<option value="">No Folder (Root)</option>';
             state.folders.forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f.id; opt.textContent = `${f.emoji} ${f.name}`;
                 els.folderSelect.appendChild(opt);
             });
-            // Add Create New Option to Desktop
             const newOpt = document.createElement('option');
             newOpt.value = 'create_new';
             newOpt.textContent = "➕ Create New Folder...";
@@ -445,7 +472,6 @@
             els.favBtn.disabled = false; els.delBtn.disabled = false; els.downBtn.disabled = false;
             els.mobileFolderBtn.disabled = false;
             
-            // Sync Folder Selects
             els.folderSelect.disabled = false; 
             els.folderSelect.value = data.folderId || "";
             
@@ -467,7 +493,6 @@
             } catch(e) { alert("Error: " + e.message); }
         };
 
-        // Modified createNewFolder to return ID for auto-move logic
         window.createNewFolder = async () => {
             const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)];
             let name = prompt("Folder Name:"); 
@@ -482,18 +507,13 @@
         };
         
         window.handleCreateFolderAction = async () => {
-            // Close mobile menu if open
             els.mobileFolderMenu.classList.add('hidden');
-            
             const newFolderId = await createNewFolder();
             if(newFolderId && state.docId) {
-                // Auto move current doc to new folder
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({folderId: newFolderId});
-                // Update UI selection
                 els.folderSelect.value = newFolderId;
                 els.status.textContent = "Moved to New Folder";
             } else {
-                // Reset select if cancelled
                  els.folderSelect.value = state.docs.find(d => d.id === state.docId)?.folderId || "";
             }
         };
@@ -550,7 +570,6 @@
             else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden'); }
         };
         
-        // --- DESKTOP FOLDER SELECT LOGIC ---
         els.folderSelect.onchange = () => {
             if(els.folderSelect.value === 'create_new') {
                 handleCreateFolderAction();
@@ -559,7 +578,6 @@
             }
         };
         
-        // --- MOBILE FOLDER MENU LOGIC ---
         window.toggleMobileFolderMenu = () => {
             if(els.mobileFolderMenu.classList.contains('hidden')) {
                 renderMobileFolderList();
@@ -569,11 +587,9 @@
             }
         };
         
-        // Render the custom list for mobile
         function renderMobileFolderList() {
             els.mobileFolderListItems.innerHTML = '';
             
-            // "No Folder" Option
             const rootBtn = document.createElement('button');
             const isRoot = !els.folderSelect.value;
             rootBtn.className = `w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${isRoot ? 'text-accent font-bold bg-blue-50' : 'text-gray-600'}`;
@@ -592,12 +608,11 @@
         }
         
         window.setDocFolder = (id) => {
-            els.folderSelect.value = id; // Sync desktop select
-            moveDoc(); // Trigger save
-            els.mobileFolderMenu.classList.add('hidden'); // Close menu
+            els.folderSelect.value = id; 
+            moveDoc(); 
+            els.mobileFolderMenu.classList.add('hidden'); 
         };
 
-        // Close mobile dropdown if clicking outside
         document.addEventListener('click', (e) => {
             if(!els.mobileFolderBtn.contains(e.target) && !els.mobileFolderMenu.contains(e.target)) {
                 els.mobileFolderMenu.classList.add('hidden');
