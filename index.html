@@ -31,7 +31,6 @@
                     animation: {
                         'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'slide-in': 'slideIn 0.3s ease-out forwards',
                         'spin-slow': 'spin 3s linear infinite'
                     },
                     keyframes: {
@@ -42,10 +41,6 @@
                         fadeIn: {
                             '0%': { opacity: '0' },
                             '100%': { opacity: '1' }
-                        },
-                        slideIn: {
-                            '0%': { opacity: '0', transform: 'translateX(-10px)' },
-                            '100%': { opacity: '1', transform: 'translateX(0)' }
                         }
                     }
                 }
@@ -94,6 +89,17 @@
         
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- ANIMATIONS --- */
+        /* Explicitly defined here to ensure Side Menu items appear correctly */
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .doc-item-anim {
+            animation: slideInRight 0.3s ease-out forwards;
+            opacity: 0; /* Default invisible, animated to visible */
+        }
 
         /* --- EDITOR ENGINE --- */
         #editor-wrapper {
@@ -218,9 +224,6 @@
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
-        
-        /* Utility for fade in items */
-        .doc-item-anim { animation: slideIn 0.3s ease-out forwards; opacity: 0; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
@@ -412,7 +415,6 @@
         // --- THEME LOGIC ---
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
-            // Default to dark if saved, otherwise light
             if (savedTheme === 'dark') {
                 document.documentElement.classList.add('dark');
             } else {
@@ -426,7 +428,6 @@
             const isDark = document.documentElement.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             
-            // Add rotation animation to button
             const btn = document.getElementById('theme-btn');
             btn.classList.add('rotate-180');
             setTimeout(() => btn.classList.remove('rotate-180'), 300);
@@ -445,7 +446,6 @@
             }
         }
         
-        // Initialize Theme Immediately
         initTheme();
 
         // --- INIT EDITOR ---
@@ -494,7 +494,6 @@
         window.sendResetLink = () => {
             const email = document.getElementById('reset-email').value;
             if(!email) return alert("Please enter email");
-            
             auth.sendPasswordResetEmail(email)
                 .then(() => { 
                     alert("Link Sent!\n\nPlease check your email inbox (and SPAM folder)."); 
@@ -559,7 +558,7 @@
             filtered.forEach((d, index) => {
                 const div = document.createElement('div');
                 const isActive = d.id === state.docId;
-                // Add animation class with staggering based on index
+                // Animation applied here via CSS class defined in <style>
                 div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 doc-item-anim ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
                 div.style.animationDelay = `${index * 0.05}s`;
                 div.innerHTML = `<div class="font-medium text-xs truncate">${d.title || 'Untitled'}</div><div class="text-[9px] opacity-60 flex justify-between mt-1"><span>${new Date(d.updatedAt?.toDate()).toLocaleDateString()}</span>${d.isFavorite ? '<span class="text-gold">★</span>' : ''}</div>`;
@@ -671,8 +670,6 @@
                 }
             </style>`;
             
-            // Get HTML. Note: Quill's root innerHTML doesn't contain the dark mode classes, 
-            // so combined with the body css above, it exports cleanly as white/black.
             const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title>${css}</head><body>${quill.root.innerHTML}</body></html>`;
             const blob = new Blob(['\ufeff', html], {type: 'application/msword'});
             const url = URL.createObjectURL(blob);
