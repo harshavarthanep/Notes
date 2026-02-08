@@ -90,7 +90,6 @@
             background-position: 0 -1px;
         }
         
-        /* Page Break Text Label */
         .ql-editor::after {
             content: "Page Break";
             position: absolute;
@@ -101,7 +100,7 @@
             pointer-events: none;
         }
 
-        /* Toolbar Styling */
+        /* --- TOOLBAR FIXES --- */
         .ql-toolbar {
             border: none !important;
             background: #edf2fa;
@@ -109,9 +108,16 @@
             padding: 8px 16px !important;
             border-radius: 24px;
             margin: 8px 16px;
-            flex-shrink: 0; /* Prevent toolbar shrinking */
+            flex-shrink: 0;
+            z-index: 50; /* Ensure toolbar stays on top */
+            position: relative;
         }
         
+        /* Dropdown Menu Z-Index Fix */
+        .ql-picker-options {
+            z-index: 100 !important;
+        }
+
         /* --- MOBILE OPTIMIZATIONS --- */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: white; }
@@ -119,24 +125,24 @@
             
             /* Smaller padding for mobile editor */
             .ql-editor { padding: 20px 15px; background-image: none; }
-            .ql-editor::after { display: none; } /* Hide page break text on mobile */
+            .ql-editor::after { display: none; }
             
-            /* Mobile Toolbar Fixes */
+            /* MOBILE TOOLBAR: WRAP ITEMS (Fixes Cut-off Dropdowns) */
             .ql-toolbar { 
                 margin: 0; 
                 border-radius: 0; 
-                overflow-x: auto; /* Enable Horizontal Scroll */
-                white-space: nowrap;
                 display: flex;
+                flex-wrap: wrap; /* CRITICAL FIX: Allow wrapping so menus don't clip */
+                justify-content: center;
                 padding: 10px 5px !important;
-                -webkit-overflow-scrolling: touch;
+                height: auto;
+                min-height: 50px;
             }
             
-            /* Fix huge dropdowns on mobile */
-            .ql-picker-label {
-                max-width: 100px; /* Limit width */
-                overflow: hidden;
-                text-overflow: ellipsis;
+            /* Adjust spacing of toolbar items on mobile */
+            .ql-formats {
+                margin-right: 5px !important;
+                margin-bottom: 5px !important;
             }
         }
 
@@ -216,29 +222,31 @@
                 </div>
 
                 <div class="p-4 bg-[#181818] border-t border-gray-800">
-                    <div class="flex items-center justify-between mb-2">
-                        <span id="user-email" class="text-xs text-white font-medium break-all pr-2"></span>
-                        <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium whitespace-nowrap">Sign Out</button>
-                    </div>
-                    <div class="text-[10px] text-gray-600 text-center mt-2 pt-2 border-t border-gray-800 cursor-default">
-                        Made with love ❤️ by <span class="hover:text-gray-400 transition">Harsha Varthan E P</span>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
+                             <span id="user-email" class="text-xs text-white font-medium break-all pr-2"></span>
+                            <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium whitespace-nowrap shrink-0">Sign Out</button>
+                        </div>
+                        <div class="text-[10px] text-gray-600 text-center pt-2 border-t border-gray-800 cursor-default">
+                            Made with love ❤️ by <span class="hover:text-gray-400 transition">Harsha Varthan E P</span>
+                        </div>
                     </div>
                 </div>
             </aside>
 
             <main class="flex-1 flex flex-col h-full relative w-full bg-[#f0f2f5]">
-                <div class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0">
-                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                <div class="bg-white border-b border-gray-200 flex flex-col md:flex-row items-center justify-between px-4 z-10 shadow-sm flex-shrink-0 md:h-16 py-2 md:py-0">
+                    <div class="flex items-center gap-3 w-full md:w-auto overflow-hidden mb-2 md:mb-0">
                         <button class="md:hidden text-gray-600 p-2 -ml-2" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                         </button>
-                        <div class="flex flex-col w-full max-w-lg">
+                        <div class="flex flex-col w-full">
                             <input type="text" id="doc-title" class="bg-transparent text-lg font-semibold text-gray-800 outline-none w-full placeholder-gray-400 truncate" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-gray-400 font-medium h-3"></span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 pl-2">
+                    <div class="flex items-center gap-2 pl-2 w-full md:w-auto justify-end">
                         <select id="folder-select" onchange="moveDoc()" class="hidden md:block text-xs bg-gray-100 border-none rounded p-2 text-gray-600 hover:bg-gray-200 outline-none cursor-pointer focus:ring-1 focus:ring-accent" disabled>
                             <option value="">No Folder</option>
                         </select>
