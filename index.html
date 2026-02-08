@@ -56,7 +56,7 @@
             flex: 1;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Align top to allow growth */
+            align-items: flex-start; 
         }
         
         #paper-container {
@@ -68,26 +68,25 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            /* CRITICAL FIX: Allow height to grow infinitely */
             height: auto; 
         }
 
         .ql-container {
             font-size: 11pt;
             font-family: 'Times New Roman', serif;
-            height: auto !important; /* Allow growth */
+            height: auto !important; 
             overflow: visible !important;
         }
         
         .ql-editor {
-            padding: 96px; /* 1 inch margins */
+            padding: 96px; /* Desktop Margins */
             min-height: 1123px;
-            height: auto !important; /* Allow growth */
-            overflow-y: visible !important; /* No scrollbars inside paper */
+            height: auto !important;
+            overflow-y: visible !important;
             
-            /* Visual Page Breaks (Dotted Line Guide) */
+            /* Visual Page Breaks */
             background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 1123px; /* Repeats every A4 height */
+            background-size: 100% 1123px; 
             background-position: 0 -1px;
         }
         
@@ -110,14 +109,35 @@
             padding: 8px 16px !important;
             border-radius: 24px;
             margin: 8px 16px;
+            flex-shrink: 0; /* Prevent toolbar shrinking */
         }
         
-        /* Mobile */
+        /* --- MOBILE OPTIMIZATIONS --- */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: white; }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px; background-image: none; }
-            .ql-toolbar { margin: 0; border-radius: 0; overflow-x: auto; }
+            
+            /* Smaller padding for mobile editor */
+            .ql-editor { padding: 20px 15px; background-image: none; }
+            .ql-editor::after { display: none; } /* Hide page break text on mobile */
+            
+            /* Mobile Toolbar Fixes */
+            .ql-toolbar { 
+                margin: 0; 
+                border-radius: 0; 
+                overflow-x: auto; /* Enable Horizontal Scroll */
+                white-space: nowrap;
+                display: flex;
+                padding: 10px 5px !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Fix huge dropdowns on mobile */
+            .ql-picker-label {
+                max-width: 100px; /* Limit width */
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
 
         .sidebar-transition { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -173,7 +193,7 @@
 
             <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
                 <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
-                    <span class="font-bold text-white tracking-wide pl-1 text-lg">My Drive</span>
+                    <span class="font-bold text-white tracking-wide pl-1 text-lg">ZenDocs</span>
                     <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1" title="New Note">+</button>
                 </div>
 
@@ -197,8 +217,8 @@
 
                 <div class="p-4 bg-[#181818] border-t border-gray-800">
                     <div class="flex items-center justify-between mb-2">
-                        <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
-                        <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
+                        <span id="user-email" class="text-xs text-white font-medium break-all pr-2"></span>
+                        <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium whitespace-nowrap">Sign Out</button>
                     </div>
                     <div class="text-[10px] text-gray-600 text-center mt-2 pt-2 border-t border-gray-800 cursor-default">
                         Made with love ❤️ by <span class="hover:text-gray-400 transition">Harsha Varthan E P</span>
