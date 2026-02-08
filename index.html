@@ -40,7 +40,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
         /* SCROLLBARS */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
@@ -56,7 +56,7 @@
             flex: 1;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Align top to allow growth */
+            align-items: flex-start;
         }
         
         #paper-container {
@@ -68,30 +68,27 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            /* CRITICAL FIX: Allow height to grow infinitely */
             height: auto; 
         }
 
         .ql-container {
             font-size: 11pt;
             font-family: 'Times New Roman', serif;
-            height: auto !important; /* Allow growth */
+            height: auto !important;
             overflow: visible !important;
         }
         
         .ql-editor {
             padding: 96px; /* 1 inch margins */
             min-height: 1123px;
-            height: auto !important; /* Allow growth */
-            overflow-y: visible !important; /* No scrollbars inside paper */
-            
-            /* Visual Page Breaks (Dotted Line Guide) */
+            height: auto !important;
+            overflow-y: visible !important;
+            /* Visual Page Breaks */
             background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 1123px; /* Repeats every A4 height */
+            background-size: 100% 1123px;
             background-position: 0 -1px;
         }
         
-        /* Page Break Text Label */
         .ql-editor::after {
             content: "Page Break";
             position: absolute;
@@ -102,56 +99,49 @@
             pointer-events: none;
         }
 
-        /* Toolbar Styling */
+        /* --- TOOLBAR CUSTOMIZATION --- */
+        #toolbar-container {
+            border-bottom: 1px solid #e5e7eb;
+            background: #ffffff;
+            z-index: 20;
+            padding: 4px 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
         .ql-toolbar {
             border: none !important;
-            background: #edf2fa;
-            border-bottom: 1px solid #e0e0e0 !important;
-            padding: 8px 16px !important;
-            border-radius: 24px;
-            margin: 8px 16px;
+            display: flex !important;
+            align-items: center;
+            flex-wrap: nowrap !important; /* Single line */
+            overflow-x: auto !important; /* Horizontal scroll */
+            white-space: nowrap !important;
+            padding: 8px 0 !important;
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+            /* Hide scrollbar but allow functionality */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        .ql-toolbar::-webkit-scrollbar { display: none; }
+        
+        /* Dropdown Fix: Ensure they pop out correctly */
+        .ql-picker-options {
+            position: absolute !important;
+            z-index: 100 !important;
+            background-color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 0 0 8px 8px !important;
+            margin-top: 4px;
         }
         
-        /* Mobile Specific Styles */
+        /* Mobile Specifics */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: white; }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
             .ql-editor { padding: 20px; background-image: none; }
-            
-            /* FIX: Horizontal Scroll for Toolbar (Single Line) */
-            .ql-toolbar { 
-                margin: 0; 
-                border-radius: 0; 
-                display: flex !important;
-                flex-wrap: nowrap !important; /* Force single line */
-                overflow-x: auto !important; /* Enable horizontal scroll */
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-                padding: 12px 10px !important;
-                gap: 5px;
-            }
-            
-            /* FIX: Make Dropdowns pop up in center (Prevent clipping) */
-            .ql-picker-options {
-                position: fixed !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) !important;
-                background: white;
-                border: 1px solid #e5e7eb;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-                border-radius: 12px;
-                z-index: 9999 !important;
-                min-width: 200px;
-                max-height: 60vh;
-                overflow-y: auto;
-            }
-            
-            /* Hide page break line on mobile */
-            .ql-editor::after { display: none; }
         }
 
-        .sidebar-transition { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
     </style>
@@ -165,7 +155,7 @@
         </div>
     </div>
 
-    <div id="app" class="flex-1 flex relative overflow-hidden">
+    <div id="app" class="flex-1 flex relative overflow-hidden h-full w-full">
 
         <div id="auth-screen" class="absolute inset-0 z-50 bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0" id="auth-box">
@@ -199,12 +189,12 @@
             </div>
         </div>
 
-        <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0" id="dashboard-container">
+        <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0">
             <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
-            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-[100dvh] md:h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
-                <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
-                    <span class="font-bold text-white tracking-wide pl-1 text-lg">ZenDocs</span>
+            <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 z-30 w-72 bg-sidebar text-gray-300 flex flex-col h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
+                <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525] flex-shrink-0">
+                    <span class="font-bold text-white tracking-wide pl-1 text-lg">My Drive</span>
                     <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1" title="New Note">+</button>
                 </div>
 
@@ -226,7 +216,7 @@
                     <div id="doc-list" class="space-y-1"></div>
                 </div>
 
-                <div class="p-4 bg-[#181818] border-t border-gray-800">
+                <div class="p-4 bg-[#181818] border-t border-gray-800 flex-shrink-0 mt-auto">
                     <div class="flex items-center justify-between mb-2">
                         <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
                         <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
@@ -237,7 +227,7 @@
                 </div>
             </aside>
 
-            <main class="flex-1 flex flex-col h-full relative w-full bg-[#f0f2f5]">
+            <main class="flex-1 flex flex-col h-full relative w-full bg-[#f0f2f5] overflow-hidden">
                 <div class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0">
                     <div class="flex items-center gap-3 flex-1 overflow-hidden">
                         <button class="md:hidden text-gray-600 p-2 -ml-2" onclick="toggleSidebar()">
@@ -249,10 +239,25 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 pl-2">
-                        <select id="folder-select" onchange="moveDoc()" class="hidden md:block text-xs bg-gray-100 border-none rounded p-2 text-gray-600 hover:bg-gray-200 outline-none cursor-pointer focus:ring-1 focus:ring-accent" disabled>
-                            <option value="">No Folder</option>
-                        </select>
+                    <div class="flex items-center gap-1 pl-2">
+                        <div class="relative" id="folder-menu-container">
+                            <button id="folder-menu-btn" onclick="toggleFolderMenu()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-accent transition flex items-center gap-2 disabled:opacity-50" disabled title="Move to Folder">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                                </svg>
+                                <span id="current-folder-label" class="text-xs font-medium hidden md:block max-w-[80px] truncate"></span>
+                            </button>
+                            <div id="folder-dropdown-menu" class="hidden absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 z-50 py-1 animate-fade-in-up origin-top-right">
+                                <div class="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Select Folder</div>
+                                <div id="folder-dropdown-list" class="max-h-48 overflow-y-auto"></div>
+                                <div class="border-t border-gray-100 mt-1 pt-1">
+                                    <button onclick="createNewFolderFromMenu()" class="w-full text-left px-4 py-2 text-sm text-accent hover:bg-blue-50 transition flex items-center gap-2">
+                                        <span>+</span> Create New Folder
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <button id="fav-btn" onclick="toggleFavorite()" class="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gold transition disabled:opacity-50" disabled title="Mark Important">★</button>
                         <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-accent transition disabled:opacity-50" disabled title="Download Word Doc">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -262,6 +267,8 @@
                         </button>
                     </div>
                 </div>
+
+                <div id="toolbar-container"></div>
 
                 <div id="editor-wrapper" class="opacity-50 pointer-events-none transition-opacity" onclick="focusEditor()">
                     <div id="paper-container">
@@ -295,7 +302,7 @@
         // --- STATE ---
         let state = {
             user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
-            isFav: false, saveTimer: null, firstLoad: true
+            isFav: false, saveTimer: null, firstLoad: true, currentFolderId: null
         };
 
         const els = {
@@ -305,36 +312,54 @@
             dashboard: document.getElementById('dashboard-screen'),
             email: document.getElementById('email'), pass: document.getElementById('password'),
             authError: document.getElementById('auth-error'), docList: document.getElementById('doc-list'),
-            folderList: document.getElementById('folder-list'), folderSelect: document.getElementById('folder-select'),
+            folderList: document.getElementById('folder-list'),
             title: document.getElementById('doc-title'), editorWrapper: document.getElementById('editor-wrapper'),
             status: document.getElementById('save-status'), favBtn: document.getElementById('fav-btn'),
             delBtn: document.getElementById('delete-btn'), downBtn: document.getElementById('download-btn'),
-            userEmail: document.getElementById('user-email')
+            userEmail: document.getElementById('user-email'),
+            folderBtn: document.getElementById('folder-menu-btn'),
+            folderMenu: document.getElementById('folder-dropdown-menu'),
+            folderDropdownList: document.getElementById('folder-dropdown-list'),
+            currentFolderLabel: document.getElementById('current-folder-label')
         };
 
         // --- INIT EDITOR ---
+        // Using the separate toolbar container
         var quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'Start writing...',
-            modules: { toolbar: [[{'header':[1,2,3,false]}], ['bold','italic','underline','strike', {'color':[]},{'background':[]}], [{'list':'ordered'},{'list':'bullet'},{'align':[]}], ['image','link','clean']] }
+            modules: { 
+                toolbar: {
+                    container: [
+                        [{'header':[1,2,3,false]}], 
+                        ['bold','italic','underline','strike'],
+                        [{'color':[]},{'background':[]}], 
+                        [{'list':'ordered'},{'list':'bullet'}],
+                        [{'align':[]}], 
+                        ['image','link','clean']
+                    ]
+                }
+            }
         });
+        
+        // Move toolbar to sticky container
+        const toolbar = document.querySelector('.ql-toolbar');
+        document.getElementById('toolbar-container').appendChild(toolbar);
 
         // --- AUTH FLOW ---
         auth.onAuthStateChanged(u => {
-            els.loadingScreen.classList.add('hidden'); // Stop loading
+            els.loadingScreen.classList.add('hidden');
             state.user = u;
             
             if(u) {
-                // Logged In
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.dashboard.classList.remove('hidden');
-                els.dashboard.classList.add('animate-fade-in'); // Trigger Anim
+                els.dashboard.classList.add('animate-fade-in');
                 initData();
             } else {
-                // Logged Out
                 els.authScreen.classList.remove('hidden');
-                els.authBox.classList.add('animate-fade-in-up'); // Trigger Anim
+                els.authBox.classList.add('animate-fade-in-up');
                 els.dashboard.classList.add('hidden');
             }
         });
@@ -347,13 +372,11 @@
             auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
         };
         document.getElementById('logout-btn').onclick = () => {
-             // Reset animations for next login
              els.dashboard.classList.remove('animate-fade-in');
              els.authBox.classList.remove('animate-fade-in-up');
              auth.signOut();
         };
 
-        // --- PASSWORD RESET ---
         window.showResetModal = () => {
             document.getElementById('reset-modal').classList.remove('hidden');
             if(els.email.value) document.getElementById('reset-email').value = els.email.value; 
@@ -361,10 +384,9 @@
         window.sendResetLink = () => {
             const email = document.getElementById('reset-email').value;
             if(!email) return alert("Please enter email");
-            
             auth.sendPasswordResetEmail(email)
                 .then(() => { 
-                    alert("Link Sent!\n\nPlease check your email inbox (and SPAM folder)."); 
+                    alert("Link Sent!\n\nPlease check your email inbox."); 
                     document.getElementById('reset-modal').classList.add('hidden'); 
                 })
                 .catch(e => alert("Error: " + e.message));
@@ -377,7 +399,7 @@
 
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderFolders(); updateFolderSelect();
+                renderFolders(); 
             });
 
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
@@ -393,22 +415,32 @@
         // --- RENDER UI ---
         function renderFolders() {
             els.folderList.innerHTML = '';
+            els.folderDropdownList.innerHTML = ''; // Clear dropdown too
+
+            // Add "No Folder" option to dropdown
+            const noFolderBtn = document.createElement('button');
+            noFolderBtn.className = "w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2";
+            noFolderBtn.innerHTML = `<span class="opacity-50">📂</span> No Folder`;
+            noFolderBtn.onclick = () => { setDocFolder(null); toggleFolderMenu(false); };
+            els.folderDropdownList.appendChild(noFolderBtn);
+
             state.folders.forEach(f => {
+                // Sidebar List
                 const div = document.createElement('div');
                 const isActive = state.activeFilter === f.id;
                 div.className = `flex justify-between items-center group p-2 rounded cursor-pointer transition ${isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-gray-400'}`;
                 div.innerHTML = `<div class="flex items-center gap-2" onclick="filterDocs('${f.id}')"><span>${f.emoji}</span> <span class="text-sm">${f.name}</span></div><button onclick="deleteFolder('${f.id}')" class="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-1">×</button>`;
                 els.folderList.appendChild(div);
+
+                // Dropdown List (Header)
+                const ddBtn = document.createElement('button');
+                ddBtn.className = "w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2";
+                ddBtn.innerHTML = `<span>${f.emoji}</span> ${f.name}`;
+                ddBtn.onclick = () => { setDocFolder(f.id); toggleFolderMenu(false); };
+                els.folderDropdownList.appendChild(ddBtn);
             });
         }
-        function updateFolderSelect() {
-            els.folderSelect.innerHTML = '<option value="">No Folder (Root)</option>';
-            state.folders.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.id; opt.textContent = `${f.emoji} ${f.name}`;
-                els.folderSelect.appendChild(opt);
-            });
-        }
+
         function renderDocs() {
             els.docList.innerHTML = '';
             let filtered = state.docs;
@@ -428,11 +460,17 @@
         // --- ACTIONS ---
         window.openDoc = (id, data) => {
             state.docId = id; state.isFav = data.isFavorite || false;
+            state.currentFolderId = data.folderId || null;
+            
             els.title.value = data.title; els.title.disabled = false;
             els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
+            
             els.favBtn.disabled = false; els.delBtn.disabled = false; els.downBtn.disabled = false;
-            els.folderSelect.disabled = false; els.folderSelect.value = data.folderId || "";
+            els.folderBtn.disabled = false;
+            
             updateFavIcon();
+            updateFolderUI(); // Update label in header
+            
             quill.setContents(data.content, 'api');
             els.status.textContent = "Synced";
             if(window.innerWidth < 768) toggleSidebar(false);
@@ -453,33 +491,83 @@
         window.createNewFolder = async () => {
             const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)];
             let name = prompt("Folder Name:"); if(!name) return;
-            await db.collection('users').doc(state.user.uid).collection('folders').add({ name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            const ref = await db.collection('users').doc(state.user.uid).collection('folders').add({ name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            return ref.id;
         };
+
+        // Create folder from dropdown and immediately assign current doc to it
+        window.createNewFolderFromMenu = async () => {
+             const newId = await createNewFolder();
+             if(newId) {
+                 await setDocFolder(newId);
+                 toggleFolderMenu(false);
+             }
+        };
+
         window.deleteFolder = async (id) => {
             if(confirm("Delete folder? Notes will move to All Files.")) await db.collection('users').doc(state.user.uid).collection('folders').doc(id).delete();
         };
+
         window.deleteCurrentDoc = async () => {
             if(confirm("Delete this note?")) {
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete();
-                state.docId = null; els.title.value = ''; els.title.disabled = true; quill.setText(''); els.editorWrapper.classList.add('opacity-50', 'pointer-events-none');
+                state.docId = null; els.title.value = ''; els.title.disabled = true; quill.setText(''); 
+                els.editorWrapper.classList.add('opacity-50', 'pointer-events-none');
+                els.folderBtn.disabled = true;
             }
         };
+
+        // --- FOLDER DROPDOWN LOGIC ---
+        window.toggleFolderMenu = (force) => {
+            const isHidden = els.folderMenu.classList.contains('hidden');
+            if (force === false || !isHidden) {
+                els.folderMenu.classList.add('hidden');
+            } else {
+                els.folderMenu.classList.remove('hidden');
+            }
+        };
+
+        async function setDocFolder(folderId) {
+            state.currentFolderId = folderId;
+            updateFolderUI();
+            triggerSave();
+        }
+
+        function updateFolderUI() {
+            if (!state.currentFolderId) {
+                els.currentFolderLabel.textContent = "No Folder";
+                els.folderBtn.classList.remove('text-accent', 'bg-blue-50');
+            } else {
+                const f = state.folders.find(x => x.id === state.currentFolderId);
+                els.currentFolderLabel.textContent = f ? f.name : "Folder";
+                els.folderBtn.classList.add('text-accent', 'bg-blue-50');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!els.folderBtn.contains(e.target) && !els.folderMenu.contains(e.target)) {
+                toggleFolderMenu(false);
+            }
+        });
 
         // --- SAVE LOGIC ---
         quill.on('text-change', (d, o, source) => { if(source === 'user') triggerSave(); });
         els.title.oninput = () => triggerSave();
+        
         function triggerSave() {
             if(!state.docId) return;
             els.status.textContent = "Saving...";
             if(state.saveTimer) clearTimeout(state.saveTimer);
             state.saveTimer = setTimeout(saveToDb, 1000);
         }
+        
         async function saveToDb() {
             if(!state.docId) return;
             try {
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).set({
                     title: els.title.value || 'Untitled', content: JSON.parse(JSON.stringify(quill.getContents())),
-                    isFavorite: state.isFav, folderId: els.folderSelect.value || null,
+                    isFavorite: state.isFav, folderId: state.currentFolderId,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, {merge: true});
                 els.status.textContent = "Saved";
@@ -503,7 +591,6 @@
             if(f===false || !sb.classList.contains('sidebar-closed')) { sb.classList.add('sidebar-closed'); sb.classList.remove('sidebar-open'); ov.classList.add('hidden'); }
             else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden'); }
         };
-        window.moveDoc = () => triggerSave();
         window.toggleFavorite = () => { state.isFav = !state.isFav; updateFavIcon(); triggerSave(); };
         function updateFavIcon() { els.favBtn.className = `p-2 rounded-full transition ${state.isFav ? 'text-gold' : 'text-gray-400 hover:text-gold'}`; }
         window.filterDocs = (f) => {
