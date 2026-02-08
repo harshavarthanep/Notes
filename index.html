@@ -83,8 +83,6 @@
             min-height: 1123px;
             height: auto !important;
             overflow-y: visible !important;
-            
-            /* Visual Page Breaks */
             background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
             background-size: 100% 1123px; 
             background-position: 0 -1px;
@@ -92,15 +90,10 @@
         
         .ql-editor::after {
             content: "Page Break";
-            position: absolute;
-            left: 10px;
-            top: 1123px;
-            font-size: 10px;
-            color: #ccc;
-            pointer-events: none;
+            position: absolute; left: 10px; top: 1123px; font-size: 10px; color: #ccc; pointer-events: none;
         }
 
-        /* --- TOOLBAR FIXES --- */
+        /* --- TOOLBAR STYLING --- */
         .ql-toolbar {
             border: none !important;
             background: #edf2fa;
@@ -109,41 +102,29 @@
             border-radius: 24px;
             margin: 8px 16px;
             flex-shrink: 0;
-            z-index: 50; /* Ensure toolbar stays on top */
+            z-index: 50;
             position: relative;
         }
-        
-        /* Dropdown Menu Z-Index Fix */
-        .ql-picker-options {
-            z-index: 100 !important;
-        }
+        .ql-picker-options { z-index: 100 !important; }
 
         /* --- MOBILE OPTIMIZATIONS --- */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: white; }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            
-            /* Smaller padding for mobile editor */
             .ql-editor { padding: 20px 15px; background-image: none; }
             .ql-editor::after { display: none; }
             
-            /* MOBILE TOOLBAR: WRAP ITEMS (Fixes Cut-off Dropdowns) */
+            /* MOBILE TOOLBAR: Sticky + Horizontal Scroll */
             .ql-toolbar { 
-                margin: 0; 
-                border-radius: 0; 
-                display: flex;
-                flex-wrap: wrap; /* CRITICAL FIX: Allow wrapping so menus don't clip */
-                justify-content: center;
-                padding: 10px 5px !important;
-                height: auto;
-                min-height: 50px;
+                margin: 0; border-radius: 0; padding: 10px 5px !important;
+                position: sticky; top: 0; /* Stick to top */
+                background: #f8faff; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                overflow-x: auto; white-space: nowrap; /* Enable horiz scroll */
+                -webkit-overflow-scrolling: touch;
+                -ms-overflow-style: none; scrollbar-width: none; /* Hide scrollbar */
             }
-            
-            /* Adjust spacing of toolbar items on mobile */
-            .ql-formats {
-                margin-right: 5px !important;
-                margin-bottom: 5px !important;
-            }
+            .ql-toolbar::-webkit-scrollbar { display: none; }
+            .ql-formats { display: inline-block !important; margin-right: 5px !important; }
         }
 
         .sidebar-transition { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -166,13 +147,10 @@
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0" id="auth-box">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
                 <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
-                
                 <form id="auth-form" class="space-y-4">
                     <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Email Address" required>
                     <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Password" required>
-                    
                     <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg transform hover:scale-[1.02]">Sign In</button>
-                    
                     <div class="flex justify-between items-center text-sm mt-4 pt-2 border-t border-gray-700">
                         <button type="button" id="signup-btn" class="text-gray-400 hover:text-white transition">Create Account</button>
                         <button type="button" onclick="showResetModal()" class="text-accent hover:text-blue-300 transition">Forgot Password?</button>
@@ -208,7 +186,6 @@
                         <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition"><span>📄</span> All Files</div>
                         <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition"><span>⭐</span> Important</div>
                     </div>
-
                     <div class="mb-2 px-2 flex justify-between items-center group">
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
                         <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
@@ -222,10 +199,10 @@
                 </div>
 
                 <div class="p-4 bg-[#181818] border-t border-gray-800">
-                    <div class="flex flex-col gap-2">
-                        <div class="flex justify-between items-start">
-                             <span id="user-email" class="text-xs text-white font-medium break-all pr-2"></span>
-                            <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium whitespace-nowrap shrink-0">Sign Out</button>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex flex-col gap-1">
+                             <span id="user-email" class="text-xs text-white font-medium break-words"></span>
+                            <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium text-left">Sign Out</button>
                         </div>
                         <div class="text-[10px] text-gray-600 text-center pt-2 border-t border-gray-800 cursor-default">
                             Made with love ❤️ by <span class="hover:text-gray-400 transition">Harsha Varthan E P</span>
@@ -245,7 +222,6 @@
                             <span id="save-status" class="text-[10px] text-gray-400 font-medium h-3"></span>
                         </div>
                     </div>
-
                     <div class="flex items-center gap-2 pl-2 w-full md:w-auto justify-end">
                         <select id="folder-select" onchange="moveDoc()" class="hidden md:block text-xs bg-gray-100 border-none rounded p-2 text-gray-600 hover:bg-gray-200 outline-none cursor-pointer focus:ring-1 focus:ring-accent" disabled>
                             <option value="">No Folder</option>
@@ -318,20 +294,17 @@
 
         // --- AUTH FLOW ---
         auth.onAuthStateChanged(u => {
-            els.loadingScreen.classList.add('hidden'); // Stop loading
+            els.loadingScreen.classList.add('hidden'); 
             state.user = u;
-            
             if(u) {
-                // Logged In
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.dashboard.classList.remove('hidden');
-                els.dashboard.classList.add('animate-fade-in'); // Trigger Anim
+                els.dashboard.classList.add('animate-fade-in');
                 initData();
             } else {
-                // Logged Out
                 els.authScreen.classList.remove('hidden');
-                els.authBox.classList.add('animate-fade-in-up'); // Trigger Anim
+                els.authBox.classList.add('animate-fade-in-up');
                 els.dashboard.classList.add('hidden');
             }
         });
@@ -344,7 +317,6 @@
             auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
         };
         document.getElementById('logout-btn').onclick = () => {
-             // Reset animations for next login
              els.dashboard.classList.remove('animate-fade-in');
              els.authBox.classList.remove('animate-fade-in-up');
              auth.signOut();
@@ -358,7 +330,6 @@
         window.sendResetLink = () => {
             const email = document.getElementById('reset-email').value;
             if(!email) return alert("Please enter email");
-            
             auth.sendPasswordResetEmail(email)
                 .then(() => { 
                     alert("Link Sent!\n\nPlease check your email inbox (and SPAM folder)."); 
@@ -371,12 +342,10 @@
         function initData() {
             if(!state.user) return;
             const uid = state.user.uid;
-
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderFolders(); updateFolderSelect();
             });
-
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderDocs();
@@ -411,7 +380,6 @@
             let filtered = state.docs;
             if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
             else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
-
             filtered.forEach(d => {
                 const div = document.createElement('div');
                 const isActive = d.id === state.docId;
@@ -434,7 +402,6 @@
             els.status.textContent = "Synced";
             if(window.innerWidth < 768) toggleSidebar(false);
         };
-
         window.createNewDoc = async () => {
             if(!state.user) return;
             const folderId = (state.activeFilter !== 'all' && state.activeFilter !== 'fav') ? state.activeFilter : null;
@@ -446,7 +413,6 @@
                 openDoc(ref.id, {title: 'Untitled Document', content: '', isFavorite: false, folderId: folderId});
             } catch(e) { alert("Error: " + e.message); }
         };
-
         window.createNewFolder = async () => {
             const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)];
             let name = prompt("Folder Name:"); if(!name) return;
