@@ -56,7 +56,7 @@
             flex: 1;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: flex-start; 
         }
         
         #paper-container {
@@ -74,28 +74,23 @@
         .ql-container {
             font-size: 11pt;
             font-family: 'Times New Roman', serif;
-            height: auto !important;
+            height: auto !important; 
             overflow: visible !important;
         }
         
         .ql-editor {
-            padding: 96px;
+            padding: 96px; 
             min-height: 1123px;
             height: auto !important;
             overflow-y: visible !important;
             background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 1123px;
+            background-size: 100% 1123px; 
             background-position: 0 -1px;
         }
         
         .ql-editor::after {
             content: "Page Break";
-            position: absolute;
-            left: 10px;
-            top: 1123px;
-            font-size: 10px;
-            color: #ccc;
-            pointer-events: none;
+            position: absolute; left: 10px; top: 1123px; font-size: 10px; color: #ccc; pointer-events: none;
         }
 
         /* --- TOOLBAR STYLING --- */
@@ -106,51 +101,53 @@
             padding: 8px 16px !important;
             border-radius: 24px;
             margin: 8px 16px;
+            flex-shrink: 0;
+            z-index: 50;
+            position: relative;
         }
         
+        /* Ensure dropdowns show on top */
+        .ql-picker-options { 
+            z-index: 9999 !important; 
+        }
+
         /* --- MOBILE OPTIMIZATIONS --- */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: white; }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px; background-image: none; }
+            .ql-editor { padding: 20px 15px; background-image: none; }
+            .ql-editor::after { display: none; }
             
-            /* 1. Horizontal Scroll Toolbar (Looks like a line) */
+            /* MOBILE TOOLBAR: Horizontal Scroll + No Wrap */
             .ql-toolbar { 
                 margin: 0; 
                 border-radius: 0; 
+                padding: 10px 5px !important;
+                position: sticky; 
+                top: 0; 
+                background: #f8faff; 
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
                 display: flex;
-                flex-wrap: nowrap; /* Forces single line */
-                overflow-x: auto; /* Horizontal scroll */
-                gap: 8px;
-                padding: 10px 8px !important;
+                flex-wrap: nowrap !important; /* Force single line */
+                overflow-x: auto; /* Enable scroll */
+                white-space: nowrap;
                 -webkit-overflow-scrolling: touch;
-                scrollbar-width: none; /* Firefox hide scrollbar */
-                -ms-overflow-style: none; /* IE hide scrollbar */
+                -ms-overflow-style: none; 
+                scrollbar-width: none; 
             }
-            .ql-toolbar::-webkit-scrollbar { display: none; /* Chrome hide scrollbar */ }
+            .ql-toolbar::-webkit-scrollbar { display: none; }
             
-            /* Ensure formats don't wrap */
-            .ql-formats { 
-                display: flex !important; 
-                flex-shrink: 0; 
-                margin-right: 0 !important;
-            }
-
-            /* 2. Fix Hidden Dropdowns in Scrollable Toolbar */
-            /* We force the dropdown options to appear fixed in the center of the screen on mobile */
+            /* Prevent dropdowns from being clipped in horizontal scroll */
             .ql-picker-options {
-                position: fixed !important;
-                top: 50% !important;
+                position: fixed !important; /* Detach from scroll container */
+                top: auto !important;
                 left: 50% !important;
-                transform: translate(-50%, -50%) !important;
-                min-width: 250px !important;
-                max-height: 50vh !important;
-                background: white !important;
-                border: 1px solid #e5e7eb !important;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
-                border-radius: 12px !important;
-                z-index: 9999 !important;
-                overflow-y: auto !important;
+                transform: translateX(-50%);
+                margin-top: 40px;
+                max-height: 200px;
+                overflow-y: auto;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                border-radius: 8px;
             }
         }
 
@@ -159,7 +156,7 @@
         .sidebar-open { transform: translateX(0); }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg">
+<body class="h-[100dvh] w-screen overflow-hidden flex flex-col font-sans text-text bg-bg">
 
     <div id="loading-screen" class="absolute inset-0 z-[100] bg-[#f0f2f5] flex items-center justify-center transition-opacity duration-500">
         <div class="flex flex-col items-center">
@@ -168,7 +165,7 @@
         </div>
     </div>
 
-    <div id="app" class="flex-1 flex relative overflow-hidden">
+    <div id="app" class="flex-1 flex relative overflow-hidden h-full">
 
         <div id="auth-screen" class="absolute inset-0 z-50 bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0" id="auth-box">
@@ -202,13 +199,13 @@
         <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0" id="dashboard-container">
             <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
-            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-[100dvh] md:h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
-                <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525] flex-shrink-0">
+            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
+                <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
                     <span class="font-bold text-white tracking-wide pl-1 text-lg">ZenDocs</span>
                     <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1" title="New Note">+</button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-3 custom-scrollbar min-h-0">
+                <div class="flex-1 overflow-y-auto p-3 custom-scrollbar pb-20 md:pb-3">
                     <div class="space-y-1 mb-6">
                         <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition"><span>📄</span> All Files</div>
                         <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition"><span>⭐</span> Important</div>
@@ -216,7 +213,7 @@
 
                     <div class="mb-2 px-2 flex justify-between items-center group">
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
-                        <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
+                        <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10 opacity-100">+ Add</button>
                     </div>
                     <div id="folder-list" class="space-y-1 mb-6"></div>
 
@@ -226,13 +223,15 @@
                     <div id="doc-list" class="space-y-1"></div>
                 </div>
 
-                <div class="p-4 bg-[#181818] border-t border-gray-800 flex-shrink-0">
-                    <div class="flex items-center justify-between mb-2">
-                        <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
-                        <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
-                    </div>
-                    <div class="text-[10px] text-gray-600 text-center mt-2 pt-2 border-t border-gray-800 cursor-default">
-                        Made with love ❤️ by <span class="hover:text-gray-400 transition">Harsha Varthan E P</span>
+                <div class="p-4 bg-[#181818] border-t border-gray-800 md:relative absolute bottom-0 w-full z-40">
+                    <div class="flex flex-col gap-3">
+                        <div class="flex flex-col gap-1">
+                            <span id="user-email" class="text-xs text-white font-medium break-words"></span>
+                            <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium text-left">Sign Out</button>
+                        </div>
+                        <div class="text-[10px] text-gray-600 text-center pt-2 border-t border-gray-800 cursor-default">
+                            Made with love ❤️ by <span class="hover:text-gray-400 transition">Harsha Varthan E P</span>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -348,6 +347,7 @@
              auth.signOut();
         };
 
+        // --- PASSWORD RESET ---
         window.showResetModal = () => {
             document.getElementById('reset-modal').classList.remove('hidden');
             if(els.email.value) document.getElementById('reset-email').value = els.email.value; 
