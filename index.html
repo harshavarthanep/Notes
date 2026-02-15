@@ -464,17 +464,33 @@
             els.title.disabled = true;
             els.status.textContent = "Read Only";
             
-            // Enable scrolling on main container since sidebar is gone
-            document.querySelector('main').style.overflowY = "auto";
+            // --- FIX START ---
+            // Remove pointer-events-none so scrolling works
+            els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
+            // --- FIX END ---
         }
 
         function openLoginForGuest() {
             els.authScreen.classList.remove('hidden');
+
+            // --- FIX START ---
+            // Make the box visible and animate it in
+            els.authBox.classList.remove('opacity-0');
+            els.authBox.classList.add('animate-fade-in-up');
+            // --- FIX END ---
+            
             els.authCancelContainer.classList.remove('hidden'); // Allow cancel
         }
 
         function closeLoginForGuest() {
             els.authScreen.classList.add('hidden');
+
+            // --- FIX START ---
+            // Reset animation state for next time
+            els.authBox.classList.remove('animate-fade-in-up');
+            els.authBox.classList.add('opacity-0');
+            // --- FIX END ---
+            
         }
 
         // --- AUTH FLOW ---
