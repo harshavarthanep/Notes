@@ -703,15 +703,41 @@
 
         window.createNewDoc = async () => {
             if(!state.user) return;
+            
+            // 1. Check if we are inside a specific folder
             const folderId = (state.activeFilter !== 'all' && state.activeFilter !== 'fav') ? state.activeFilter : null;
+            
             try {
-                await db.collection('users').doc(state.user.uid).collection('docs').add({
-                    title: 'Untitled Document', content: '', isFavorite: false, folderId: folderId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                // 2. Create the file in the database
+                const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
+                    title: 'Untitled Document', 
+                    content: '', 
+                    isFavorite: false, 
+                    folderId: folderId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-            } catch(e) { alert("Error: " + e.message); }
+        
+                // 3. FIX: Manually construct the new data object immediately
+                const newDocData = {
+                    title: 'Untitled Document', 
+                    content: '', 
+                    isFavorite: false, 
+                    folderId: folderId
+                };
+        
+                // 4. FIX: Force the editor to open this new ID right now
+                openDoc(ref.id, newDocData);
+                
+                // 5. UX: On mobile, automatically close the sidebar so you can start typing
+                if(window.innerWidth < 850) toggleSidebar(false);
+        
+            } catch(e) { 
+                console.error(e);
+                alert("Error creating note: " + e.message); 
+            }
         };
-
+        
         window.duplicateCurrentDoc = () => duplicateDocFromSidebar(null, state.docId);
         window.duplicateDocFromSidebar = async (e, docId) => {
             if(e) e.stopPropagation();
