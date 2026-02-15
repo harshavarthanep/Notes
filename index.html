@@ -413,33 +413,85 @@
             }
         });
 
-        // --- URL PARSER (For Sharing) ---
-        function checkUrlForShare() {
+        async function checkUrlForShare() {
             const urlParams = new URLSearchParams(window.location.search);
-            const shareData = urlParams.get('share');
+            const shareId = urlParams.get('shareId'); // Look for ID, not full data
             
-            if (shareData) {
+            if (shareId) {
                 try {
-                    const decoded = JSON.parse(decodeURIComponent(escape(atob(shareData))));
-                    state.pendingShareData = decoded;
-                    state.isGuest = true;
+                    // Show loading UI
+                    els.loadingScreen.classList.remove('hidden');
                     
-                    // Apply Shared Theme Immediately
-                    if(decoded.theme) {
-                        applyTheme(decoded.theme === 'dark');
-                    }
+                    // Fetch from Database
+                    const doc = await db.collection('shared_docs').doc(shareId).get();
+                    
+                    if (doc.exists) {
+                        const data = doc.data();
+                        state.pendingShareData = data;
+                        state.isGuest = true;
 
-                    enterGuestMode(decoded);
+                        // Apply Theme
+                        if(data.theme) {
+                            applyTheme(data.theme === 'dark');
+                        }
+
+                        enterGuestMode(data);
+                        return true;
+                    } else {
+                        alert("This shared note no longer exists.");
+                        // Clean URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        return false;
+                    }
                     
                 } catch (e) {
-                    console.error("Invalid Share Link", e);
-                    alert("This shared link is invalid or corrupted.");
-                    window.history.replaceState({}, document.title, window.location.pathname);
+                    console.error("Error loading shared doc", e);
+                    alert("Error loading document.");
+                    return false;
                 }
-                return true; 
             }
+            // Fallback: Check for old style links just in case
+            const oldShare = urlParams.get('share');
+            if(oldShare) {
+                 try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(oldShare))));
+                    state.pendingShareData = decoded;
+                    state.isGuest = true;
+                    enterGuestMode(decoded);
+                    return true;
+                 } catch(e) {}
+            }
+            
             return false;
         }
+        
+        // // --- URL PARSER (For Sharing) ---
+        // function checkUrlForShare() {
+        //     const urlParams = new URLSearchParams(window.location.search);
+        //     const shareData = urlParams.get('share');
+            
+        //     if (shareData) {
+        //         try {
+        //             const decoded = JSON.parse(decodeURIComponent(escape(atob(shareData))));
+        //             state.pendingShareData = decoded;
+        //             state.isGuest = true;
+                    
+        //             // Apply Shared Theme Immediately
+        //             if(decoded.theme) {
+        //                 applyTheme(decoded.theme === 'dark');
+        //             }
+
+        //             enterGuestMode(decoded);
+                    
+        //         } catch (e) {
+        //             console.error("Invalid Share Link", e);
+        //             alert("This shared link is invalid or corrupted.");
+        //             window.history.replaceState({}, document.title, window.location.pathname);
+        //         }
+        //         return true; 
+        //     }
+        //     return false;
+        // }
 
         function enterGuestMode(data) {
             // UI Cleanup for Guest
@@ -492,11 +544,13 @@
             // --- FIX END ---
             
         }
-
         // --- AUTH FLOW ---
-        auth.onAuthStateChanged(u => {
+        auth.onAuthStateChanged(async (u) => { // Added 'async' here
             state.user = u;
             
+            // Check for share link FIRST
+            const isSharing = await checkUrlForShare(); // Added 'await'
+
             if(u) {
                 // LOGGED IN
                 state.isGuest = false;
@@ -521,6 +575,7 @@
                     }
                 });
 
+                // If user clicked a share link while logged in, import it
                 if (state.pendingShareData) {
                     importPendingShare();
                 } else {
@@ -529,15 +584,61 @@
 
             } else {
                 // LOGGED OUT
-                if(!checkUrlForShare()) {
+                if(!isSharing) { // Use the result we waited for
                     els.loadingScreen.classList.add('hidden'); 
                     els.authScreen.classList.remove('hidden');
                     els.authBox.classList.add('animate-fade-in-up'); 
                     els.dashboard.classList.add('hidden');
-                    els.authCancelContainer.classList.add('hidden'); // Cannot cancel main login
+                    els.authCancelContainer.classList.add('hidden'); 
                 }
             }
         });
+
+        // // --- AUTH FLOW ---
+        // auth.onAuthStateChanged(u => {
+        //     state.user = u;
+            
+        //     if(u) {
+        //         // LOGGED IN
+        //         state.isGuest = false;
+        //         els.userEmail.textContent = u.email;
+        //         els.authScreen.classList.add('hidden');
+        //         els.previewBanner.classList.add('hidden'); 
+        //         els.dashboard.classList.remove('hidden');
+                
+        //         // Restore UI
+        //         els.loggedInControls.classList.remove('hidden');
+        //         els.sidebar.classList.remove('hidden');
+        //         els.hamburgerBtn.classList.remove('hidden');
+        //         els.guestDownloadBtn.classList.add('hidden');
+                
+        //         els.dashboard.classList.add('animate-fade-in'); 
+                
+        //         db.collection('users').doc(u.uid).onSnapshot(doc => {
+        //             if(doc.exists && doc.data().settings?.theme) {
+        //                 const dbTheme = doc.data().settings.theme;
+        //                 localStorage.setItem('theme', dbTheme);
+        //                 applyTheme(dbTheme === 'dark');
+        //             }
+        //         });
+
+        //         if (state.pendingShareData) {
+        //             importPendingShare();
+        //         } else {
+        //             initData();
+        //         }
+
+        //     } else {
+        //         // LOGGED OUT
+        //         if(!checkUrlForShare()) {
+        //             els.loadingScreen.classList.add('hidden'); 
+        //             els.authScreen.classList.remove('hidden');
+        //             els.authBox.classList.add('animate-fade-in-up'); 
+        //             els.dashboard.classList.add('hidden');
+        //             els.authCancelContainer.classList.add('hidden'); // Cannot cancel main login
+        //         }
+        //     }
+        // });
 
         document.getElementById('auth-form').onsubmit = (e) => {
             e.preventDefault();
@@ -786,21 +887,62 @@
             a.href = url; a.download = title + ".doc"; a.click();
         };
 
-        window.shareCurrentNote = () => {
+        window.shareCurrentNote = async () => {
             if(!state.docId) return;
-            const noteData = { 
-                t: els.title.value, 
-                c: quill.getContents(), 
-                email: state.user.email,
-                theme: localStorage.getItem('theme') || 'light' // Share Theme preference
-            };
-            const shareString = btoa(unescape(encodeURIComponent(JSON.stringify(noteData))));
-            const url = new URL(window.location.href);
-            url.searchParams.set('share', shareString);
-            navigator.clipboard.writeText(url.toString()).then(() => {
-                alert("Link Copied! \n\nAnyone with this link can view the note.\nIf they login, they can edit a copy.");
-            });
+            
+            // UI Feedback
+            const shareBtn = document.getElementById('share-btn');
+            const originalText = shareBtn.innerHTML;
+            shareBtn.innerHTML = '<span>⏳</span> Generating Link...';
+            shareBtn.disabled = true;
+
+            try {
+                // 1. Create a snapshot of the data
+                const noteData = { 
+                    t: els.title.value, 
+                    c: JSON.parse(JSON.stringify(quill.getContents())), // Ensure clean JSON
+                    email: state.user.email,
+                    theme: localStorage.getItem('theme') || 'light',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // 2. Save to a new 'shared_docs' collection
+                const docRef = await db.collection('shared_docs').add(noteData);
+
+                // 3. Generate Short URL
+                const url = new URL(window.location.href);
+                // Remove old params and set the new short ID
+                url.search = `?shareId=${docRef.id}`;
+                
+                // 4. Copy to clipboard
+                await navigator.clipboard.writeText(url.toString());
+                alert("Short Link Copied! \n\n" + url.toString());
+
+            } catch (error) {
+                console.error("Share failed:", error);
+                alert("Could not generate link. Please try again.");
+            } finally {
+                // Reset Button
+                shareBtn.innerHTML = originalText;
+                shareBtn.disabled = false;
+            }
         };
+
+        // window.shareCurrentNote = () => {
+        //     if(!state.docId) return;
+        //     const noteData = { 
+        //         t: els.title.value, 
+        //         c: quill.getContents(), 
+        //         email: state.user.email,
+        //         theme: localStorage.getItem('theme') || 'light' // Share Theme preference
+        //     };
+        //     const shareString = btoa(unescape(encodeURIComponent(JSON.stringify(noteData))));
+        //     const url = new URL(window.location.href);
+        //     url.searchParams.set('share', shareString);
+        //     navigator.clipboard.writeText(url.toString()).then(() => {
+        //         alert("Link Copied! \n\nAnyone with this link can view the note.\nIf they login, they can edit a copy.");
+        //     });
+        // };
 
         // Helpers
         window.toggleSidebar = (f) => {
