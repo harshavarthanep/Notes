@@ -178,49 +178,50 @@
             margin: 8px 16px;
         }
         
-        /* ADD THIS: Fix for Safari/iOS Dropdowns and Text selection */
+        /* ADD THIS: Fix for Safari/iOS Dropdowns and Text selection zooming */
         select, input, textarea {
-        font-size: 16px !important; /* Prevents iOS zoom on focus */
+            font-size: 16px !important; /* Prevents iOS zoom on focus */
         }
 
-        /* MODIFIED: Mobile Specific Styles */
+        /* Mobile Specific Styles */
         @media (max-width: 850px) {
-        #editor-wrapper { padding: 0; background: var(--bg-color); }
-        #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-        .ql-editor { padding: 20px; background-image: none; }
-        
-        .ql-toolbar { 
-            margin: 0 !important; 
-            width: 100% !important;
-            border-radius: 0 !important; 
-            background: var(--surface-color) !important;
-            display: flex !important;
-            flex-wrap: nowrap !important; 
-            gap: 8px;
-            padding: 12px 10px !important;
-            overflow-x: auto !important; 
-            white-space: nowrap !important;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        /* FIX: Ensure dropdowns appear correctly on Mobile/Safari */
-        .ql-toolbar .ql-picker-options {
-            position: fixed !important;
-            top: 50% !important; 
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            width: 80% !important;
-            max-height: 300px !important;
-            overflow-y: auto !important;
-            background: var(--surface-color);
-            border: 1px solid var(--border-color) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-            z-index: 99999 !important;
-        }
-    }
+            #editor-wrapper { padding: 0; background: var(--bg-color); }
+            #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
+            .ql-editor { padding: 20px; background-image: none; }
+            
+            .ql-toolbar { 
+                margin: 0 !important; 
+                width: 100% !important;
+                border-radius: 0 !important; 
+                background: var(--surface-color) !important;
+                display: flex !important;
+                flex-wrap: nowrap !important; 
+                gap: 8px;
+                padding: 12px 10px !important;
+                overflow-x: auto !important; 
+                white-space: nowrap !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            .ql-toolbar::-webkit-scrollbar { display: none; }
+            .ql-formats { display: flex !important; flex-shrink: 0 !important; margin-right: 12px !important; }
 
-        
+            .ql-toolbar .ql-picker-options {
+                position: fixed !important;
+                top: 50% !important; 
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 80% !important;
+                max-height: 300px !important;
+                overflow-y: auto !important;
+                background: var(--surface-color);
+                border: 1px solid var(--border-color) !important;
+                border-radius: 12px !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+                z-index: 99999 !important;
+            }
+            .ql-editor::after { display: none; }
+        }
+
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
@@ -317,28 +318,54 @@
                             <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-muted font-medium h-3"></span>
                         </div>
-                      </div>
+                    </div>
 
                     <div class="flex items-center gap-2 pl-2 relative">
-                        <button id="import-btn" onclick="importSharedNote()" class="p-2 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition" title="Import a shared note">📥 Import</button>
+                         <button id="import-btn" onclick="importSharedNote()" class="p-2 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition" title="Import a shared note">📥 Import</button>
                         <button id="share-btn" onclick="shareCurrentNote()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition mr-2" disabled title="Share this note">📤 Share</button>
 
                         <button id="theme-btn" onclick="toggleTheme()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition" title="Toggle Dark Mode">
-                            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707M12.728 6.343l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                         </button>
+                            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707M12.728 6.343l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                        </button>
 
-                        <select id="folder-select" class="hidden md:block text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 text-gray-600 cursor-pointer outline-none relative z-50" disabled>
+                        <select id="folder-select" class="hidden md:block text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 outline-none cursor-pointer focus:ring-1 focus:ring-accent transition-colors" disabled>
                             <option value="">No Folder</option>
                         </select>
-        
-                        <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50" disabled>
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                         </button>
-                         <button id="delete-btn" onclick="deleteCurrentDoc()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50" disabled>
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                         </button>
-                     </div>
+                        
+                        <button id="mobile-folder-btn" onclick="toggleMobileFolderMenu()" class="md:hidden p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50" disabled title="Move to Folder">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                        </button>
+
+                        <button id="fav-btn" onclick="toggleFavorite()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gold transition disabled:opacity-50 hover:scale-110 duration-200" disabled title="Mark Important">★</button>
+                        
+                        <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50 hover:scale-110 duration-200" disabled title="Download Word Doc">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        </button>
+                        
+                        <button id="delete-btn" onclick="deleteCurrentDoc()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50 hover:scale-110 duration-200" disabled title="Delete">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                        
+                        <div id="mobile-folder-menu" class="hidden absolute top-14 right-10 bg-surface dark:bg-[#2d2d2d] shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 w-56 z-[60] py-1 flex flex-col animate-fade-in-up">
+                            <div id="mobile-folder-list-items" class="max-h-60 overflow-y-auto"></div>
+                            <div class="border-t border-gray-100 dark:border-gray-700 mt-1 pt-1">
+                                <button onclick="handleCreateFolderAction()" class="w-full text-left px-4 py-3 text-accent text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <span>➕</span> Create New Folder...
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="editor-wrapper" class="opacity-50 pointer-events-none transition-opacity duration-500" onclick="focusEditor()">
+                    <div id="paper-container" class="transition-all duration-300">
+                        <div id="editor-container"></div>
+                    </div>
                 </div>
             </main>
         </div>
@@ -351,6 +378,7 @@
 
     <script>
         // --- CONFIGURATION ---
+        // ⚠️ IMPORTANT: Replace this with YOUR Firebase Keys if you haven't already
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
@@ -425,16 +453,16 @@
         
         initTheme();
 
-        // --- INIT EDITOR WITH CHECKBOXES ---
+        // --- INIT EDITOR ---
+        // MODIFIED: Added {'list': 'check'} for Todo lists
         var quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'Start writing...',
             modules: { 
                 toolbar: [
                     [{'header':[1,2,3,false]}], 
-                    ['bold','italic','underline','strike'], 
-                    [{'color':[]},{'background':[]}], 
-                    [{'list':'ordered'},{'list':'bullet'}, {'list': 'check'}], // Added 'check' here
+                    ['bold','italic','underline','strike', {'color':[]},{'background':[]}], 
+                    [{'list':'ordered'},{'list':'bullet'}, {'list': 'check'}], 
                     [{'align':[]}], 
                     ['image','link','clean']
                 ] 
@@ -496,6 +524,8 @@
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderFolders(); updateFolderSelect();
+                // Re-render docs to update badges if folders change
+                if(state.docs.length > 0) renderDocs();
             });
 
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
@@ -519,7 +549,7 @@
                 els.folderList.appendChild(div);
             });
         }
-               
+
         function updateFolderSelect() {
             els.folderSelect.innerHTML = '<option value="">No Folder (Root)</option>';
             state.folders.forEach(f => {
@@ -540,21 +570,21 @@
             let filtered = state.docs;
             if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
             else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
-        
+
             filtered.forEach((d, index) => {
                 const div = document.createElement('div');
                 const isActive = d.id === state.docId;
                 
-                // Find Folder Name
+                // MODIFIED: Logic to show folder name in sidebar
                 const folderObj = state.folders.find(f => f.id === d.folderId);
                 const folderBadge = folderObj 
                     ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[9px] bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">${folderObj.emoji} ${folderObj.name}</span>` 
                     : '';
-        
+
                 div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 doc-item-anim ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
                 div.style.animationDelay = `${index * 0.05}s`;
                 
-                // Added folderBadge to the innerHTML
+                // MODIFIED: HTML structure to include folder badge
                 div.innerHTML = `
                     <div class="font-medium text-xs truncate flex items-center justify-between">
                         <span>${d.title || 'Untitled'}</span>
@@ -578,6 +608,9 @@
             els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
             els.favBtn.disabled = false; els.delBtn.disabled = false; els.downBtn.disabled = false;
             els.mobileFolderBtn.disabled = false;
+            
+            // MODIFIED: Enable Share button
+            document.getElementById('share-btn').disabled = false;
             
             els.folderSelect.disabled = false; 
             els.folderSelect.value = data.folderId || "";
@@ -635,6 +668,7 @@
                 els.editorWrapper.classList.add('opacity-50', 'pointer-events-none');
                 els.favBtn.disabled = true; els.delBtn.disabled = true; els.downBtn.disabled = true;
                 els.mobileFolderBtn.disabled = true;
+                document.getElementById('share-btn').disabled = true;
             }
         };
 
@@ -681,9 +715,7 @@
             a.href = url; a.download = title + ".doc"; a.click();
         };
 
-        // --- SHARING & IMPORTING ---
-
-        // 1. Share: Generates a compressed code of the note
+        // --- SHARE & IMPORT FUNCTIONS (MODIFIED) ---
         window.shareCurrentNote = () => {
             if(!state.docId) return;
             const noteData = {
@@ -691,26 +723,21 @@
                 c: quill.getContents(),
                 d: new Date().toISOString()
             };
-            // Convert to a string (base64 encoded for safety)
             const shareCode = btoa(unescape(encodeURIComponent(JSON.stringify(noteData))));
             
-            // Copy to clipboard
             navigator.clipboard.writeText(shareCode).then(() => {
                 alert("Note copied to clipboard!\n\nSend this code to your friend. They can use the 'Import' button to add it to their notes.");
             });
         };
-        
-        // 2. Import: Reads the code and creates a new doc
+
         window.importSharedNote = async () => {
             const shareCode = prompt("Paste the Shared Note Code here:");
             if(!shareCode) return;
         
             try {
-                els.loadingScreen.classList.remove('hidden'); // Show loading
-                
+                els.loadingScreen.classList.remove('hidden'); 
                 const decoded = JSON.parse(decodeURIComponent(escape(atob(shareCode))));
                 
-                // Create new doc with this content
                 const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
                     title: decoded.t + " (Imported)", 
                     content: decoded.c, 
@@ -720,11 +747,9 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
         
-                // Open the new doc immediately
                 els.loadingScreen.classList.add('hidden');
                 alert("Note Imported Successfully!");
                 
-                // Wait for listener to sync then open
                 setTimeout(() => {
                    const newDoc = state.docs.find(d => d.id === ref.id);
                    if(newDoc) openDoc(ref.id, newDoc);
@@ -735,13 +760,6 @@
                 alert("Invalid Note Code or Import Failed.");
                 console.error(e);
             }
-        };
-        
-        // UPDATE: Enable share button when doc opens
-        const originalOpenDoc = window.openDoc;
-        window.openDoc = (id, data) => {
-            originalOpenDoc(id, data);
-            document.getElementById('share-btn').disabled = false;
         };
 
         // Helpers
