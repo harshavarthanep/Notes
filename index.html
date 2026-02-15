@@ -226,20 +226,19 @@
                     </div>
                     <div id="doc-list" class="space-y-1 pb-10"></div>
                 </div>
-                <div class="p-4 bg-[#181818] border-t border-gray-800">
+                <div class="p-3 bg-[#181818] border-t border-gray-800">
     
-                    <a href="https://harshavarthanep.github.io/apps" target="_blank" class="block w-full text-center bg-white/5 hover:bg-white/10 text-accent text-xs font-bold py-2 rounded mb-4 transition border border-white/5 hover:border-accent/30 group">
-                        🚀 Explore More Apps 
-                        <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+                    <a href="https://harshavarthanep.github.io/apps" target="_blank" class="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-accent text-[10px] font-medium py-1.5 rounded transition mb-3 border border-transparent hover:border-gray-700 group">
+                        <span>🚀</span> <span class="group-hover:underline decoration-accent/50 underline-offset-2">Explore More Apps</span>
                     </a>
                 
-                    <div class="flex items-center justify-between mb-3 px-1">
-                        <span id="user-email" class="text-xs text-gray-300 font-medium truncate max-w-[130px]"></span>
-                        <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium bg-red-400/10 hover:bg-red-400/20 px-2 py-1 rounded">Sign Out</button>
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <span id="user-email" class="text-[11px] text-gray-400 font-medium truncate max-w-[120px]"></span>
+                        <button id="logout-btn" class="text-[10px] text-red-400 hover:text-red-300 transition font-bold bg-red-900/10 hover:bg-red-900/30 px-2 py-0.5 rounded border border-transparent hover:border-red-900/50">Sign Out</button>
                     </div>
                 
-                    <div class="text-[10px] text-gray-600 text-center border-t border-gray-800 pt-3 cursor-default select-none">
-                        Made with love ❤️ by <span class="text-gray-500 hover:text-gray-300 transition">Harsha Varthan E P</span>
+                    <div class="text-[9px] text-gray-600 text-center border-t border-gray-800 pt-2 cursor-default select-none">
+                        Made with love ❤️ by <span class="text-gray-500 hover:text-gray-300 transition cursor-pointer">Harsha Varthan E P</span>
                     </div>
                 
                 </div>
@@ -639,37 +638,55 @@
             const newOpt = document.createElement('option'); newOpt.value = 'create_new'; newOpt.textContent = "➕ Create New..."; newOpt.style.color = "#1a73e8"; els.folderSelect.appendChild(newOpt);
         }
         function renderDocs() {
-            els.docList.innerHTML = '';
-            let filtered = state.docs;
-            if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
-            else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
-            filtered.forEach((d, index) => {
-                const div = document.createElement('div');
-                const isActive = d.id === state.docId;
-                const folderObj = state.folders.find(f => f.id === d.folderId);
-                const folderBadge = folderObj ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[9px] bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">${folderObj.emoji} ${folderObj.name}</span>` : '';
-                let badges = '';
-                if (d.sharedBy) badges += `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">from: ${d.sharedBy}</span>`;
-                if (d.shareId) badges += `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">Shared</span>`;
-                div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 group ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
-                div.innerHTML = `
-                    <div class="font-medium text-xs truncate flex items-center justify-between">
-                        <span>${d.title || 'Untitled'}</span>
-                        <div class="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button onclick="duplicateDocFromSidebar(event, '${d.id}')" title="Duplicate" class="p-1 hover:text-white text-gray-500">❐</button>
-                        </div>
-                    </div>
-                    <div class="text-[9px] opacity-60 flex justify-between mt-1 items-center flex-wrap gap-1">
-                        <div class="flex items-center flex-wrap gap-1">
-                            <span>${d.updatedAt ? new Date(d.updatedAt.toDate()).toLocaleDateString() : 'Just now'}</span>
-                            ${folderBadge} ${badges}
-                        </div>
-                        ${d.isFavorite ? '<span class="text-gold">★</span>' : ''}
-                    </div>`;
-                div.onclick = (e) => { if(!e.target.closest('button')) openDoc(d.id, d); }
-                els.docList.appendChild(div);
-            });
+    els.docList.innerHTML = '';
+    let filtered = state.docs;
+    
+    // Filter Logic
+    if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
+    else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
+
+    filtered.forEach((d, index) => {
+        const div = document.createElement('div');
+        const isActive = d.id === state.docId;
+        
+        // Folder Badge
+        const folderObj = state.folders.find(f => f.id === d.folderId);
+        const folderBadge = folderObj ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[9px] bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">${folderObj.emoji} ${folderObj.name}</span>` : '';
+        
+        // Share/From Badges
+        let badges = '';
+        if (d.sharedBy) badges += `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">from: ${d.sharedBy}</span>`;
+        if (d.shareId) badges += `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">Shared</span>`;
+
+        // Item Container Style
+        div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 group relative ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
+        
+        // HTML Content
+        div.innerHTML = `
+            <div class="font-medium text-xs flex items-center justify-between h-5">
+                <span class="truncate pr-2 select-none">${d.title || 'Untitled'}</span>
+                
+                <button onclick="duplicateDocFromSidebar(event, '${d.id}')" title="Duplicate File" 
+                    class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-500 hover:text-white hover:bg-white/20 transition-all opacity-60 hover:opacity-100 active:scale-95">
+                    <span class="text-[12px] pb-[1px]">❐</span>
+                </button>
+            </div>
+            
+            <div class="text-[9px] opacity-60 flex justify-between mt-1 items-center flex-wrap gap-1 select-none">
+                <div class="flex items-center flex-wrap gap-1">
+                    <span>${d.updatedAt ? new Date(d.updatedAt.toDate()).toLocaleDateString() : 'Just now'}</span>
+                    ${folderBadge} ${badges}
+                </div>
+                ${d.isFavorite ? '<span class="text-gold text-[10px]">★</span>' : ''}
+            </div>`;
+            
+        div.onclick = (e) => { 
+            // Only open if NOT clicking the duplicate button
+            if(!e.target.closest('button')) openDoc(d.id, d); 
         }
+        els.docList.appendChild(div);
+    });
+}
 
         window.openDoc = (id, data) => {
             state.docId = id; state.isFav = data.isFavorite || false;
