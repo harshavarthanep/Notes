@@ -125,9 +125,11 @@
             #editor-wrapper { padding: 0; background: var(--bg-color); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
             .ql-editor { padding: 20px; background-image: none; }
+            /* Toolbar Horizontal Scroll */
             .ql-toolbar { margin: 0 !important; width: 100% !important; border-radius: 0 !important; background: var(--surface-color) !important; display: flex !important; flex-wrap: nowrap !important; gap: 8px; padding: 12px 10px !important; overflow-x: auto !important; white-space: nowrap !important; -webkit-overflow-scrolling: touch; }
             .ql-toolbar::-webkit-scrollbar { display: none; }
             .ql-formats { display: flex !important; flex-shrink: 0 !important; margin-right: 12px !important; }
+            /* Safari Dropdown Fix */
             .ql-toolbar .ql-picker-options { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 80% !important; max-height: 300px !important; overflow-y: auto !important; background: var(--surface-color); border: 1px solid var(--border-color) !important; border-radius: 12px !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important; z-index: 99999 !important; }
             .ql-editor::after { display: none; }
         }
@@ -140,8 +142,8 @@
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
 
     <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md">
-        <span>👀 You are viewing a shared note (Read Only)</span>
-        <button onclick="document.getElementById('auth-screen').classList.remove('hidden')" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100">Login to Edit</button>
+        <span class="truncate mr-2">👀 Read-Only Mode (Shared Note)</span>
+        <button onclick="document.getElementById('auth-screen').classList.remove('hidden')" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 whitespace-nowrap">Login to Save</button>
     </div>
 
     <div id="loading-screen" class="absolute inset-0 z-[100] bg-bg flex items-center justify-center transition-opacity duration-500">
@@ -167,6 +169,7 @@
                     </div>
                     <p id="auth-error" class="text-danger text-xs text-center min-h-[1.5em] mt-2"></p>
                 </form>
+                <button onclick="document.getElementById('auth-screen').classList.add('hidden')" class="w-full mt-4 text-xs text-gray-500 hover:text-white">Cancel (Keep Reading)</button>
             </div>
         </div>
 
