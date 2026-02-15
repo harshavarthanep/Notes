@@ -414,28 +414,35 @@
             }
         });
 
-        // --- MOBILE FIXES ---
-        // 1. Force keyboard close to show menus
-        // 2. Close other menus when one opens (heading/alignment conflict)
-        document.querySelectorAll('.ql-picker-label').forEach(el => {
-            el.addEventListener('click', function(e) {
-                // Close ANY other open pickers immediately
-                const parent = this.parentNode;
-                document.querySelectorAll('.ql-picker.ql-expanded').forEach(picker => {
-                    if (picker !== parent) {
-                        picker.classList.remove('ql-expanded');
-                    }
-                });
+        // --- MOBILE CHECKBOX FIX ---
+        // This listens for clicks on the editor and manually toggles checkboxes 
+        // if the user taps the bullet point area.
+        document.querySelector('.ql-editor').addEventListener('click', function(e) {
+            // 1. Find the closest list item being clicked
+            const li = e.target.closest('li[data-list="checked"], li[data-list="unchecked"]');
+            
+            if (li) {
+                // 2. Get the bounding box of the list item
+                const rect = li.getBoundingClientRect();
                 
-                // Hide keyboard so bottom menu is visible
-                setTimeout(() => {
-                    if (document.activeElement && 
-                        (document.activeElement.tagName === 'INPUT' || 
-                         document.activeElement.getAttribute('contenteditable'))) {
-                         document.activeElement.blur();
+                // 3. Check if the click was on the "checkbox" icon (approx. first 30px from left)
+                // Adjust '35' if your padding is wider
+                if (e.clientX >= rect.left && e.clientX <= rect.left + 35) {
+                    
+                    // 4. Find the Quill internal object for this line
+                    const blot = Quill.find(li);
+                    if (blot) {
+                        const index = quill.getIndex(blot);
+                        const isChecked = li.dataset.list === 'checked';
+                        
+                        // 5. Toggle the format
+                        quill.formatLine(index, 1, 'list', isChecked ? 'unchecked' : 'checked');
+                        
+                        // 6. Stop the browser from moving the text cursor
+                        e.preventDefault(); 
                     }
-                }, 50);
-            });
+                }
+            }
         });
 
         function getShareIdFromUrl() { return new URLSearchParams(window.location.search).get('shareId'); }
