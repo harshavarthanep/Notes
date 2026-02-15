@@ -69,7 +69,7 @@
         body, div, button, input, select { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
 
         /* CUSTOM SCROLLBARS */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         html.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
@@ -110,26 +110,33 @@
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: var(--bg-color); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px 20px 80px 20px; } /* Extra padding at bottom for keyboard */
+            .ql-editor { padding: 20px 20px 80px 20px; } 
             
-            /* Horizontal Scroll Toolbar */
+            /* Horizontal Scroll Toolbar (Single Line, Neat) */
             .ql-toolbar { 
-                margin: 0 !important; width: 100% !important; border-radius: 0 !important; 
+                margin: 0 !important; width: 100vw !important; border-radius: 0 !important; 
                 background: var(--surface-color) !important; 
-                padding: 12px 10px !important; 
-                gap: 12px;
+                padding: 10px 10px !important; 
                 display: flex !important;
-                flex-wrap: nowrap !important;
+                flex-flow: row nowrap !important; /* Force Single Line */
                 overflow-x: auto !important;
                 white-space: nowrap !important;
-                -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
+                -webkit-overflow-scrolling: touch;
+                gap: 5px;
             }
             
-            /* Hide scrollbar but keep functionality */
+            /* Ensure Format groups don't wrap */
+            .ql-formats {
+                display: flex !important;
+                flex-shrink: 0 !important;
+                margin-right: 10px !important;
+            }
+
+            /* Hide scrollbar visually */
             .ql-toolbar::-webkit-scrollbar { display: none; }
             .ql-toolbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-            /* Fix dropdowns on mobile (Bottom Sheet Style) */
+            /* Bottom Sheet Dropdowns */
             .ql-toolbar .ql-picker-options { 
                 position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
                 width: 100vw !important; max-height: 45vh !important; overflow-y: auto !important; 
@@ -138,8 +145,6 @@
                 border: 1px solid var(--border-color);
                 padding: 10px !important;
             }
-            
-            /* Prevent body scroll when picker is open */
             .ql-picker-expanded .ql-picker-options { display: block; }
         }
 
@@ -167,7 +172,6 @@
     </div>
 
     <div id="app" class="flex-1 flex relative overflow-hidden">
-
         <div id="auth-screen" class="absolute inset-0 z-[80] bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0 transform transition-all duration-500" id="auth-box">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
@@ -399,18 +403,27 @@
             }
         });
 
-        // --- KEYBOARD & DROPDOWN FIX FOR MOBILE ---
-        // Detect picker clicks and force keyboard blur so dropdown is visible
+        // --- MOBILE FIXES ---
+        // 1. Force keyboard close to show menus
+        // 2. Close other menus when one opens (heading/alignment conflict)
         document.querySelectorAll('.ql-picker-label').forEach(el => {
-            el.addEventListener('click', function() {
-                // Wait slightly for picker to expand, then kill keyboard
+            el.addEventListener('click', function(e) {
+                // Close ANY other open pickers immediately
+                const parent = this.parentNode;
+                document.querySelectorAll('.ql-picker.ql-expanded').forEach(picker => {
+                    if (picker !== parent) {
+                        picker.classList.remove('ql-expanded');
+                    }
+                });
+                
+                // Hide keyboard so bottom menu is visible
                 setTimeout(() => {
                     if (document.activeElement && 
                         (document.activeElement.tagName === 'INPUT' || 
                          document.activeElement.getAttribute('contenteditable'))) {
                          document.activeElement.blur();
                     }
-                }, 100);
+                }, 50);
             });
         });
 
@@ -438,8 +451,16 @@
 
             if (state.guestUnsubscribe) state.guestUnsubscribe();
             
-            // LIVE GUEST LISTENER
+            // Safety timeout to prevent infinite loading
+            const safetyTimeout = setTimeout(() => {
+                if(!els.loadingScreen.classList.contains('hidden')) {
+                    alert("Loading timed out. The note may be deleted.");
+                    els.loadingScreen.classList.add('hidden');
+                }
+            }, 8000);
+
             state.guestUnsubscribe = db.collection('shared_docs').doc(shareId).onSnapshot(doc => {
+                clearTimeout(safetyTimeout);
                 if (doc.exists) {
                     const data = doc.data();
                     if(data.theme) applyTheme(data.theme === 'dark');
@@ -465,7 +486,12 @@
                     window.history.replaceState({}, document.title, window.location.pathname);
                     window.location.reload();
                 }
-            }, error => { console.error(error); alert("Error loading."); });
+            }, error => { 
+                clearTimeout(safetyTimeout);
+                console.error(error); 
+                alert("Error loading.");
+                els.loadingScreen.classList.add('hidden');
+            });
         }
 
         auth.onAuthStateChanged((u) => {
@@ -509,14 +535,20 @@
                     state.firstLoad = false;
                     const myOwnedDoc = state.docs.find(d => d.shareId === shareId);
                     const myImportedDoc = state.docs.find(d => d.importedFromShareId === shareId);
-                    if (myOwnedDoc) {
-                        openDoc(myOwnedDoc.id, myOwnedDoc);
-                        window.history.replaceState({}, document.title, window.location.pathname); 
-                    } else if (myImportedDoc) {
-                        openDoc(myImportedDoc.id, myImportedDoc);
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    } else {
-                        await checkAndHandleDeletedOwner(shareId);
+                    
+                    try {
+                        if (myOwnedDoc) {
+                            openDoc(myOwnedDoc.id, myOwnedDoc);
+                            window.history.replaceState({}, document.title, window.location.pathname); 
+                        } else if (myImportedDoc) {
+                            openDoc(myImportedDoc.id, myImportedDoc);
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        } else {
+                            await checkAndHandleDeletedOwner(shareId);
+                        }
+                    } catch(e) {
+                        console.error("Init Error", e);
+                        els.loadingScreen.classList.add('hidden');
                     }
                 } 
                 else if (state.firstLoad && !state.docId) {
@@ -540,9 +572,14 @@
                         importSharedNote(shareId);
                     }
                 } else {
-                     alert("Note not found."); els.loadingScreen.classList.add('hidden');
+                     alert("Note not found or deleted."); 
+                     els.loadingScreen.classList.add('hidden');
+                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error(e); 
+                els.loadingScreen.classList.add('hidden');
+            }
         }
 
         async function restoreDeletedFile(shareId, data) {
@@ -625,8 +662,6 @@
 
         window.openDoc = (id, data) => {
             state.docId = id; state.isFav = data.isFavorite || false;
-            
-            // Clean up previous listeners
             if(state.importedUnsubscribe) { state.importedUnsubscribe(); state.importedUnsubscribe = null; }
 
             els.title.value = data.title; els.title.disabled = false;
@@ -635,29 +670,26 @@
             els.shareBtn.disabled = false;
             els.folderSelect.disabled = false; 
             els.folderSelect.value = data.folderId || "";
-            els.syncBanner.classList.add('hidden'); // Default hidden
+            els.syncBanner.classList.add('hidden'); 
 
             updateFavIcon();
             quill.setContents(data.content, 'api');
             quill.enable(); 
             els.status.textContent = "Synced";
 
-            // CHECK IF IMPORTED? IF YES, START LISTENING TO OWNER
+            // If imported, sync from owner
             if (data.importedFromShareId) {
-                els.syncBanner.classList.remove('hidden'); // Show Banner
+                els.syncBanner.classList.remove('hidden');
                 state.importedUnsubscribe = db.collection('shared_docs').doc(data.importedFromShareId).onSnapshot(doc => {
                     if(doc.exists) {
                         const publicData = doc.data();
-                        // Verify content difference to avoid loop
                         const cur = JSON.stringify(quill.getContents());
                         const inc = JSON.stringify(publicData.c);
                         if (cur !== inc) {
                             const range = quill.getSelection();
-                            quill.setContents(publicData.c, 'silent'); // Silent update
+                            quill.setContents(publicData.c, 'silent'); 
                             els.title.value = publicData.t;
                             if(range) quill.setSelection(range);
-                            
-                            // Save this update to local private doc immediately
                             db.collection('users').doc(state.user.uid).collection('docs').doc(id).update({
                                 title: publicData.t, content: publicData.c, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                             });
@@ -687,7 +719,7 @@
             if(!original) return;
             if(confirm(`Duplicate "${original.title}"?`)) {
                 try {
-                    const contentCopy = original.content ? JSON.parse(JSON.stringify(original.content)) : ''; // DEEP COPY
+                    const contentCopy = original.content ? JSON.parse(JSON.stringify(original.content)) : ''; 
                     await db.collection('users').doc(state.user.uid).collection('docs').add({
                         title: original.title + " (Copy)", content: contentCopy, isFavorite: false, folderId: original.folderId,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -717,7 +749,6 @@
                 };
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).set(updateData, {merge: true});
                 
-                // IF I AM THE OWNER, UPDATE PUBLIC DOC
                 const activeDoc = state.docs.find(d => d.id === state.docId);
                 if (activeDoc && activeDoc.shareId) {
                     await db.collection('shared_docs').doc(activeDoc.shareId).update({
@@ -749,9 +780,14 @@
                 if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
                     await navigator.share({ title: els.title.value, text: 'Check out this note on ZenDocs', url: urlStr });
                 } else {
-                    await navigator.clipboard.writeText(urlStr); alert("Link Copied! Updates are now live.");
+                    await navigator.clipboard.writeText(urlStr); alert("Link Copied!");
                 }
-            } catch (error) { console.error(error); alert("Could not generate link."); } 
+            } catch (error) { 
+                // Fix for "Couldn't generate link" on share cancellation
+                if (error.name !== 'AbortError') {
+                    console.error(error); alert("Could not generate link."); 
+                }
+            } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         };
 
