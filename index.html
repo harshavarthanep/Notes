@@ -207,29 +207,24 @@
             <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-[60] hidden backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar()"></div>
 
             <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-[65] h-[100dvh] md:h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
-                <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
-                    <span class="font-bold text-white tracking-wide pl-1 text-lg">ZenDocs</span>
-                    <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1 hover:rotate-90 duration-300" title="New Note">+</button>
-                </div>
-                <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
-                    <div class="space-y-1 mb-6">
-                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition hover:translate-x-1 duration-200"><span>📄</span> All Files</div>
-                        <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition hover:translate-x-1 duration-200"><span>⭐</span> Important</div>
+                <div class="p-4 bg-[#181818] border-t border-gray-800 flex flex-col gap-3">
+    
+                    <a href="https://harshavarthanep.github.io/apps" target="_blank" class="w-full flex items-center justify-center gap-2 bg-[#2d2d2d] hover:bg-[#3d3d3d] text-gray-300 py-2 rounded-lg transition text-xs font-medium border border-gray-700 hover:border-gray-600">
+                        <span>🚀</span> Explore More Apps
+                    </a>
+                
+                    <button onclick="openDonateModal()" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 text-white py-2 rounded-lg transition text-xs font-bold shadow-lg transform active:scale-95">
+                        <span>☕</span> Buy me a Coffee
+                    </button>
+                
+                    <div class="text-[10px] text-gray-500 text-center mt-2 cursor-default flex flex-col items-center">
+                        <span>Made with <span class="text-red-500 animate-pulse">❤️</span> by</span>
+                        <a href="https://harshavarthanep.github.io" target="_blank" class="font-bold text-gray-400 hover:text-white transition mt-0.5">Harsha Varthan E P</a>
                     </div>
-                    <div class="mb-2 px-2 flex justify-between items-center group">
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
-                        <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
-                    </div>
-                    <div id="folder-list" class="space-y-1 mb-6"></div>
-                    <div class="mb-2 px-2 border-t border-gray-700 pt-4">
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Recent</span>
-                    </div>
-                    <div id="doc-list" class="space-y-1 pb-10"></div>
-                </div>
-                <div class="p-4 bg-[#181818] border-t border-gray-800">
-                    <div class="flex items-center justify-between mb-2">
-                        <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
-                        <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
+                
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-800 mt-1">
+                        <span id="user-email" class="text-[10px] text-gray-500 truncate max-w-[140px]"></span>
+                        <button id="logout-btn" class="text-[10px] text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
                     </div>
                 </div>
             </aside>
