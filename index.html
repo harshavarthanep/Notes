@@ -827,7 +827,36 @@
         window.createNewFolder = async () => { const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)]; let name = prompt("Folder Name:"); if(!name) return null; try { const ref = await db.collection('users').doc(state.user.uid).collection('folders').add({ name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); return ref.id; } catch(e) { return null; } };
         window.handleCreateFolderAction = async () => { els.mobileFolderMenu.classList.add('hidden'); const newFolderId = await createNewFolder(); if(newFolderId && state.docId) { await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({folderId: newFolderId}); els.folderSelect.value = newFolderId; els.status.textContent = "Moved to New Folder"; } };
         window.deleteFolder = async (id) => { if(confirm("Delete folder? Notes move to All Files.")) await db.collection('users').doc(state.user.uid).collection('folders').doc(id).delete(); };
-        window.deleteCurrentDoc = async () => { if(confirm("Delete this note?")) { await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete(); state.docId = null; els.title.value = ''; els.title.disabled = true; quill.setText(''); els.editorWrapper.classList.add('opacity-50', 'pointer-events-none'); els.favBtn.disabled = true; els.delBtn.disabled = true; els.downBtn.disabled = true; els.shareBtn.disabled = true; } };
+        
+        window.deleteCurrentDoc = async () => {
+            if (!state.docId) return;
+        
+            if (confirm("Delete this note?")) {
+                const deletedId = state.docId;
+        
+                try {
+                    // 1. Delete from Database
+                    await db.collection('users').doc(state.user.uid).collection('docs').doc(deletedId).delete();
+        
+                    // 2. Find the next file to open (the previous one in the list)
+                    // We filter out the one we just deleted from the local state
+                    const remainingDocs = state.docs.filter(d => d.id !== deletedId);
+        
+                    if (remainingDocs.length > 0) {
+                        // Since state.docs is already sorted by date, index 0 is the most recent previous file
+                        const nextDoc = remainingDocs[0];
+                        openDoc(nextDoc.id, nextDoc);
+                    } else {
+                        // If no files are left, create a fresh one so the screen is never empty
+                        createNewDoc();
+                    }
+        
+                } catch (e) {
+                    console.error(e);
+                    alert("Error deleting file.");
+                }
+            }
+        };        
         window.downloadAsWord = () => { const title = els.title.value || "Document"; const css = `<style>@page{size:A4;margin:1in;}body{font-family:'Times New Roman',serif;font-size:11pt;line-height:1.5;}</style>`; const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title>${css}</head><body>${quill.root.innerHTML}</body></html>`; const blob = new Blob(['\ufeff', html], {type: 'application/msword'}); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = title + ".doc"; a.click(); };
         window.toggleSidebar = (f) => { const sb = document.getElementById('sidebar'), ov = document.getElementById('mobile-overlay'); if(f===false || !sb.classList.contains('sidebar-closed')) { sb.classList.add('sidebar-closed'); sb.classList.remove('sidebar-open'); ov.classList.add('hidden'); } else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden'); } };
         window.toggleMobileMenu = () => { els.mobileMenuDropdown.classList.toggle('hidden'); };
