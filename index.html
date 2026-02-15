@@ -12,21 +12,14 @@
             theme: {
                 extend: {
                     colors: {
-                        bg: 'var(--bg-color)', 
-                        surface: 'var(--surface-color)', 
-                        sidebar: '#1e1e1e',  
-                        border: 'var(--border-color)', 
-                        text: 'var(--text-color)', 
-                        muted: '#9ca3af',
-                        accent: '#1a73e8', 
-                        danger: '#d93025', 
-                        gold: '#fbbc04'
+                        bg: 'var(--bg-color)', surface: 'var(--surface-color)', sidebar: '#1e1e1e',  
+                        border: 'var(--border-color)', text: 'var(--text-color)', muted: '#9ca3af',
+                        accent: '#1a73e8', danger: '#d93025', gold: '#fbbc04',
+                        darkSurface: '#1e1e1e', darkBg: '#121212', darkBorder: '#374151'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    animation: {
-                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
-                    },
+                    boxShadow: { 'paper': '0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15)' },
+                    animation: { 'fade-in-up': 'fadeInUp 0.6s ease-out forwards', 'fade-in': 'fadeIn 0.5s ease-out forwards', 'spin-slow': 'spin 3s linear infinite' },
                     keyframes: {
                         fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
@@ -38,66 +31,25 @@
     
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --surface-color: #ffffff;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --paper-bg: #ffffff;
-            --paper-text: #000000;
-            --toolbar-bg: #edf2fa;
-            --toolbar-border: #e0e0e0;
-            --line-color: #e5e7eb;
-        }
-
-        html.dark {
-            --bg-color: #121212;
-            --surface-color: #1e1e1e;
-            --text-color: #e5e7eb;
-            --border-color: #374151;
-            --paper-bg: #1e1e1e; 
-            --paper-text: #e0e0e0;
-            --toolbar-bg: #2d2d2d;
-            --toolbar-border: #404040;
-            --line-color: #333333;
-        }
-
-        body, div, button, input, select, .ql-toolbar, #paper-container {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
-        }
-
-        /* SCROLLBARS */
+        :root { --bg-color: #f0f2f5; --surface-color: #ffffff; --text-color: #1f2937; --border-color: #e5e7eb; --paper-bg: #ffffff; --paper-text: #000000; --toolbar-bg: #edf2fa; --toolbar-border: #e0e0e0; --line-color: #e5e7eb; }
+        html.dark { --bg-color: #121212; --surface-color: #1e1e1e; --text-color: #e5e7eb; --border-color: #374151; --paper-bg: #1e1e1e; --paper-text: #e0e0e0; --toolbar-bg: #2d2d2d; --toolbar-border: #404040; --line-color: #333333; }
+        body, div, button, input, select, .ql-toolbar, #paper-container { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         html.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
-        
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes slideInRight { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
         .doc-item-anim { animation: slideInRight 0.3s ease-out forwards; opacity: 0; }
 
         /* EDITOR */
-        #editor-wrapper {
-            background-color: var(--bg-color);
-            padding: 40px 0;
-            overflow-y: auto;
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        
-        #paper-container {
-            width: 794px; min-height: 1123px;
-            background: var(--paper-bg); color: var(--paper-text);
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,.3); margin-bottom: 40px;
-            display: flex; flex-direction: column; position: relative; height: auto; 
-        }
-        
+        #editor-wrapper { background-color: var(--bg-color); padding: 40px 0; overflow-y: auto; flex: 1; display: flex; justify-content: center; align-items: flex-start; }
+        #paper-container { width: 794px; min-height: 1123px; background: var(--paper-bg); color: var(--paper-text); box-shadow: 0 1px 3px 0 rgba(0,0,0,.3); margin-bottom: 40px; display: flex; flex-direction: column; position: relative; height: auto; }
         html.dark #paper-container { box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid #333; }
         .ql-container { font-size: 11pt; font-family: 'Times New Roman', serif; height: auto !important; overflow: visible !important; }
         .ql-editor { padding: 96px; min-height: 1123px; height: auto !important; overflow-y: visible !important; background-image: linear-gradient(var(--line-color) 1px, transparent 1px); background-size: 100% 1123px; background-position: 0 -1px; }
+        .ql-editor::after { content: "Page Break"; position: absolute; left: 10px; top: 1123px; font-size: 10px; color: #ccc; pointer-events: none; }
         
         /* Dark Mode Quill */
         html.dark .ql-editor.ql-blank::before { color: #6b7280; }
@@ -105,37 +57,21 @@
         html.dark .ql-toolbar .ql-fill { fill: #d1d5db; }
         html.dark .ql-toolbar .ql-picker { color: #d1d5db; }
         .ql-toolbar { border: none !important; background: var(--toolbar-bg); border-bottom: 1px solid var(--toolbar-border) !important; padding: 8px 16px !important; border-radius: 24px; margin: 8px 16px; }
-        
-        /* CURSORS */
-        .cursor-flag {
-            position: absolute;
-            top: -1.5em;
-            left: 0;
-            font-size: 10px;
-            color: white;
-            padding: 2px 4px;
-            border-radius: 4px 4px 4px 0;
-            white-space: nowrap;
-            pointer-events: none;
-            z-index: 50;
-        }
-        .cursor-c {
-            position: absolute;
-            width: 2px;
-            height: 1.2em;
-            pointer-events: none;
-            z-index: 49;
-        }
+        select, input, textarea { font-size: 16px !important; }
 
-        /* MOBILE FIXES */
+        /* CURSORS */
+        .cursor-flag { position: absolute; top: -1.5em; left: 0; font-size: 10px; color: white; padding: 2px 4px; border-radius: 4px 4px 4px 0; white-space: nowrap; pointer-events: none; z-index: 50; box-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        .cursor-c { position: absolute; width: 2px; height: 1.2em; pointer-events: none; z-index: 49; }
+
+        /* MOBILE */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: var(--bg-color); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
             .ql-editor { padding: 20px; background-image: none; }
             .ql-toolbar { margin: 0 !important; width: 100% !important; border-radius: 0 !important; background: var(--surface-color) !important; display: flex !important; flex-wrap: nowrap !important; gap: 8px; padding: 12px 10px !important; overflow-x: auto !important; }
-            .ql-toolbar .ql-picker-options { position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100vw !important; max-height: 40vh !important; overflow-y: auto !important; background: var(--surface-color); z-index: 99999 !important; }
+            .ql-toolbar .ql-picker-options { position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100vw !important; max-height: 40vh !important; overflow-y: auto !important; background: var(--surface-color); z-index: 99999 !important; border-radius: 16px 16px 0 0 !important; }
+            .ql-editor::after { display: none; }
         }
-
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
@@ -144,7 +80,7 @@
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
 
     <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md">
-        <span class="truncate pr-2">👀 Guest Mode (Realtime)</span>
+        <span class="truncate pr-2">👀 Guest Mode (Realtime View)</span>
         <button onclick="openLoginForGuest()" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 whitespace-nowrap">Login to Import</button>
     </div>
 
@@ -156,7 +92,6 @@
     </div>
 
     <div id="app" class="flex-1 flex relative overflow-hidden">
-
         <div id="auth-screen" class="absolute inset-0 z-[80] bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0 transform transition-all duration-500" id="auth-box">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
@@ -180,10 +115,10 @@
         <div id="reset-modal" class="absolute inset-0 z-[90] bg-black/80 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
             <div class="bg-white dark:bg-[#2d2d2d] rounded-xl p-6 max-w-xs w-full shadow-2xl animate-fade-in-up">
                 <h3 class="font-bold text-lg mb-2 text-gray-800 dark:text-white">Reset Password</h3>
-                <input type="email" id="reset-email" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1e1e1e] dark:text-white rounded p-2 mb-4 focus:outline-none focus:border-accent transition-colors" placeholder="your@email.com">
+                <input type="email" id="reset-email" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1e1e1e] dark:text-white rounded p-2 mb-4" placeholder="your@email.com">
                 <div class="flex justify-end gap-2">
-                    <button onclick="document.getElementById('reset-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition">Cancel</button>
-                    <button onclick="sendResetLink()" class="px-4 py-2 bg-accent text-white rounded hover:bg-blue-600 shadow transition transform active:scale-95">Send Link</button>
+                    <button onclick="document.getElementById('reset-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded">Cancel</button>
+                    <button onclick="sendResetLink()" class="px-4 py-2 bg-accent text-white rounded hover:bg-blue-600">Send Link</button>
                 </div>
             </div>
         </div>
@@ -216,23 +151,21 @@
                         <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
                         <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
                     </div>
+                    <div class="text-[10px] text-gray-600 text-center mt-2 pt-2 border-t border-gray-800 cursor-default">Made with love ❤️ by <span class="hover:text-gray-400">Harsha Varthan E P</span></div>
                 </div>
             </aside>
 
             <main class="flex-1 flex flex-col h-full relative w-full bg-bg transition-colors duration-300">
                 <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-3 md:px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
-                    
                     <div class="flex items-center gap-2 flex-1 min-w-0">
                         <button id="hamburger-btn" class="md:hidden text-muted p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                         </button>
-                        
                         <div class="flex flex-col w-full min-w-0">
                             <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300 min-w-0" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-muted font-medium h-3 truncate"></span>
                         </div>
                     </div>
-
                     <div class="flex items-center gap-1 pl-2 relative">
                         <button id="share-btn" onclick="shareCurrentNote()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded-full md:rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-1" disabled title="Share Link">
                             <span>🔗</span> <span class="hidden md:inline">Share</span>
@@ -241,7 +174,6 @@
                             <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707M12.728 6.343l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                             <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                         </button>
-
                         <div id="logged-in-controls" class="flex items-center gap-2">
                              <select id="folder-select" class="hidden md:block text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 outline-none cursor-pointer" disabled>
                                 <option value="">No Folder</option>
@@ -253,7 +185,6 @@
                             <button id="delete-btn" onclick="deleteCurrentDoc()" class="hidden md:block p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
-
                             <div class="md:hidden relative mobile-menu-container">
                                 <button onclick="toggleMobileMenu()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
@@ -261,24 +192,19 @@
                                 <div id="mobile-menu-dropdown" class="hidden absolute right-0 top-12 w-48 bg-surface dark:bg-[#2d2d2d] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 py-2 z-[70]">
                                     <button onclick="toggleFavorite(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span id="mobile-fav-icon">★</span> <span id="mobile-fav-text">Mark Important</span></button>
                                     <button onclick="toggleMobileFolderMenu(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>📁</span> Move to Folder</button>
-                                    <button onclick="duplicateCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>📋</span> Duplicate</button>
                                     <button onclick="downloadAsWord(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>⬇</span> Download</button>
                                     <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
                                     <button onclick="deleteCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2 text-danger"><span>🗑</span> Delete</button>
                                 </div>
                             </div>
                         </div>
-                        
                         <button id="guest-download-btn" onclick="downloadAsWord()" class="hidden p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition" title="Download">
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                         </button>
-
                         <div id="mobile-folder-menu" class="hidden absolute top-14 right-10 bg-surface dark:bg-[#2d2d2d] shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 w-56 z-[75] py-1 flex flex-col animate-fade-in-up folder-menu-container">
                             <div id="mobile-folder-list-items" class="max-h-60 overflow-y-auto"></div>
                             <div class="border-t border-gray-100 dark:border-gray-700 mt-1 pt-1">
-                                <button onclick="handleCreateFolderAction()" class="w-full text-left px-4 py-3 text-accent text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
-                                    <span>➕</span> Create New Folder...
-                                </button>
+                                <button onclick="handleCreateFolderAction()" class="w-full text-left px-4 py-3 text-accent text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"><span>➕</span> Create New Folder...</button>
                             </div>
                         </div>
                     </div>
@@ -309,7 +235,6 @@
           messagingSenderId: "372433592521",
           appId: "1:372433592521:web:348b2558084299be1a6d18"
         };
-
         try { firebase.initializeApp(firebaseConfig); } catch(e) { console.error(e); }
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -318,13 +243,9 @@
         let state = {
             user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
             isFav: false, saveTimer: null, firstLoad: true,
-            pendingShareData: null,
-            isGuest: false,
-            // Realtime specific state
-            sharedDocId: null, // The ID in 'shared_docs' collection
-            unsubscribeRealtime: null, // Listener for content
-            unsubscribeCursors: null, // Listener for cursors
-            isRemoteUpdate: false // Prevent loops
+            pendingShareData: null, isGuest: false,
+            // Realtime specific
+            sharedDocId: null, unsubscribeRealtime: null, unsubscribeCursors: null, isRemoteUpdate: false
         };
 
         const els = {
@@ -357,10 +278,7 @@
             const isDark = !document.documentElement.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light'); applyTheme(isDark);
             if(state.user) db.collection('users').doc(state.user.uid).set({ settings: { theme: isDark ? 'dark' : 'light' }}, {merge:true});
-            // Update shared theme if owner
-            if(state.sharedDocId && !state.isGuest) {
-                db.collection('shared_docs').doc(state.sharedDocId).update({ theme: isDark ? 'dark' : 'light' });
-            }
+            if(state.sharedDocId && !state.isGuest) db.collection('shared_docs').doc(state.sharedDocId).update({ theme: isDark ? 'dark' : 'light' });
         }
 
         // --- EDITOR ---
@@ -369,24 +287,16 @@
             modules: { toolbar: [[{'header':[1,2,3,false]}], ['bold','italic','underline','strike', {'color':[]},{'background':[]}], [{'list':'ordered'},{'list':'bullet'}, {'list': 'check'}], [{'align':[]}], ['image','link','clean']] }
         });
 
-        // --- REALTIME SYNC ENGINE ---
+        // --- REALTIME ---
         function setupRealtimeSync(sharedId) {
             if(state.unsubscribeRealtime) state.unsubscribeRealtime();
             if(state.unsubscribeCursors) state.unsubscribeCursors();
             state.sharedDocId = sharedId;
 
-            // 1. Content Sync
             state.unsubscribeRealtime = db.collection('shared_docs').doc(sharedId).onSnapshot(doc => {
-                if(!doc.exists) {
-                    if(state.isGuest) { alert("The owner deleted this note."); window.location.href = window.location.pathname; }
-                    return; // If imported, keep local copy
-                }
+                if(!doc.exists) { if(state.isGuest) { alert("Note deleted."); window.location.href=window.location.pathname; } return; }
                 const data = doc.data();
-                
-                // Update Title
                 if(data.t !== els.title.value && document.activeElement !== els.title) els.title.value = data.t;
-                
-                // Update Content (Only if different to avoid loop)
                 const localContent = JSON.stringify(quill.getContents());
                 const remoteContent = JSON.stringify(data.c);
                 if(localContent !== remoteContent) {
@@ -396,120 +306,82 @@
                     if(range) quill.setSelection(range.index, range.length, 'silent');
                     state.isRemoteUpdate = false;
                 }
-
-                // Update Theme
                 if(state.isGuest && data.theme) applyTheme(data.theme === 'dark');
             });
 
-            // 2. Cursor Sync
             const myUid = state.user ? state.user.uid : 'guest-' + Math.floor(Math.random()*1000);
-            
-            // Listen for others' cursors
             state.unsubscribeCursors = db.collection('shared_docs').doc(sharedId).collection('cursors').onSnapshot(snap => {
-                els.cursorLayer.innerHTML = ''; // Clear old cursors
-                snap.forEach(doc => {
-                    if(doc.id === myUid) return; // Don't show my own cursor
-                    drawCursor(doc.data(), doc.id);
-                });
+                els.cursorLayer.innerHTML = '';
+                snap.forEach(doc => { if(doc.id !== myUid) drawCursor(doc.data(), doc.id); });
             });
 
-            // Broadcast my cursor
             quill.on('selection-change', (range) => {
                 if(range) {
                     const bounds = quill.getBounds(range.index);
                     db.collection('shared_docs').doc(sharedId).collection('cursors').doc(myUid).set({
-                        name: state.user ? state.user.email : 'Guest',
-                        index: range.index,
-                        top: bounds.top,
-                        left: bounds.left,
-                        color: stringToColor(doc.id || 'x'),
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        name: state.user ? state.user.email : 'Guest', index: range.index, top: bounds.top, left: bounds.left,
+                        color: stringToColor(state.user ? state.user.email : 'Guest'), timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
             });
         }
 
         function drawCursor(data, id) {
-            // Safety check for bounds
             if(!data.top && data.top !== 0) return;
-            
-            const color = stringToColor(id);
-            const cursor = document.createElement('div');
-            cursor.className = 'cursor-c';
-            cursor.style.top = (data.top + 96) + 'px'; // +96 for editor padding
-            cursor.style.left = (data.left + 96) + 'px';
+            const color = data.color || stringToColor(id);
+            const cursor = document.createElement('div'); cursor.className = 'cursor-c';
+            cursor.style.top = (data.top + 96) + 'px'; cursor.style.left = (data.left + 96) + 'px';
             cursor.style.backgroundColor = color;
-
-            const flag = document.createElement('div');
-            flag.className = 'cursor-flag';
-            flag.textContent = data.name.split('@')[0];
-            flag.style.backgroundColor = color;
-            
-            cursor.appendChild(flag);
-            els.cursorLayer.appendChild(cursor);
+            const flag = document.createElement('div'); flag.className = 'cursor-flag';
+            flag.textContent = data.name.split('@')[0]; flag.style.backgroundColor = color;
+            cursor.appendChild(flag); els.cursorLayer.appendChild(cursor);
         }
-
         function stringToColor(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-            return '#' + "00000".substring(0, 6 - c.length) + c;
+            let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            const c = (hash & 0x00FFFFFF).toString(16).toUpperCase(); return '#' + "00000".substring(0, 6 - c.length) + c;
         }
 
         // --- URL LOGIC ---
         async function checkUrlForShare() {
             const urlParams = new URLSearchParams(window.location.search);
             const shareId = urlParams.get('shareId');
-            
             if (shareId) {
-                // 1. Check if I AM THE OWNER
-                if (state.user) {
-                    const docCheck = await db.collection('shared_docs').doc(shareId).get();
-                    if(docCheck.exists && docCheck.data().ownerUid === state.user.uid) {
-                        // It's mine. Open local copy. Clean URL.
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                        // Find the local docId that corresponds to this share
-                        const localDocId = docCheck.data().originalDocId; // Ideally we stored this
-                        // Fallback: Just open the first doc that matches title/content or wait for initData
-                        // For now, let's just let initData load and we open the dashboard.
-                        return false; 
-                    }
-
-                    // 2. Check if I ALREADY IMPORTED IT
-                    const existingImport = await db.collection('users').doc(state.user.uid).collection('docs')
-                        .where('sharedSourceId', '==', shareId).limit(1).get();
-                    
-                    if(!existingImport.empty) {
-                         // Found import. Open it.
-                         window.history.replaceState({}, document.title, window.location.pathname);
-                         const docData = existingImport.docs[0].data();
-                         // We need to wait for initData to populate state.docs usually, 
-                         // but we can force open here.
-                         state.docs = [{id: existingImport.docs[0].id, ...docData}]; // Temp populate
-                         openDoc(existingImport.docs[0].id, docData);
-                         return true; 
-                    }
-                }
-
-                // 3. Guest / New Import Mode
                 try {
-                    els.loadingScreen.classList.remove('hidden');
+                    els.loadingScreen.classList.remove('hidden'); // Show loading explicitly
+                    
+                    if (state.user) {
+                        // Check if I already imported this or own it
+                        const existingImport = await db.collection('users').doc(state.user.uid).collection('docs').where('sharedSourceId', '==', shareId).limit(1).get();
+                        const docCheck = await db.collection('shared_docs').doc(shareId).get();
+                        
+                        // If I am owner
+                        if(docCheck.exists && docCheck.data().ownerUid === state.user.uid) {
+                             window.history.replaceState({}, document.title, window.location.pathname);
+                             // Let initData handle opening the latest version
+                             return false; 
+                        }
+                        // If I imported it
+                        if(!existingImport.empty) {
+                             window.history.replaceState({}, document.title, window.location.pathname);
+                             // Let initData handle opening
+                             return false; 
+                        }
+                    }
+
                     const doc = await db.collection('shared_docs').doc(shareId).get();
                     if (doc.exists) {
                         const data = doc.data();
-                        state.pendingShareData = { ...data, shareId: shareId }; // Keep shareId
+                        state.pendingShareData = { ...data, shareId: shareId };
                         state.isGuest = true;
                         if(data.theme) applyTheme(data.theme === 'dark');
-                        
                         enterGuestMode(data);
-                        setupRealtimeSync(shareId); // Start listening immediately
+                        setupRealtimeSync(shareId);
                         return true;
                     } else {
                         alert("Note not found.");
                         window.history.replaceState({}, document.title, window.location.pathname);
-                        return false;
                     }
-                } catch (e) { console.error(e); return false; }
+                } catch (e) { console.error(e); }
             }
             return false;
         }
@@ -520,9 +392,6 @@
             els.loggedInControls.classList.add('hidden'); els.sidebar.classList.add('hidden'); els.hamburgerBtn.classList.add('hidden');
             els.guestDownloadBtn.classList.remove('hidden'); els.previewBanner.classList.remove('hidden');
             els.title.value = data.t; quill.setContents(data.c); 
-            // Allow typing in guest mode to test cursors? No, strict read only until login.
-            // Actually, for "Google Docs" style, guest *can* usually edit if allowed. 
-            // Current req: "Login to save". Let's keep it Read-Only for Guest, but Realtime updates.
             quill.disable(); els.title.disabled = true; els.status.textContent = "Live View";
             els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
         }
@@ -541,11 +410,9 @@
                 els.dashboard.classList.remove('hidden'); els.loggedInControls.classList.remove('hidden');
                 els.sidebar.classList.remove('hidden'); els.hamburgerBtn.classList.remove('hidden');
                 els.guestDownloadBtn.classList.add('hidden'); els.dashboard.classList.add('animate-fade-in');
-
                 db.collection('users').doc(u.uid).onSnapshot(doc => {
                     if(doc.exists && doc.data().settings?.theme) { localStorage.setItem('theme', doc.data().settings.theme); applyTheme(doc.data().settings.theme === 'dark'); }
                 });
-
                 if (state.pendingShareData) importPendingShare();
                 else initData();
             } else {
@@ -570,6 +437,7 @@
             db.collection('users').doc(state.user.uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderDocs();
+                // Logic to open specific shared doc if redirected from checkUrlForShare
                 if (state.firstLoad && !state.docId) {
                     state.firstLoad = false;
                     state.docs.length > 0 ? openDoc(state.docs[0].id, state.docs[0]) : createNewDoc();
@@ -581,18 +449,14 @@
             const data = state.pendingShareData;
             state.pendingShareData = null; window.history.replaceState({}, document.title, window.location.pathname);
             quill.enable(); els.title.disabled = false;
-
             try {
-                // Save as a new doc but linked to source
                 const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
-                    title: data.t, content: data.c, isFavorite: false, folderId: null,
-                    sharedBy: data.email || 'Anonymous',
-                    sharedSourceId: data.shareId, // IMPORTANT: Link back to real-time doc
+                    title: data.t, content: data.c, isFavorite: false, folderId: null, sharedBy: data.email || 'Anonymous',
+                    sharedSourceId: data.shareId, 
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 alert("Note Imported! You can now edit in real-time.");
-                initData();
-                setTimeout(() => openDoc(ref.id, { ...data, id: ref.id, sharedSourceId: data.shareId }), 800);
+                initData(); setTimeout(() => openDoc(ref.id, { ...data, id: ref.id, sharedSourceId: data.shareId }), 800);
             } catch(e) { console.error(e); alert("Import failed"); }
         }
 
@@ -622,12 +486,16 @@
                 const f = state.folders.find(x => x.id === d.folderId);
                 div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 doc-item-anim ${d.id===state.docId ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
                 div.style.animationDelay = i*0.05+'s';
-                div.innerHTML = `<div class="font-medium text-xs truncate flex justify-between"><span>${d.title||'Untitled'}</span></div>
-                <div class="text-[9px] opacity-60 flex justify-between mt-1 items-center flex-wrap gap-1">
-                    <div class="flex items-center gap-1">${new Date(d.updatedAt?.toDate()).toLocaleDateString()} ${f ? `<span class="bg-gray-700 px-1 rounded">${f.emoji}</span>`:''} ${d.sharedSourceId ? '<span class="text-accent">● Live</span>' : ''}</div>
-                    ${d.isFavorite ? '<span class="text-gold">★</span>' : ''}
-                </div>`;
-                div.onclick = () => openDoc(d.id, d);
+                div.innerHTML = `
+                    <div class="flex justify-between items-center font-medium text-xs">
+                        <span onclick="openDoc('${d.id}', state.docs.find(x=>x.id=='${d.id}'))" class="truncate flex-1">${d.title||'Untitled'}</span>
+                        <button onclick="duplicateDoc('${d.id}')" class="opacity-0 group-hover:opacity-100 text-[9px] bg-white/10 px-1 rounded hover:bg-white/20 ml-2" title="Duplicate">📋</button>
+                    </div>
+                    <div class="text-[9px] opacity-60 flex justify-between mt-1 items-center flex-wrap gap-1" onclick="openDoc('${d.id}', state.docs.find(x=>x.id=='${d.id}'))">
+                        <div class="flex items-center gap-1">${new Date(d.updatedAt?.toDate()).toLocaleDateString()} ${f ? `<span class="bg-gray-700 px-1 rounded">${f.emoji}</span>`:''} ${d.sharedSourceId || d.shareLinkActive ? '<span class="text-accent">● Live</span>' : ''}</div>
+                        ${d.isFavorite ? '<span class="text-gold">★</span>' : ''}
+                    </div>`;
+                div.classList.add('group'); // For hover effect
                 els.docList.appendChild(div);
             });
         }
@@ -642,28 +510,17 @@
             els.folderSelect.disabled = false; els.folderSelect.value = data.folderId || "";
             updateFavIcon();
             
-            // Set Content
             quill.setContents(data.content, 'silent');
             quill.enable(); els.status.textContent = "Synced";
             
-            // CHECK IF LINKED TO SHARED DOC
             if(data.sharedSourceId) {
-                setupRealtimeSync(data.sharedSourceId);
-                els.status.textContent = "● Live Sync";
+                setupRealtimeSync(data.sharedSourceId); els.status.textContent = "● Live Sync";
+            } else if(data.shareLinkActive && data.shareLinkId) {
+                 setupRealtimeSync(data.shareLinkId); els.status.textContent = "● Live Hosting";
             } else {
-                // Check if I am the owner of a shared doc
-                // Ideally we store this in local doc, but for now we lazily check or just don't sync up 
-                // untill share button is clicked. 
-                // Optimization: If this doc was shared before, reconnect.
-                if(data.shareLinkActive && data.shareLinkId) {
-                     setupRealtimeSync(data.shareLinkId);
-                     els.status.textContent = "● Live Hosting";
-                } else {
-                    if(state.unsubscribeRealtime) state.unsubscribeRealtime();
-                    if(state.unsubscribeCursors) state.unsubscribeCursors();
-                    els.cursorLayer.innerHTML = '';
-                    state.sharedDocId = null;
-                }
+                if(state.unsubscribeRealtime) state.unsubscribeRealtime();
+                if(state.unsubscribeCursors) state.unsubscribeCursors();
+                els.cursorLayer.innerHTML = ''; state.sharedDocId = null;
             }
             if(window.innerWidth < 850) toggleSidebar(false);
         };
@@ -677,6 +534,14 @@
             openDoc(ref.id, {title:'Untitled', content:'', isFavorite:false, folderId:fId});
         };
 
+        window.duplicateDoc = async (id) => {
+            const doc = state.docs.find(d => d.id === id); if(!doc) return;
+            await db.collection('users').doc(state.user.uid).collection('docs').add({
+                ...doc, title: doc.title + ' (Copy)', sharedSourceId: null, shareLinkActive: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        };
+
         window.createNewFolder = async () => {
             const name = prompt("Folder Name:"); if(!name) return;
             await db.collection('users').doc(state.user.uid).collection('folders').add({ name, emoji:'📁', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
@@ -684,101 +549,45 @@
 
         window.deleteFolder = async (id) => { if(confirm("Delete folder?")) await db.collection('users').doc(state.user.uid).collection('folders').doc(id).delete(); };
         window.deleteCurrentDoc = async () => {
-            if(confirm("Delete note?")) {
+            if(confirm("Delete note? (Shared version remains accessible)")) {
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete();
-                // We do NOT delete the shared_docs version, satisfying requirement that others can still use it.
                 state.docId = null; els.title.value=''; quill.setText(''); els.editorWrapper.classList.add('opacity-50','pointer-events-none');
             }
         };
-        
-        // --- NEW DUPLICATE FEATURE ---
-        window.duplicateCurrentDoc = async () => {
-            if(!state.docId) return;
-            const doc = state.docs.find(d => d.id === state.docId);
-            if(!doc) return;
-            const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
-                ...doc, title: doc.title + ' (Copy)',
-                sharedSourceId: null, // Break link on copy
-                shareLinkActive: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Document Duplicated!");
-        }
 
         // --- SAVE & SYNC ---
-        quill.on('text-change', (d, o, source) => { 
-            if(source === 'user') { triggerSave(); }
-        });
+        quill.on('text-change', (d, o, source) => { if(source === 'user') { triggerSave(); } });
         els.title.oninput = () => triggerSave();
-
-        function triggerSave() {
-            if(!state.docId && !state.sharedDocId) return;
-            els.status.textContent = "Saving...";
-            if(state.saveTimer) clearTimeout(state.saveTimer);
-            state.saveTimer = setTimeout(saveToDb, 1000);
-        }
-
+        function triggerSave() { if(!state.docId && !state.sharedDocId) return; els.status.textContent = "Saving..."; if(state.saveTimer) clearTimeout(state.saveTimer); state.saveTimer = setTimeout(saveToDb, 1000); }
         async function saveToDb() {
             const content = JSON.parse(JSON.stringify(quill.getContents()));
             const title = els.title.value || 'Untitled';
-            
-            // 1. Save to Local Private Copy (if exists)
             if(state.docId && !state.isGuest) {
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).set({
-                    title, content, isFavorite: state.isFav, folderId: els.folderSelect.value||null,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    title, content, isFavorite: state.isFav, folderId: els.folderSelect.value||null, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, {merge: true});
             }
-
-            // 2. Sync to Shared Copy (if active)
             if(state.sharedDocId && !state.isRemoteUpdate) {
-                // If I am guest/importer, I update the shared doc directly?
-                // Yes, for collaboration.
-                await db.collection('shared_docs').doc(state.sharedDocId).update({
-                    t: title, c: content,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                await db.collection('shared_docs').doc(state.sharedDocId).update({ t: title, c: content, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
             }
             els.status.textContent = "Saved";
         }
 
-        // --- SHARING ---
         window.shareCurrentNote = async () => {
             if(!state.docId) return;
-            const btn = document.getElementById('share-btn');
-            btn.innerHTML = '⏳'; btn.disabled = true;
-
+            const btn = document.getElementById('share-btn'); btn.innerHTML = '⏳'; btn.disabled = true;
             try {
-                // Use the SAME ID for shared doc as local doc so we can track it easily
-                const shareId = state.docId; 
-                const noteData = { 
-                    t: els.title.value, c: JSON.parse(JSON.stringify(quill.getContents())), 
-                    ownerUid: state.user.uid, 
-                    originalDocId: state.docId, // Reference back
-                    email: state.user.email, theme: localStorage.getItem('theme') || 'light',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                // Create/Update the Live Doc
+                const shareId = state.docId; // Use local ID as share ID for simplicity
+                const noteData = { t: els.title.value, c: JSON.parse(JSON.stringify(quill.getContents())), ownerUid: state.user.uid, originalDocId: state.docId, email: state.user.email, theme: localStorage.getItem('theme') || 'light', createdAt: firebase.firestore.FieldValue.serverTimestamp() };
                 await db.collection('shared_docs').doc(shareId).set(noteData, {merge:true});
-                
-                // Mark local doc as shared
-                await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({
-                    shareLinkActive: true, shareLinkId: shareId
-                });
-
-                // Start Syncing immediately
+                await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({ shareLinkActive: true, shareLinkId: shareId });
                 setupRealtimeSync(shareId);
-
                 const url = new URL(window.location.href); url.search = `?shareId=${shareId}`;
-                await navigator.clipboard.writeText(url.toString());
-                alert("Live Link Copied!\n\nCollaborate in real-time.");
+                await navigator.clipboard.writeText(url.toString()); alert("Live Link Copied!\n\nCollaborate in real-time.");
             } catch (e) { console.error(e); alert("Share failed"); }
             finally { btn.innerHTML = '<span>🔗</span> <span class="hidden md:inline">Share</span>'; btn.disabled = false; }
         };
 
-        // --- EXPORT ---
         window.downloadAsWord = () => {
             const t = els.title.value||"Doc";
             const h = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${t}</title></head><body>${quill.root.innerHTML}</body></html>`;
@@ -786,12 +595,7 @@
             const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = t+".doc"; a.click();
         };
 
-        // --- UI HELPERS ---
-        window.toggleSidebar = (f) => {
-            const s=els.sidebar, o=document.getElementById('mobile-overlay');
-            if(f===false||!s.classList.contains('sidebar-closed')){s.classList.add('sidebar-closed');s.classList.remove('sidebar-open');o.classList.add('hidden');}
-            else{s.classList.remove('sidebar-closed');s.classList.add('sidebar-open');o.classList.remove('hidden');}
-        };
+        window.toggleSidebar = (f) => { const s=els.sidebar, o=document.getElementById('mobile-overlay'); if(f===false||!s.classList.contains('sidebar-closed')){s.classList.add('sidebar-closed');s.classList.remove('sidebar-open');o.classList.add('hidden');} else{s.classList.remove('sidebar-closed');s.classList.add('sidebar-open');o.classList.remove('hidden');} };
         window.toggleMobileMenu=()=>els.mobileMenuDropdown.classList.toggle('hidden');
         els.folderSelect.onchange=()=>{ if(els.folderSelect.value==='create_new') handleCreateFolderAction(); else triggerSave(); };
         window.toggleMobileFolderMenu=()=>{ if(els.mobileFolderMenu.classList.contains('hidden')){ renderMobileFolderList(); els.mobileFolderMenu.classList.remove('hidden'); }else els.mobileFolderMenu.classList.add('hidden'); };
