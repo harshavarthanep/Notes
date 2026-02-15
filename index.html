@@ -68,7 +68,7 @@
 
         body, div, button, input, select { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
 
-        /* SCROLLBARS */
+        /* CUSTOM SCROLLBARS */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
@@ -106,37 +106,41 @@
         html.dark .ql-toolbar .ql-picker { color: #d1d5db; }
         .ql-toolbar { border: none !important; background: var(--toolbar-bg); border-bottom: 1px solid var(--toolbar-border) !important; padding: 8px 16px !important; border-radius: 24px; margin: 8px 16px; }
 
-        /* MOBILE FIXES */
+        /* MOBILE OPTIMIZATIONS */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: var(--bg-color); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px; }
+            .ql-editor { padding: 20px 20px 80px 20px; } /* Extra padding at bottom for keyboard */
             
-            /* Horizontal Scroll Menus */
-            .horizontal-scroll {
-                display: flex !important;
-                flex-wrap: nowrap !important;
-                overflow-x: auto !important;
-                white-space: nowrap !important;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-            }
-            .horizontal-scroll::-webkit-scrollbar { display: none; }
-
+            /* Horizontal Scroll Toolbar */
             .ql-toolbar { 
                 margin: 0 !important; width: 100% !important; border-radius: 0 !important; 
                 background: var(--surface-color) !important; 
                 padding: 12px 10px !important; 
-                gap: 8px;
+                gap: 12px;
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
             }
             
-            /* Fix dropdowns on mobile */
+            /* Hide scrollbar but keep functionality */
+            .ql-toolbar::-webkit-scrollbar { display: none; }
+            .ql-toolbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+            /* Fix dropdowns on mobile (Bottom Sheet Style) */
             .ql-toolbar .ql-picker-options { 
                 position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
-                width: 100vw !important; max-height: 40vh !important; overflow-y: auto !important; 
+                width: 100vw !important; max-height: 45vh !important; overflow-y: auto !important; 
                 background: var(--surface-color); border-radius: 16px 16px 0 0 !important; z-index: 99999 !important;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.2) !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.3) !important;
+                border: 1px solid var(--border-color);
+                padding: 10px !important;
             }
+            
+            /* Prevent body scroll when picker is open */
+            .ql-picker-expanded .ql-picker-options { display: block; }
         }
 
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -147,19 +151,18 @@
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
 
     <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md transition-all duration-300">
-        <span class="truncate pr-2 flex items-center gap-2"><span class="animate-pulse">🟢</span> Live Preview (Read Only)</span>
-        <button onclick="openLoginForGuest()" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 whitespace-nowrap shadow">Save to My Notes</button>
+        <span class="truncate pr-2 flex items-center gap-2"><span class="animate-pulse">🟢</span> Live View (Read Only)</span>
+        <button onclick="openLoginForGuest()" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 whitespace-nowrap shadow">Save Copy</button>
     </div>
 
-    <div id="restore-banner" class="hidden bg-gray-800 text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md transition-all duration-300">
-        <span class="truncate pr-2">🗑️ You deleted this file.</span>
-        <button onclick="restoreDeletedFile()" class="bg-white text-gray-800 px-3 py-1 rounded font-bold text-xs hover:bg-gray-200 whitespace-nowrap shadow">Restore File</button>
+    <div id="sync-banner" class="hidden bg-blue-600 text-white px-4 py-1 text-[10px] flex justify-center items-center z-[60] shadow-sm">
+        <span class="flex items-center gap-2">🔄 Synced with Owner</span>
     </div>
 
     <div id="loading-screen" class="absolute inset-0 z-[100] bg-bg flex items-center justify-center transition-opacity duration-500">
         <div class="flex flex-col items-center">
             <div class="loader mb-3"></div>
-            <div class="text-sm text-gray-500 font-medium animate-pulse">Syncing Workspace...</div>
+            <div class="text-sm text-gray-500 font-medium animate-pulse">Syncing...</div>
         </div>
     </div>
 
@@ -311,7 +314,6 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
-        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
@@ -324,12 +326,11 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- STATE & DOM ELEMENTS ---
         let state = {
             user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
             isFav: false, saveTimer: null, firstLoad: true,
-            pendingShareId: null, guestUnsubscribe: null, isGuest: false,
-            restorableData: null // Stores data if owner accesses deleted file
+            pendingShareId: null, guestUnsubscribe: null, importedUnsubscribe: null, isGuest: false,
+            restorableData: null
         };
 
         const els = {
@@ -349,7 +350,7 @@
             mobileFolderListItems: document.getElementById('mobile-folder-list-items'),
             sunIcon: document.getElementById('sun-icon'), moonIcon: document.getElementById('moon-icon'),
             previewBanner: document.getElementById('preview-banner'),
-            restoreBanner: document.getElementById('restore-banner'),
+            syncBanner: document.getElementById('sync-banner'),
             mobileMenuDropdown: document.getElementById('mobile-menu-dropdown'),
             mobileFavIcon: document.getElementById('mobile-fav-icon'),
             mobileFavText: document.getElementById('mobile-fav-text'),
@@ -360,7 +361,6 @@
             shareBtn: document.getElementById('share-btn')
         };
 
-        // --- THEME ---
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             applyTheme(savedTheme === 'dark');
@@ -383,7 +383,6 @@
             if (state.docId && !state.isGuest) triggerSave();
         }
 
-        // --- EDITOR SETUP ---
         var quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'Start writing...',
@@ -399,13 +398,22 @@
                 }
             }
         });
-        
-        if(window.innerWidth < 850) {
-            const toolbar = document.querySelector('.ql-toolbar');
-            if(toolbar) toolbar.classList.add('horizontal-scroll');
-        }
 
-        // --- ROUTING & INIT ---
+        // --- KEYBOARD & DROPDOWN FIX FOR MOBILE ---
+        // Detect picker clicks and force keyboard blur so dropdown is visible
+        document.querySelectorAll('.ql-picker-label').forEach(el => {
+            el.addEventListener('click', function() {
+                // Wait slightly for picker to expand, then kill keyboard
+                setTimeout(() => {
+                    if (document.activeElement && 
+                        (document.activeElement.tagName === 'INPUT' || 
+                         document.activeElement.getAttribute('contenteditable'))) {
+                         document.activeElement.blur();
+                    }
+                }, 100);
+            });
+        });
+
         function getShareIdFromUrl() { return new URLSearchParams(window.location.search).get('shareId'); }
 
         async function handleRoute() {
@@ -430,70 +438,53 @@
 
             if (state.guestUnsubscribe) state.guestUnsubscribe();
             
+            // LIVE GUEST LISTENER
             state.guestUnsubscribe = db.collection('shared_docs').doc(shareId).onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
-                    
                     if(data.theme) applyTheme(data.theme === 'dark');
-
-                    // UI Setup
                     els.loadingScreen.classList.add('hidden');
                     els.authScreen.classList.add('hidden');
                     els.dashboard.classList.remove('hidden');
                     els.dashboard.classList.add('animate-fade-in');
-                    
                     els.loggedInControls.classList.add('hidden');
                     els.sidebar.classList.add('hidden');
                     els.hamburgerBtn.classList.add('hidden');
                     els.guestDownloadBtn.classList.remove('hidden');
                     els.previewBanner.classList.remove('hidden');
-
                     els.title.value = data.t;
-                    
-                    // PRESERVE CURSOR
                     const range = quill.getSelection();
                     quill.setContents(data.c);
                     if(range) quill.setSelection(range);
-
                     quill.disable();
                     els.title.disabled = true;
                     els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
                     els.status.textContent = "Live View";
-
                 } else {
-                    alert("This shared note no longer exists.");
+                    alert("Shared note not found.");
                     window.history.replaceState({}, document.title, window.location.pathname);
                     window.location.reload();
                 }
-            }, error => {
-                console.error("Guest error", error);
-                alert("Error loading document.");
-            });
+            }, error => { console.error(error); alert("Error loading."); });
         }
 
-        // --- AUTH ---
         auth.onAuthStateChanged((u) => {
             state.user = u;
             if (u) {
                 state.isGuest = false;
                 if(state.guestUnsubscribe) state.guestUnsubscribe();
-                
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.previewBanner.classList.add('hidden'); 
-                els.restoreBanner.classList.add('hidden');
                 els.dashboard.classList.remove('hidden');
                 els.loggedInControls.classList.remove('hidden');
                 els.sidebar.classList.remove('hidden');
                 els.hamburgerBtn.classList.remove('hidden');
                 els.guestDownloadBtn.classList.add('hidden');
                 els.dashboard.classList.add('animate-fade-in'); 
-
                 db.collection('users').doc(u.uid).onSnapshot(doc => {
                     if(doc.exists && doc.data().settings?.theme) {
-                        const dbTheme = doc.data().settings.theme;
-                        localStorage.setItem('theme', dbTheme);
-                        applyTheme(dbTheme === 'dark');
+                        applyTheme(doc.data().settings.theme === 'dark');
                     }
                 });
                 initData();
@@ -502,32 +493,22 @@
             }
         });
 
-        // --- DATA MGMT ---
         function initData() {
             if(!state.user) return;
             const uid = state.user.uid;
-
-            // Folders
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderFolders(); updateFolderSelect();
                 if(state.docs.length > 0) renderDocs();
             });
-
-            // Docs
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(async (snap) => {
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderDocs();
-
                 const shareId = getShareIdFromUrl();
-
-                // HANDLE SHARE LINK LOGIC
                 if (shareId && state.firstLoad) {
                     state.firstLoad = false;
-                    
                     const myOwnedDoc = state.docs.find(d => d.shareId === shareId);
                     const myImportedDoc = state.docs.find(d => d.importedFromShareId === shareId);
-
                     if (myOwnedDoc) {
                         openDoc(myOwnedDoc.id, myOwnedDoc);
                         window.history.replaceState({}, document.title, window.location.pathname); 
@@ -535,7 +516,6 @@
                         openDoc(myImportedDoc.id, myImportedDoc);
                         window.history.replaceState({}, document.title, window.location.pathname);
                     } else {
-                        // Check if I am the owner but deleted it
                         await checkAndHandleDeletedOwner(shareId);
                     }
                 } 
@@ -554,60 +534,27 @@
                 if(snap.exists) {
                     const data = snap.data();
                     if (data.ownerId === state.user.uid) {
-                        // OWNER FOUND - RESTORE MODE
-                        state.restorableData = data;
-                        state.restorableData.shareId = shareId; // Ensure ID is passed
-                        
-                        // Show Restore UI
-                        els.loadingScreen.classList.add('hidden');
-                        els.dashboard.classList.remove('hidden');
-                        els.restoreBanner.classList.remove('hidden');
-                        
-                        // Show content read-only until restored
-                        els.title.value = data.t;
-                        quill.setContents(data.c);
-                        quill.disable();
-                        els.title.disabled = true;
-                        els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
-                        
+                         alert("Restoring your deleted shared note...");
+                         restoreDeletedFile(shareId, data);
                     } else {
-                        // Not owner, just import it
                         importSharedNote(shareId);
                     }
                 } else {
-                     alert("Note not found.");
-                     els.loadingScreen.classList.add('hidden');
+                     alert("Note not found."); els.loadingScreen.classList.add('hidden');
                 }
             } catch(e) { console.error(e); }
         }
 
-        window.restoreDeletedFile = async () => {
-            if(!state.restorableData) return;
-            const data = state.restorableData;
+        async function restoreDeletedFile(shareId, data) {
             try {
-                // Restore with existing shareId so link keeps working!
                 const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
-                    title: data.t, 
-                    content: data.c, 
-                    isFavorite: false, 
-                    folderId: null,
-                    shareId: data.shareId, // KEY: Re-attach the share ID
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    title: data.t, content: data.c, isFavorite: false, folderId: null, shareId: shareId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                
-                els.restoreBanner.classList.add('hidden');
-                state.restorableData = null;
                 window.history.replaceState({}, document.title, window.location.pathname);
-                
-                // Open restored doc
-                setTimeout(() => {
-                    const newDoc = state.docs.find(d => d.id === ref.id);
-                    if(newDoc) openDoc(ref.id, newDoc);
-                }, 500);
-
-            } catch(e) { alert("Restore failed: " + e.message); }
-        };
+                els.loadingScreen.classList.add('hidden');
+            } catch(e) { alert("Restore failed"); }
+        }
 
         async function importSharedNote(shareId) {
             els.loadingScreen.classList.remove('hidden');
@@ -615,29 +562,17 @@
                 const snap = await db.collection('shared_docs').doc(shareId).get();
                 if (!snap.exists) { alert("Shared note not found."); els.loadingScreen.classList.add('hidden'); return; }
                 const data = snap.data();
-
                 const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
-                    title: data.t, 
-                    content: data.c, 
-                    isFavorite: false, 
-                    folderId: null,
-                    importedFromShareId: shareId, 
+                    title: data.t, content: data.c, isFavorite: false, folderId: null,
+                    importedFromShareId: shareId, // CRITICAL FOR SYNC
                     sharedBy: data.email || 'Anonymous',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-
                 window.history.replaceState({}, document.title, window.location.pathname);
                 els.loadingScreen.classList.add('hidden');
-                setTimeout(() => {
-                    const newDoc = state.docs.find(d => d.id === ref.id);
-                    if(newDoc) openDoc(ref.id, newDoc);
-                }, 500);
-
             } catch (e) { console.error(e); alert("Error importing note."); els.loadingScreen.classList.add('hidden'); }
         }
 
-        // --- RENDER UI ---
         function renderFolders() {
             els.folderList.innerHTML = '';
             state.folders.forEach(f => {
@@ -651,34 +586,24 @@
         function updateFolderSelect() {
             els.folderSelect.innerHTML = '<option value="">No Folder</option>';
             state.folders.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.id; opt.textContent = `${f.emoji} ${f.name}`;
-                els.folderSelect.appendChild(opt);
+                const opt = document.createElement('option'); opt.value = f.id; opt.textContent = `${f.emoji} ${f.name}`; els.folderSelect.appendChild(opt);
             });
-            const newOpt = document.createElement('option');
-            newOpt.value = 'create_new';
-            newOpt.textContent = "➕ Create New...";
-            newOpt.style.color = "#1a73e8";
-            els.folderSelect.appendChild(newOpt);
+            const newOpt = document.createElement('option'); newOpt.value = 'create_new'; newOpt.textContent = "➕ Create New..."; newOpt.style.color = "#1a73e8"; els.folderSelect.appendChild(newOpt);
         }
         function renderDocs() {
             els.docList.innerHTML = '';
             let filtered = state.docs;
             if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
             else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
-
             filtered.forEach((d, index) => {
                 const div = document.createElement('div');
                 const isActive = d.id === state.docId;
                 const folderObj = state.folders.find(f => f.id === d.folderId);
                 const folderBadge = folderObj ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[9px] bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">${folderObj.emoji} ${folderObj.name}</span>` : '';
-                
                 let badges = '';
                 if (d.sharedBy) badges += `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">from: ${d.sharedBy}</span>`;
                 if (d.shareId) badges += `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">Shared</span>`;
-
                 div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 group ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
-                
                 div.innerHTML = `
                     <div class="font-medium text-xs truncate flex items-center justify-between">
                         <span>${d.title || 'Untitled'}</span>
@@ -698,26 +623,49 @@
             });
         }
 
-        // --- CORE ACTIONS ---
         window.openDoc = (id, data) => {
             state.docId = id; state.isFav = data.isFavorite || false;
-            // Store reference, but for real-time saving we trust state.docId lookups
-            state.currentShareId = data.shareId || null; 
             
+            // Clean up previous listeners
+            if(state.importedUnsubscribe) { state.importedUnsubscribe(); state.importedUnsubscribe = null; }
+
             els.title.value = data.title; els.title.disabled = false;
             els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
             els.favBtn.disabled = false; els.delBtn.disabled = false; els.downBtn.disabled = false;
             els.shareBtn.disabled = false;
             els.folderSelect.disabled = false; 
             els.folderSelect.value = data.folderId || "";
-            
+            els.syncBanner.classList.add('hidden'); // Default hidden
+
             updateFavIcon();
-            
-            // CRITICAL: If Quill has focus, setting contents can act weird. 
-            // We set content silently.
             quill.setContents(data.content, 'api');
             quill.enable(); 
             els.status.textContent = "Synced";
+
+            // CHECK IF IMPORTED? IF YES, START LISTENING TO OWNER
+            if (data.importedFromShareId) {
+                els.syncBanner.classList.remove('hidden'); // Show Banner
+                state.importedUnsubscribe = db.collection('shared_docs').doc(data.importedFromShareId).onSnapshot(doc => {
+                    if(doc.exists) {
+                        const publicData = doc.data();
+                        // Verify content difference to avoid loop
+                        const cur = JSON.stringify(quill.getContents());
+                        const inc = JSON.stringify(publicData.c);
+                        if (cur !== inc) {
+                            const range = quill.getSelection();
+                            quill.setContents(publicData.c, 'silent'); // Silent update
+                            els.title.value = publicData.t;
+                            if(range) quill.setSelection(range);
+                            
+                            // Save this update to local private doc immediately
+                            db.collection('users').doc(state.user.uid).collection('docs').doc(id).update({
+                                title: publicData.t, content: publicData.c, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                });
+            }
+
             if(window.innerWidth < 850 && !state.isGuest) toggleSidebar(false);
         };
 
@@ -732,32 +680,22 @@
             } catch(e) { alert("Error: " + e.message); }
         };
 
-        // --- FIXED DUPLICATION ---
         window.duplicateCurrentDoc = () => duplicateDocFromSidebar(null, state.docId);
-
         window.duplicateDocFromSidebar = async (e, docId) => {
             if(e) e.stopPropagation();
             const original = state.docs.find(d => d.id === docId);
             if(!original) return;
-            
             if(confirm(`Duplicate "${original.title}"?`)) {
                 try {
-                    // DEEP COPY CONTENT to avoid empty file bug
-                    const contentCopy = original.content ? JSON.parse(JSON.stringify(original.content)) : '';
-                    
+                    const contentCopy = original.content ? JSON.parse(JSON.stringify(original.content)) : ''; // DEEP COPY
                     await db.collection('users').doc(state.user.uid).collection('docs').add({
-                        title: original.title + " (Copy)",
-                        content: contentCopy,
-                        isFavorite: false,
-                        folderId: original.folderId,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        title: original.title + " (Copy)", content: contentCopy, isFavorite: false, folderId: original.folderId,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 } catch(err) { console.error(err); alert("Error duplicating"); }
             }
         };
 
-        // --- SAVE & REALTIME SYNC ---
         quill.on('text-change', (d, o, source) => { if(source === 'user') triggerSave(); });
         els.title.oninput = () => triggerSave();
         
@@ -773,164 +711,73 @@
             try {
                 const currentContent = JSON.parse(JSON.stringify(quill.getContents()));
                 const updateData = {
-                    title: els.title.value || 'Untitled', 
-                    content: currentContent,
-                    isFavorite: state.isFav, 
-                    folderId: els.folderSelect.value || null,
+                    title: els.title.value || 'Untitled', content: currentContent,
+                    isFavorite: state.isFav, folderId: els.folderSelect.value || null,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
-
-                // 1. Save to Private
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).set(updateData, {merge: true});
                 
-                // 2. REAL-TIME SYNC FIXED: Check the active doc for a shareId
-                // We fetch the doc object from our local state array to be sure we have the latest metadata
+                // IF I AM THE OWNER, UPDATE PUBLIC DOC
                 const activeDoc = state.docs.find(d => d.id === state.docId);
-                
                 if (activeDoc && activeDoc.shareId) {
-                    // Update public doc
                     await db.collection('shared_docs').doc(activeDoc.shareId).update({
-                        t: updateData.title,
-                        c: updateData.content,
-                        theme: localStorage.getItem('theme') || 'light'
+                        t: updateData.title, c: updateData.content, theme: localStorage.getItem('theme') || 'light'
                     });
                 }
-
                 els.status.textContent = "Saved";
             } catch(e) { console.error(e); els.status.textContent = "Error"; }
         }
 
-        // --- SHARING ---
         window.shareCurrentNote = async () => {
             if(!state.docId) return;
-            const btn = els.shareBtn;
-            const originalText = btn.innerHTML;
+            const btn = els.shareBtn; const originalText = btn.innerHTML;
             btn.innerHTML = '<span>⏳</span>...'; btn.disabled = true;
-
             try {
-                // Check if already shared
                 const activeDoc = state.docs.find(d => d.id === state.docId);
                 let shareId = activeDoc.shareId;
-
                 if (!shareId) {
                     const noteData = { 
-                        t: els.title.value, 
-                        c: JSON.parse(JSON.stringify(quill.getContents())), 
-                        email: state.user.email,
-                        ownerId: state.user.uid,
-                        theme: localStorage.getItem('theme') || 'light',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        t: els.title.value, c: JSON.parse(JSON.stringify(quill.getContents())), 
+                        email: state.user.email, ownerId: state.user.uid,
+                        theme: localStorage.getItem('theme') || 'light', createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     const docRef = await db.collection('shared_docs').add(noteData);
                     shareId = docRef.id;
-                    
-                    // SAVE shareId IMMEDIATELY to private doc so future edits sync
                     await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({ shareId: shareId });
                 }
-
-                const url = new URL(window.location.href);
-                url.search = `?shareId=${shareId}`;
-                const urlStr = url.toString();
-
+                const url = new URL(window.location.href); url.search = `?shareId=${shareId}`; const urlStr = url.toString();
                 if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
                     await navigator.share({ title: els.title.value, text: 'Check out this note on ZenDocs', url: urlStr });
                 } else {
-                    await navigator.clipboard.writeText(urlStr);
-                    alert("Link Copied! Updates are now live.");
+                    await navigator.clipboard.writeText(urlStr); alert("Link Copied! Updates are now live.");
                 }
-
             } catch (error) { console.error(error); alert("Could not generate link."); } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         };
 
-        // --- HELPERS (Login, Folders, etc) ---
-        function openLoginForGuest() {
-            els.authScreen.classList.remove('hidden'); els.authBox.classList.remove('opacity-0');
-            els.authBox.classList.add('animate-fade-in-up'); els.authCancelContainer.classList.remove('hidden'); 
-        }
-        function closeLoginForGuest() {
-            els.authScreen.classList.add('hidden'); els.authBox.classList.remove('animate-fade-in-up'); els.authBox.classList.add('opacity-0');
-        }
-        document.getElementById('auth-form').onsubmit = (e) => {
-            e.preventDefault();
-            auth.signInWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = "Check email or password.");
-        };
-        document.getElementById('signup-btn').onclick = () => {
-            auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message);
-        };
+        function openLoginForGuest() { els.authScreen.classList.remove('hidden'); els.authBox.classList.remove('opacity-0'); els.authBox.classList.add('animate-fade-in-up'); els.authCancelContainer.classList.remove('hidden'); }
+        function closeLoginForGuest() { els.authScreen.classList.add('hidden'); els.authBox.classList.remove('animate-fade-in-up'); els.authBox.classList.add('opacity-0'); }
+        document.getElementById('auth-form').onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = "Check email or password."); };
+        document.getElementById('signup-btn').onclick = () => { auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message); };
         document.getElementById('logout-btn').onclick = () => { auth.signOut(); window.location.reload(); };
         window.showResetModal = () => { document.getElementById('reset-modal').classList.remove('hidden'); if(els.email.value) document.getElementById('reset-email').value = els.email.value; };
-        window.sendResetLink = () => {
-            const email = document.getElementById('reset-email').value;
-            if(!email) return alert("Please enter email");
-            auth.sendPasswordResetEmail(email).then(() => { alert("Link Sent!"); document.getElementById('reset-modal').classList.add('hidden'); }).catch(e => alert(e.message));
-        };
-        window.createNewFolder = async () => {
-            const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)];
-            let name = prompt("Folder Name:"); if(!name) return null;
-            try { const ref = await db.collection('users').doc(state.user.uid).collection('folders').add({ name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); return ref.id; } catch(e) { return null; }
-        };
-        window.handleCreateFolderAction = async () => {
-            els.mobileFolderMenu.classList.add('hidden'); const newFolderId = await createNewFolder();
-            if(newFolderId && state.docId) {
-                await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({folderId: newFolderId});
-                els.folderSelect.value = newFolderId; els.status.textContent = "Moved to New Folder";
-            }
-        };
+        window.sendResetLink = () => { const email = document.getElementById('reset-email').value; if(!email) return alert("Please enter email"); auth.sendPasswordResetEmail(email).then(() => { alert("Link Sent!"); document.getElementById('reset-modal').classList.add('hidden'); }).catch(e => alert(e.message)); };
+        window.createNewFolder = async () => { const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)]; let name = prompt("Folder Name:"); if(!name) return null; try { const ref = await db.collection('users').doc(state.user.uid).collection('folders').add({ name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); return ref.id; } catch(e) { return null; } };
+        window.handleCreateFolderAction = async () => { els.mobileFolderMenu.classList.add('hidden'); const newFolderId = await createNewFolder(); if(newFolderId && state.docId) { await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({folderId: newFolderId}); els.folderSelect.value = newFolderId; els.status.textContent = "Moved to New Folder"; } };
         window.deleteFolder = async (id) => { if(confirm("Delete folder? Notes move to All Files.")) await db.collection('users').doc(state.user.uid).collection('folders').doc(id).delete(); };
-        window.deleteCurrentDoc = async () => {
-            if(confirm("Delete this note?")) {
-                await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete();
-                state.docId = null; els.title.value = ''; els.title.disabled = true; quill.setText(''); 
-                els.editorWrapper.classList.add('opacity-50', 'pointer-events-none');
-                els.favBtn.disabled = true; els.delBtn.disabled = true; els.downBtn.disabled = true; els.shareBtn.disabled = true;
-            }
-        };
-        window.downloadAsWord = () => {
-            const title = els.title.value || "Document";
-            const css = `<style>@page{size:A4;margin:1in;}body{font-family:'Times New Roman',serif;font-size:11pt;line-height:1.5;}</style>`;
-            const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title>${css}</head><body>${quill.root.innerHTML}</body></html>`;
-            const blob = new Blob(['\ufeff', html], {type: 'application/msword'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = title + ".doc"; a.click();
-        };
-        window.toggleSidebar = (f) => {
-            const sb = document.getElementById('sidebar'), ov = document.getElementById('mobile-overlay');
-            if(f===false || !sb.classList.contains('sidebar-closed')) { sb.classList.add('sidebar-closed'); sb.classList.remove('sidebar-open'); ov.classList.add('hidden'); }
-            else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden'); }
-        };
+        window.deleteCurrentDoc = async () => { if(confirm("Delete this note?")) { await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete(); state.docId = null; els.title.value = ''; els.title.disabled = true; quill.setText(''); els.editorWrapper.classList.add('opacity-50', 'pointer-events-none'); els.favBtn.disabled = true; els.delBtn.disabled = true; els.downBtn.disabled = true; els.shareBtn.disabled = true; } };
+        window.downloadAsWord = () => { const title = els.title.value || "Document"; const css = `<style>@page{size:A4;margin:1in;}body{font-family:'Times New Roman',serif;font-size:11pt;line-height:1.5;}</style>`; const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title>${css}</head><body>${quill.root.innerHTML}</body></html>`; const blob = new Blob(['\ufeff', html], {type: 'application/msword'}); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = title + ".doc"; a.click(); };
+        window.toggleSidebar = (f) => { const sb = document.getElementById('sidebar'), ov = document.getElementById('mobile-overlay'); if(f===false || !sb.classList.contains('sidebar-closed')) { sb.classList.add('sidebar-closed'); sb.classList.remove('sidebar-open'); ov.classList.add('hidden'); } else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden'); } };
         window.toggleMobileMenu = () => { els.mobileMenuDropdown.classList.toggle('hidden'); };
         els.folderSelect.onchange = () => { if(els.folderSelect.value === 'create_new') handleCreateFolderAction(); else triggerSave(); };
         window.toggleMobileFolderMenu = () => { if(els.mobileFolderMenu.classList.contains('hidden')) { renderMobileFolderList(); els.mobileFolderMenu.classList.remove('hidden'); } else els.mobileFolderMenu.classList.add('hidden'); };
-        function renderMobileFolderList() {
-            els.mobileFolderListItems.innerHTML = ''; const rootBtn = document.createElement('button'); const isRoot = !els.folderSelect.value;
-            rootBtn.className = `w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${isRoot ? 'text-accent font-bold bg-blue-50 dark:bg-gray-800' : 'text-gray-600 dark:text-gray-300'}`;
-            rootBtn.innerHTML = `<span>🏠</span> No Folder`; rootBtn.onclick = () => { setDocFolder(''); }; els.mobileFolderListItems.appendChild(rootBtn);
-            state.folders.forEach(f => {
-                const btn = document.createElement('button'); const isSelected = els.folderSelect.value === f.id;
-                btn.className = `w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${isSelected ? 'text-accent font-bold bg-blue-50 dark:bg-gray-800' : 'text-gray-600 dark:text-gray-300'}`;
-                btn.innerHTML = `<span>${f.emoji}</span> ${f.name}`; btn.onclick = () => { setDocFolder(f.id); }; els.mobileFolderListItems.appendChild(btn);
-            });
-        }
+        function renderMobileFolderList() { els.mobileFolderListItems.innerHTML = ''; const rootBtn = document.createElement('button'); const isRoot = !els.folderSelect.value; rootBtn.className = `w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${isRoot ? 'text-accent font-bold bg-blue-50 dark:bg-gray-800' : 'text-gray-600 dark:text-gray-300'}`; rootBtn.innerHTML = `<span>🏠</span> No Folder`; rootBtn.onclick = () => { setDocFolder(''); }; els.mobileFolderListItems.appendChild(rootBtn); state.folders.forEach(f => { const btn = document.createElement('button'); const isSelected = els.folderSelect.value === f.id; btn.className = `w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${isSelected ? 'text-accent font-bold bg-blue-50 dark:bg-gray-800' : 'text-gray-600 dark:text-gray-300'}`; btn.innerHTML = `<span>${f.emoji}</span> ${f.name}`; btn.onclick = () => { setDocFolder(f.id); }; els.mobileFolderListItems.appendChild(btn); }); }
         window.setDocFolder = (id) => { els.folderSelect.value = id; triggerSave(); els.mobileFolderMenu.classList.add('hidden'); };
         window.toggleFavorite = () => { state.isFav = !state.isFav; updateFavIcon(); triggerSave(); renderDocs(); };
-        function updateFavIcon() { 
-            const cls = `hidden md:block p-2 rounded-full transition ${state.isFav ? 'text-gold' : 'text-muted hover:text-gold'}`;
-            els.favBtn.className = cls; 
-            if(els.mobileFavText) { els.mobileFavText.textContent = state.isFav ? 'Unmark Important' : 'Mark Important'; els.mobileFavIcon.style.color = state.isFav ? '#fbbc04' : 'inherit'; }
-        }
-        window.filterDocs = (f) => {
-            state.activeFilter = f; document.querySelectorAll('#sidebar .bg-white\\/10').forEach(e => e.classList.remove('bg-white/10', 'text-white'));
-            if(f==='all') document.getElementById('filter-all').classList.add('bg-white/10', 'text-white'); else if(f==='fav') document.getElementById('filter-fav').classList.add('bg-white/10', 'text-white');
-            renderFolders(); renderDocs(); if(window.innerWidth < 768) toggleSidebar(false);
-        };
+        function updateFavIcon() { const cls = `hidden md:block p-2 rounded-full transition ${state.isFav ? 'text-gold' : 'text-muted hover:text-gold'}`; els.favBtn.className = cls; if(els.mobileFavText) { els.mobileFavText.textContent = state.isFav ? 'Unmark Important' : 'Mark Important'; els.mobileFavIcon.style.color = state.isFav ? '#fbbc04' : 'inherit'; } }
+        window.filterDocs = (f) => { state.activeFilter = f; document.querySelectorAll('#sidebar .bg-white\\/10').forEach(e => e.classList.remove('bg-white/10', 'text-white')); if(f==='all') document.getElementById('filter-all').classList.add('bg-white/10', 'text-white'); else if(f==='fav') document.getElementById('filter-fav').classList.add('bg-white/10', 'text-white'); renderFolders(); renderDocs(); if(window.innerWidth < 768) toggleSidebar(false); };
         window.focusEditor = () => { if(state.docId) quill.focus(); };
-        document.addEventListener('click', (e) => {
-            const menu = els.mobileMenuDropdown; const btn = e.target.closest('.mobile-menu-container'); 
-            if (!menu.classList.contains('hidden') && !btn && !menu.contains(e.target)) menu.classList.add('hidden');
-            const folderMenu = els.mobileFolderMenu;
-            if(!folderMenu.classList.contains('hidden') && !e.target.closest('.folder-menu-container') && !e.target.closest('[onclick*="toggleMobileFolderMenu"]')) folderMenu.classList.add('hidden');
-        });
+        document.addEventListener('click', (e) => { const menu = els.mobileMenuDropdown; const btn = e.target.closest('.mobile-menu-container'); if (!menu.classList.contains('hidden') && !btn && !menu.contains(e.target)) menu.classList.add('hidden'); const folderMenu = els.mobileFolderMenu; if(!folderMenu.classList.contains('hidden') && !e.target.closest('.folder-menu-container') && !e.target.closest('[onclick*="toggleMobileFolderMenu"]')) folderMenu.classList.add('hidden'); });
 
         initTheme(); 
     </script>
