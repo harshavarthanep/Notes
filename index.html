@@ -21,7 +21,6 @@
                         accent: '#1a73e8', 
                         danger: '#d93025', 
                         gold: '#fbbc04',
-                        // Dark mode specific palette
                         darkSurface: '#1e1e1e',
                         darkBg: '#121212',
                         darkBorder: '#374151'
@@ -50,7 +49,6 @@
     
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
-        /* --- CSS VARIABLES FOR THEMING --- */
         :root {
             --bg-color: #f0f2f5;
             --surface-color: #ffffff;
@@ -68,14 +66,13 @@
             --surface-color: #1e1e1e;
             --text-color: #e5e7eb;
             --border-color: #374151;
-            --paper-bg: #1e1e1e; /* Soft dark for paper */
+            --paper-bg: #1e1e1e; 
             --paper-text: #e0e0e0;
             --toolbar-bg: #2d2d2d;
             --toolbar-border: #404040;
             --line-color: #333333;
         }
 
-        /* TRANSITIONS */
         body, div, button, input, select, .ql-toolbar, #paper-container {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
         }
@@ -85,23 +82,13 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         html.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
-        ::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
         
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .doc-item-anim { animation: slideInRight 0.3s ease-out forwards; opacity: 0; }
 
-        /* --- ANIMATIONS --- */
-        /* Explicitly defined here to ensure Side Menu items appear correctly */
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .doc-item-anim {
-            animation: slideInRight 0.3s ease-out forwards;
-            opacity: 0; /* Default invisible, animated to visible */
-        }
-
-        /* --- EDITOR ENGINE --- */
+        /* EDITOR */
         #editor-wrapper {
             background-color: var(--bg-color);
             padding: 40px 0;
@@ -113,112 +100,35 @@
         }
         
         #paper-container {
-            width: 794px; /* A4 Width */
-            min-height: 1123px; /* A4 Height */
-            background: var(--paper-bg);
-            color: var(--paper-text);
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
-            margin-bottom: 40px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            height: auto; 
+            width: 794px; min-height: 1123px;
+            background: var(--paper-bg); color: var(--paper-text);
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,.3); margin-bottom: 40px;
+            display: flex; flex-direction: column; position: relative; height: auto; 
         }
         
-        /* Dark Mode Shadow Adjustment */
-        html.dark #paper-container {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            border: 1px solid #333;
-        }
-
-        .ql-container {
-            font-size: 11pt;
-            font-family: 'Times New Roman', serif;
-            height: auto !important; 
-            overflow: visible !important;
-        }
+        html.dark #paper-container { box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid #333; }
+        .ql-container { font-size: 11pt; font-family: 'Times New Roman', serif; height: auto !important; overflow: visible !important; }
+        .ql-editor { padding: 96px; min-height: 1123px; height: auto !important; overflow-y: visible !important; background-image: linear-gradient(var(--line-color) 1px, transparent 1px); background-size: 100% 1123px; background-position: 0 -1px; }
+        .ql-editor::after { content: "Page Break"; position: absolute; left: 10px; top: 1123px; font-size: 10px; color: #ccc; pointer-events: none; }
         
-        .ql-editor {
-            padding: 96px; /* 1 inch margins */
-            min-height: 1123px;
-            height: auto !important;
-            overflow-y: visible !important;
-            
-            /* Visual Page Breaks */
-            background-image: linear-gradient(var(--line-color) 1px, transparent 1px);
-            background-size: 100% 1123px;
-            background-position: 0 -1px;
-        }
-        
-        .ql-editor::after {
-            content: "Page Break";
-            position: absolute;
-            left: 10px;
-            top: 1123px;
-            font-size: 10px;
-            color: #ccc;
-            pointer-events: none;
-        }
-        
-        /* Dark Mode Quill Overrides */
-        html.dark .ql-editor.ql-blank::before {
-            color: #6b7280;
-        }
+        /* Dark Mode Quill */
+        html.dark .ql-editor.ql-blank::before { color: #6b7280; }
         html.dark .ql-toolbar .ql-stroke { stroke: #d1d5db; }
         html.dark .ql-toolbar .ql-fill { fill: #d1d5db; }
         html.dark .ql-toolbar .ql-picker { color: #d1d5db; }
-
-        /* Toolbar Styling */
-        .ql-toolbar {
-            border: none !important;
-            background: var(--toolbar-bg);
-            border-bottom: 1px solid var(--toolbar-border) !important;
-            padding: 8px 16px !important;
-            border-radius: 24px;
-            margin: 8px 16px;
-        }
+        .ql-toolbar { border: none !important; background: var(--toolbar-bg); border-bottom: 1px solid var(--toolbar-border) !important; padding: 8px 16px !important; border-radius: 24px; margin: 8px 16px; }
         
-        /* ADD THIS: Fix for Safari/iOS Dropdowns and Text selection zooming */
-        select, input, textarea {
-            font-size: 16px !important; /* Prevents iOS zoom on focus */
-        }
+        select, input, textarea { font-size: 16px !important; }
 
-        /* Mobile Specific Styles */
+        /* MOBILE FIXES */
         @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: var(--bg-color); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
             .ql-editor { padding: 20px; background-image: none; }
-            
-            .ql-toolbar { 
-                margin: 0 !important; 
-                width: 100% !important;
-                border-radius: 0 !important; 
-                background: var(--surface-color) !important;
-                display: flex !important;
-                flex-wrap: nowrap !important; 
-                gap: 8px;
-                padding: 12px 10px !important;
-                overflow-x: auto !important; 
-                white-space: nowrap !important;
-                -webkit-overflow-scrolling: touch;
-            }
+            .ql-toolbar { margin: 0 !important; width: 100% !important; border-radius: 0 !important; background: var(--surface-color) !important; display: flex !important; flex-wrap: nowrap !important; gap: 8px; padding: 12px 10px !important; overflow-x: auto !important; white-space: nowrap !important; -webkit-overflow-scrolling: touch; }
             .ql-toolbar::-webkit-scrollbar { display: none; }
             .ql-formats { display: flex !important; flex-shrink: 0 !important; margin-right: 12px !important; }
-
-            .ql-toolbar .ql-picker-options {
-                position: fixed !important;
-                top: 50% !important; 
-                left: 50% !important;
-                transform: translate(-50%, -50%) !important;
-                width: 80% !important;
-                max-height: 300px !important;
-                overflow-y: auto !important;
-                background: var(--surface-color);
-                border: 1px solid var(--border-color) !important;
-                border-radius: 12px !important;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-                z-index: 99999 !important;
-            }
+            .ql-toolbar .ql-picker-options { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 80% !important; max-height: 300px !important; overflow-y: auto !important; background: var(--surface-color); border: 1px solid var(--border-color) !important; border-radius: 12px !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important; z-index: 99999 !important; }
             .ql-editor::after { display: none; }
         }
 
@@ -229,6 +139,11 @@
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
 
+    <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md">
+        <span>👀 You are viewing a shared note (Read Only)</span>
+        <button onclick="document.getElementById('auth-screen').classList.remove('hidden')" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100">Login to Edit</button>
+    </div>
+
     <div id="loading-screen" class="absolute inset-0 z-[100] bg-bg flex items-center justify-center transition-opacity duration-500">
         <div class="flex flex-col items-center">
             <div class="loader mb-2"></div>
@@ -238,17 +153,14 @@
 
     <div id="app" class="flex-1 flex relative overflow-hidden">
 
-        <div id="auth-screen" class="absolute inset-0 z-50 bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
+        <div id="auth-screen" class="absolute inset-0 z-[80] bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0 transform transition-all duration-500" id="auth-box">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
                 <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
-                
                 <form id="auth-form" class="space-y-4">
                     <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Email Address" required>
                     <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Password" required>
-                    
                     <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg transform hover:scale-[1.02] active:scale-95">Sign In</button>
-                    
                     <div class="flex justify-between items-center text-sm mt-4 pt-2 border-t border-gray-700">
                         <button type="button" id="signup-btn" class="text-gray-400 hover:text-white transition">Create Account</button>
                         <button type="button" onclick="showResetModal()" class="text-accent hover:text-blue-300 transition">Forgot Password?</button>
@@ -258,10 +170,9 @@
             </div>
         </div>
 
-        <div id="reset-modal" class="absolute inset-0 z-[60] bg-black/80 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+        <div id="reset-modal" class="absolute inset-0 z-[90] bg-black/80 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
             <div class="bg-white dark:bg-[#2d2d2d] rounded-xl p-6 max-w-xs w-full shadow-2xl animate-fade-in-up">
                 <h3 class="font-bold text-lg mb-2 text-gray-800 dark:text-white">Reset Password</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter your email. A reset link will be sent.</p>
                 <input type="email" id="reset-email" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1e1e1e] dark:text-white rounded p-2 mb-4 focus:outline-none focus:border-accent transition-colors" placeholder="your@email.com">
                 <div class="flex justify-end gap-2">
                     <button onclick="document.getElementById('reset-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition">Cancel</button>
@@ -271,32 +182,28 @@
         </div>
 
         <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0" id="dashboard-container">
-            <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar()"></div>
+            <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-[55] hidden backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar()"></div>
 
-            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-30 h-[100dvh] md:h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
+            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-[60] h-[100dvh] md:h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
                 <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
                     <span class="font-bold text-white tracking-wide pl-1 text-lg">ZenDocs</span>
                     <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1 hover:rotate-90 duration-300" title="New Note">+</button>
                 </div>
-
                 <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
                     <div class="space-y-1 mb-6">
                         <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition hover:translate-x-1 duration-200"><span>📄</span> All Files</div>
                         <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition hover:translate-x-1 duration-200"><span>⭐</span> Important</div>
                     </div>
-
                     <div class="mb-2 px-2 flex justify-between items-center group">
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
                         <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
                     </div>
                     <div id="folder-list" class="space-y-1 mb-6"></div>
-
                     <div class="mb-2 px-2 border-t border-gray-700 pt-4">
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Recent</span>
                     </div>
                     <div id="doc-list" class="space-y-1"></div>
                 </div>
-
                 <div class="p-4 bg-[#181818] border-t border-gray-800">
                     <div class="flex items-center justify-between mb-2">
                         <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
@@ -309,49 +216,57 @@
             </aside>
 
             <main class="flex-1 flex flex-col h-full relative w-full bg-bg transition-colors duration-300">
-                <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
-                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
-                        <button class="md:hidden text-muted p-2 -ml-2" onclick="toggleSidebar()">
+                <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-3 md:px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
+                    
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <button class="md:hidden text-muted p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                         </button>
-                        <div class="flex flex-col w-full max-w-lg">
-                            <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300" placeholder="Untitled Document" disabled>
-                            <span id="save-status" class="text-[10px] text-muted font-medium h-3"></span>
+                        
+                        <div class="flex flex-col w-full min-w-0">
+                            <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300 min-w-0" placeholder="Untitled Document" disabled>
+                            <span id="save-status" class="text-[10px] text-muted font-medium h-3 truncate"></span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 pl-2 relative">
-                         <button id="import-btn" onclick="importSharedNote()" class="p-2 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition" title="Import a shared note">📥 Import</button>
-                        <button id="share-btn" onclick="shareCurrentNote()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition mr-2" disabled title="Share this note">📤 Share</button>
-
-                        <button id="theme-btn" onclick="toggleTheme()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition" title="Toggle Dark Mode">
-                            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707M12.728 6.343l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                            </svg>
+                    <div class="flex items-center gap-1 pl-2 relative">
+                        
+                        <button id="share-btn" onclick="shareCurrentNote()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded-full md:rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-1" disabled title="Share Link">
+                            <span>🔗</span> <span class="hidden md:inline">Share</span>
                         </button>
 
-                        <select id="folder-select" class="hidden md:block text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 outline-none cursor-pointer focus:ring-1 focus:ring-accent transition-colors" disabled>
-                            <option value="">No Folder</option>
-                        </select>
-                        
-                        <button id="mobile-folder-btn" onclick="toggleMobileFolderMenu()" class="md:hidden p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50" disabled title="Move to Folder">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                        <button id="theme-btn" onclick="toggleTheme()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition">
+                            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707M12.728 6.343l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                         </button>
 
-                        <button id="fav-btn" onclick="toggleFavorite()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gold transition disabled:opacity-50 hover:scale-110 duration-200" disabled title="Mark Important">★</button>
-                        
-                        <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50 hover:scale-110 duration-200" disabled title="Download Word Doc">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        </button>
-                        
-                        <button id="delete-btn" onclick="deleteCurrentDoc()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50 hover:scale-110 duration-200" disabled title="Delete">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                        
-                        <div id="mobile-folder-menu" class="hidden absolute top-14 right-10 bg-surface dark:bg-[#2d2d2d] shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 w-56 z-[60] py-1 flex flex-col animate-fade-in-up">
+                        <div class="hidden md:flex items-center gap-2">
+                             <select id="folder-select" class="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 outline-none cursor-pointer" disabled>
+                                <option value="">No Folder</option>
+                            </select>
+                            <button id="fav-btn" onclick="toggleFavorite()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gold transition disabled:opacity-50" disabled>★</button>
+                            <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            </button>
+                            <button id="delete-btn" onclick="deleteCurrentDoc()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+
+                        <div class="md:hidden relative">
+                            <button onclick="toggleMobileMenu()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                            </button>
+                            <div id="mobile-menu-dropdown" class="hidden absolute right-0 top-12 w-48 bg-surface dark:bg-[#2d2d2d] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 py-2 z-[70]">
+                                <button onclick="toggleFavorite(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>★</span> Toggle Important</button>
+                                <button onclick="toggleMobileFolderMenu(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>📁</span> Move to Folder</button>
+                                <button onclick="downloadAsWord(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>⬇</span> Download</button>
+                                <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                <button onclick="deleteCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2 text-danger"><span>🗑</span> Delete</button>
+                            </div>
+                        </div>
+
+                        <div id="mobile-folder-menu" class="hidden absolute top-14 right-10 bg-surface dark:bg-[#2d2d2d] shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 w-56 z-[75] py-1 flex flex-col animate-fade-in-up">
                             <div id="mobile-folder-list-items" class="max-h-60 overflow-y-auto"></div>
                             <div class="border-t border-gray-100 dark:border-gray-700 mt-1 pt-1">
                                 <button onclick="handleCreateFolderAction()" class="w-full text-left px-4 py-3 text-accent text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
@@ -378,7 +293,6 @@
 
     <script>
         // --- CONFIGURATION ---
-        // ⚠️ IMPORTANT: Replace this with YOUR Firebase Keys if you haven't already
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
@@ -395,7 +309,8 @@
         // --- STATE ---
         let state = {
             user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
-            isFav: false, saveTimer: null, firstLoad: true
+            isFav: false, saveTimer: null, firstLoad: true,
+            pendingShareData: null // Holds data if user opens a shared link but isn't logged in
         };
 
         const els = {
@@ -410,51 +325,46 @@
             status: document.getElementById('save-status'), favBtn: document.getElementById('fav-btn'),
             delBtn: document.getElementById('delete-btn'), downBtn: document.getElementById('download-btn'),
             userEmail: document.getElementById('user-email'),
-            mobileFolderBtn: document.getElementById('mobile-folder-btn'),
             mobileFolderMenu: document.getElementById('mobile-folder-menu'),
             mobileFolderListItems: document.getElementById('mobile-folder-list-items'),
             sunIcon: document.getElementById('sun-icon'),
-            moonIcon: document.getElementById('moon-icon')
+            moonIcon: document.getElementById('moon-icon'),
+            previewBanner: document.getElementById('preview-banner'),
+            mobileMenuDropdown: document.getElementById('mobile-menu-dropdown')
         };
 
-        // --- THEME LOGIC ---
+        // --- THEME SYNC LOGIC ---
         function initTheme() {
+            // 1. Check LocalStorage first (instant)
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
+            applyTheme(savedTheme === 'dark');
+        }
+
+        function applyTheme(isDark) {
+            if (isDark) {
                 document.documentElement.classList.add('dark');
+                els.sunIcon.classList.remove('hidden'); els.moonIcon.classList.add('hidden');
             } else {
                 document.documentElement.classList.remove('dark');
+                els.sunIcon.classList.add('hidden'); els.moonIcon.classList.remove('hidden');
             }
-            updateThemeIcon();
         }
 
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
             const isDark = document.documentElement.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            applyTheme(isDark);
             
-            const btn = document.getElementById('theme-btn');
-            btn.classList.add('rotate-180');
-            setTimeout(() => btn.classList.remove('rotate-180'), 300);
-            
-            updateThemeIcon();
-        }
-
-        function updateThemeIcon() {
-            const isDark = document.documentElement.classList.contains('dark');
-            if (isDark) {
-                els.sunIcon.classList.remove('hidden');
-                els.moonIcon.classList.add('hidden');
-            } else {
-                els.sunIcon.classList.add('hidden');
-                els.moonIcon.classList.remove('hidden');
+            // Sync to Database
+            if(state.user) {
+                db.collection('users').doc(state.user.uid).set({ 
+                    settings: { theme: isDark ? 'dark' : 'light' } 
+                }, { merge: true });
             }
         }
         
-        initTheme();
-
         // --- INIT EDITOR ---
-        // MODIFIED: Added {'list': 'check'} for Todo lists
         var quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'Start writing...',
@@ -469,21 +379,80 @@
             }
         });
 
+        // --- URL PARSER (For Sharing) ---
+        function checkUrlForShare() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shareData = urlParams.get('share');
+            
+            if (shareData) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(shareData))));
+                    state.pendingShareData = decoded;
+                    
+                    // Show Preview Mode
+                    els.loadingScreen.classList.add('hidden');
+                    els.authScreen.classList.add('hidden');
+                    els.dashboard.classList.remove('hidden');
+                    els.dashboard.classList.add('animate-fade-in');
+                    
+                    // Set Content Read-Only
+                    els.title.value = decoded.t;
+                    quill.setContents(decoded.c);
+                    quill.disable();
+                    els.title.disabled = true;
+                    els.status.textContent = "Read Only View";
+                    els.previewBanner.classList.remove('hidden');
+                    
+                    // Hide Sidebar in preview
+                    toggleSidebar(false);
+                    
+                } catch (e) {
+                    console.error("Invalid Share Link", e);
+                    alert("This shared link is invalid or corrupted.");
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+                return true; // We are in share mode
+            }
+            return false;
+        }
+
         // --- AUTH FLOW ---
         auth.onAuthStateChanged(u => {
-            els.loadingScreen.classList.add('hidden'); 
             state.user = u;
             
             if(u) {
+                // LOGGED IN
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
+                els.previewBanner.classList.add('hidden'); // Hide banner if it was there
                 els.dashboard.classList.remove('hidden');
                 els.dashboard.classList.add('animate-fade-in'); 
-                initData();
+                
+                // 1. Sync Theme from DB
+                db.collection('users').doc(u.uid).onSnapshot(doc => {
+                    if(doc.exists && doc.data().settings?.theme) {
+                        const dbTheme = doc.data().settings.theme;
+                        localStorage.setItem('theme', dbTheme);
+                        applyTheme(dbTheme === 'dark');
+                    }
+                });
+
+                // 2. Check if we have a pending share to Import
+                if (state.pendingShareData) {
+                    importPendingShare();
+                } else {
+                    initData();
+                }
+
             } else {
-                els.authScreen.classList.remove('hidden');
-                els.authBox.classList.add('animate-fade-in-up'); 
-                els.dashboard.classList.add('hidden');
+                // LOGGED OUT
+                if(!checkUrlForShare()) {
+                    els.loadingScreen.classList.add('hidden'); 
+                    els.authScreen.classList.remove('hidden');
+                    els.authBox.classList.add('animate-fade-in-up'); 
+                    els.dashboard.classList.add('hidden');
+                }
             }
         });
 
@@ -498,6 +467,7 @@
              els.dashboard.classList.remove('animate-fade-in');
              els.authBox.classList.remove('animate-fade-in-up');
              auth.signOut();
+             window.location.reload(); // Reload to clear states
         };
 
         // --- PASSWORD RESET ---
@@ -520,22 +490,69 @@
         function initData() {
             if(!state.user) return;
             const uid = state.user.uid;
+            els.loadingScreen.classList.add('hidden');
 
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderFolders(); updateFolderSelect();
-                // Re-render docs to update badges if folders change
                 if(state.docs.length > 0) renderDocs();
             });
 
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderDocs();
-                if (state.firstLoad) {
+                if (state.firstLoad && !state.docId) {
                     state.firstLoad = false;
                     state.docs.length > 0 ? openDoc(state.docs[0].id, state.docs[0]) : createNewDoc();
                 }
             });
+        }
+
+        // --- IMPORT LOGIC (From Link) ---
+        async function importPendingShare() {
+            const data = state.pendingShareData;
+            state.pendingShareData = null; // Clear it
+
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+
+            // Re-enable editor
+            quill.enable();
+            els.title.disabled = false;
+
+            try {
+                // Add to DB
+                const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
+                    title: data.t, 
+                    content: data.c, 
+                    isFavorite: false, 
+                    folderId: null,
+                    // Add metadata about sharing
+                    sharedBy: data.email || 'Anonymous',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert(`Note shared by ${data.email || 'user'} has been saved to your account!`);
+                
+                // Initialize Data listeners now
+                initData();
+                
+                // Open the new doc (wait briefly for sync)
+                setTimeout(() => {
+                   const newDoc = state.docs.find(d => d.id === ref.id);
+                   if(newDoc) openDoc(ref.id, newDoc);
+                   else {
+                       // Fallback if sync is slow
+                       openDoc(ref.id, {title: data.t, content: data.c});
+                   }
+                }, 800);
+
+            } catch(e) {
+                console.error(e);
+                alert("Error saving shared note.");
+                initData();
+            }
         }
 
         // --- RENDER UI ---
@@ -551,7 +568,7 @@
         }
 
         function updateFolderSelect() {
-            els.folderSelect.innerHTML = '<option value="">No Folder (Root)</option>';
+            els.folderSelect.innerHTML = '<option value="">No Folder</option>';
             state.folders.forEach(f => {
                 const opt = document.createElement('option');
                 opt.value = f.id; opt.textContent = `${f.emoji} ${f.name}`;
@@ -559,9 +576,8 @@
             });
             const newOpt = document.createElement('option');
             newOpt.value = 'create_new';
-            newOpt.textContent = "➕ Create New Folder...";
+            newOpt.textContent = "➕ Create New...";
             newOpt.style.color = "#1a73e8";
-            newOpt.style.fontWeight = "bold";
             els.folderSelect.appendChild(newOpt);
         }
 
@@ -575,24 +591,28 @@
                 const div = document.createElement('div');
                 const isActive = d.id === state.docId;
                 
-                // MODIFIED: Logic to show folder name in sidebar
                 const folderObj = state.folders.find(f => f.id === d.folderId);
                 const folderBadge = folderObj 
                     ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[9px] bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">${folderObj.emoji} ${folderObj.name}</span>` 
+                    : '';
+                
+                // Show "Shared" badge if imported
+                const sharedBadge = d.sharedBy 
+                    ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">from: ${d.sharedBy}</span>`
                     : '';
 
                 div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 doc-item-anim ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
                 div.style.animationDelay = `${index * 0.05}s`;
                 
-                // MODIFIED: HTML structure to include folder badge
                 div.innerHTML = `
                     <div class="font-medium text-xs truncate flex items-center justify-between">
                         <span>${d.title || 'Untitled'}</span>
                     </div>
-                    <div class="text-[9px] opacity-60 flex justify-between mt-1 items-center">
-                        <div class="flex items-center">
+                    <div class="text-[9px] opacity-60 flex justify-between mt-1 items-center flex-wrap gap-1">
+                        <div class="flex items-center flex-wrap gap-1">
                             <span>${new Date(d.updatedAt?.toDate()).toLocaleDateString()}</span>
                             ${folderBadge}
+                            ${sharedBadge}
                         </div>
                         ${d.isFavorite ? '<span class="text-gold">★</span>' : ''}
                     </div>`;
@@ -607,18 +627,15 @@
             els.title.value = data.title; els.title.disabled = false;
             els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
             els.favBtn.disabled = false; els.delBtn.disabled = false; els.downBtn.disabled = false;
-            els.mobileFolderBtn.disabled = false;
-            
-            // MODIFIED: Enable Share button
             document.getElementById('share-btn').disabled = false;
-            
             els.folderSelect.disabled = false; 
             els.folderSelect.value = data.folderId || "";
             
             updateFavIcon();
             quill.setContents(data.content, 'api');
+            quill.enable(); // Ensure it's editable
             els.status.textContent = "Synced";
-            if(window.innerWidth < 768) toggleSidebar(false);
+            if(window.innerWidth < 850) toggleSidebar(false);
         };
 
         window.createNewDoc = async () => {
@@ -637,7 +654,6 @@
             const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)];
             let name = prompt("Folder Name:"); 
             if(!name) return null;
-            
             try {
                 const ref = await db.collection('users').doc(state.user.uid).collection('folders').add({ 
                     name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() 
@@ -667,7 +683,6 @@
                 state.docId = null; els.title.value = ''; els.title.disabled = true; quill.setText(''); 
                 els.editorWrapper.classList.add('opacity-50', 'pointer-events-none');
                 els.favBtn.disabled = true; els.delBtn.disabled = true; els.downBtn.disabled = true;
-                els.mobileFolderBtn.disabled = true;
                 document.getElementById('share-btn').disabled = true;
             }
         };
@@ -696,18 +711,7 @@
         // --- WORD EXPORT ---
         window.downloadAsWord = () => {
             const title = els.title.value || "Document";
-            // Important: This CSS forces white background and black text regardless of current theme
-            const css = `<style>
-                @page{size:A4;margin:1in;}
-                body{
-                    font-family:'Times New Roman',serif;
-                    font-size:11pt;
-                    line-height:1.5;
-                    background-color: white !important; 
-                    color: black !important;
-                }
-            </style>`;
-            
+            const css = `<style>@page{size:A4;margin:1in;}body{font-family:'Times New Roman',serif;font-size:11pt;line-height:1.5;background-color:white!important;color:black!important;}</style>`;
             const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title>${css}</head><body>${quill.root.innerHTML}</body></html>`;
             const blob = new Blob(['\ufeff', html], {type: 'application/msword'});
             const url = URL.createObjectURL(blob);
@@ -715,51 +719,28 @@
             a.href = url; a.download = title + ".doc"; a.click();
         };
 
-        // --- SHARE & IMPORT FUNCTIONS (MODIFIED) ---
+        // --- SHARE LINK LOGIC ---
         window.shareCurrentNote = () => {
             if(!state.docId) return;
+            
+            // 1. Prepare Data
             const noteData = {
                 t: els.title.value,
                 c: quill.getContents(),
-                d: new Date().toISOString()
+                email: state.user.email
             };
-            const shareCode = btoa(unescape(encodeURIComponent(JSON.stringify(noteData))));
             
-            navigator.clipboard.writeText(shareCode).then(() => {
-                alert("Note copied to clipboard!\n\nSend this code to your friend. They can use the 'Import' button to add it to their notes.");
+            // 2. encode
+            const shareString = btoa(unescape(encodeURIComponent(JSON.stringify(noteData))));
+            
+            // 3. Create URL
+            const url = new URL(window.location.href);
+            url.searchParams.set('share', shareString);
+            
+            // 4. Copy
+            navigator.clipboard.writeText(url.toString()).then(() => {
+                alert("Link Copied! \n\nAnyone with this link can view the note.\nIf they login, they can edit a copy.");
             });
-        };
-
-        window.importSharedNote = async () => {
-            const shareCode = prompt("Paste the Shared Note Code here:");
-            if(!shareCode) return;
-        
-            try {
-                els.loadingScreen.classList.remove('hidden'); 
-                const decoded = JSON.parse(decodeURIComponent(escape(atob(shareCode))));
-                
-                const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
-                    title: decoded.t + " (Imported)", 
-                    content: decoded.c, 
-                    isFavorite: false, 
-                    folderId: null,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-        
-                els.loadingScreen.classList.add('hidden');
-                alert("Note Imported Successfully!");
-                
-                setTimeout(() => {
-                   const newDoc = state.docs.find(d => d.id === ref.id);
-                   if(newDoc) openDoc(ref.id, newDoc);
-                }, 500);
-        
-            } catch(e) {
-                els.loadingScreen.classList.add('hidden');
-                alert("Invalid Note Code or Import Failed.");
-                console.error(e);
-            }
         };
 
         // Helpers
@@ -769,11 +750,15 @@
             else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden'); }
         };
         
+        window.toggleMobileMenu = () => {
+            els.mobileMenuDropdown.classList.toggle('hidden');
+        };
+
         els.folderSelect.onchange = () => {
             if(els.folderSelect.value === 'create_new') {
                 handleCreateFolderAction();
             } else {
-                moveDoc();
+                triggerSave();
             }
         };
         
@@ -788,7 +773,6 @@
         
         function renderMobileFolderList() {
             els.mobileFolderListItems.innerHTML = '';
-            
             const rootBtn = document.createElement('button');
             const isRoot = !els.folderSelect.value;
             rootBtn.className = `w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${isRoot ? 'text-accent font-bold bg-blue-50 dark:bg-gray-800' : 'text-gray-600 dark:text-gray-300'}`;
@@ -808,27 +792,18 @@
         
         window.setDocFolder = (id) => {
             els.folderSelect.value = id; 
-            moveDoc(); 
+            triggerSave(); 
             els.mobileFolderMenu.classList.add('hidden'); 
         };
 
         document.addEventListener('click', (e) => {
-            if(!els.mobileFolderBtn.contains(e.target) && !els.mobileFolderMenu.contains(e.target)) {
-                els.mobileFolderMenu.classList.add('hidden');
-            }
+            // Close mobile menu if clicked outside
+             if(!els.mobileMenuDropdown.classList.contains('hidden') && !e.target.closest('.relative')) {
+                 els.mobileMenuDropdown.classList.add('hidden');
+             }
         });
-
-        window.moveDoc = () => triggerSave();
-        window.toggleFavorite = () => { state.isFav = !state.isFav; updateFavIcon(); triggerSave(); };
-        function updateFavIcon() { els.favBtn.className = `p-2 rounded-full transition ${state.isFav ? 'text-gold' : 'text-muted hover:text-gold'}`; }
-        window.filterDocs = (f) => {
-            state.activeFilter = f;
-            document.querySelectorAll('#sidebar .bg-white\\/10').forEach(e => e.classList.remove('bg-white/10', 'text-white'));
-            if(f==='all') document.getElementById('filter-all').classList.add('bg-white/10', 'text-white');
-            else if(f==='fav') document.getElementById('filter-fav').classList.add('bg-white/10', 'text-white');
-            renderFolders(); renderDocs(); if(window.innerWidth < 768) toggleSidebar(false);
-        };
-        window.focusEditor = () => { if(state.docId) quill.focus(); };
+        
+        initTheme(); // Run once on load
     </script>
 </body>
 </html>
