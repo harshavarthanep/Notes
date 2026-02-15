@@ -178,8 +178,50 @@
             margin: 8px 16px;
         }
         
-        /* Mobile Specific Styles */
+        /* ADD THIS: Fix for Safari/iOS Dropdowns and Text selection */
+        select, input, textarea {
+        font-size: 16px !important; /* Prevents iOS zoom on focus */
+        }
+
+        /* MODIFIED: Mobile Specific Styles */
         @media (max-width: 850px) {
+        #editor-wrapper { padding: 0; background: var(--bg-color); }
+        #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
+        .ql-editor { padding: 20px; background-image: none; }
+        
+        .ql-toolbar { 
+            margin: 0 !important; 
+            width: 100% !important;
+            border-radius: 0 !important; 
+            background: var(--surface-color) !important;
+            display: flex !important;
+            flex-wrap: nowrap !important; 
+            gap: 8px;
+            padding: 12px 10px !important;
+            overflow-x: auto !important; 
+            white-space: nowrap !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* FIX: Ensure dropdowns appear correctly on Mobile/Safari */
+        .ql-toolbar .ql-picker-options {
+            position: fixed !important;
+            top: 50% !important; 
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 80% !important;
+            max-height: 300px !important;
+            overflow-y: auto !important;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+            z-index: 99999 !important;
+        }
+    }
+        
+        /* Mobile Specific Styles */
+        /* @media (max-width: 850px) {
             #editor-wrapper { padding: 0; background: var(--bg-color); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
             .ql-editor { padding: 20px; background-image: none; }
@@ -219,7 +261,7 @@
                 z-index: 10000 !important;
             }
             .ql-editor::after { display: none; }
-        }
+        } */
 
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
@@ -308,7 +350,7 @@
             </aside>
 
             <main class="flex-1 flex flex-col h-full relative w-full bg-bg transition-colors duration-300">
-                <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
+                <!-- <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
                     <div class="flex items-center gap-3 flex-1 overflow-hidden">
                         <button class="md:hidden text-muted p-2 -ml-2" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -362,6 +404,38 @@
                     <div id="paper-container" class="transition-all duration-300">
                         <div id="editor-container"></div>
                     </div>
+                </div> -->
+                <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
+                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                        <button class="md:hidden text-muted p-2 -ml-2" onclick="toggleSidebar()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                        </button>
+                        <div class="flex flex-col w-full max-w-lg">
+                            <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300" placeholder="Untitled Document" disabled>
+                            <span id="save-status" class="text-[10px] text-muted font-medium h-3"></span>
+                        </div>
+                      </div>
+
+                    <div class="flex items-center gap-2 pl-2 relative">
+                        <button id="import-btn" onclick="importSharedNote()" class="p-2 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition" title="Import a shared note">📥 Import</button>
+                        <button id="share-btn" onclick="shareCurrentNote()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition mr-2" disabled title="Share this note">📤 Share</button>
+
+                        <button id="theme-btn" onclick="toggleTheme()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition" title="Toggle Dark Mode">
+                            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707M12.728 6.343l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                         </button>
+
+                        <select id="folder-select" class="hidden md:block text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 text-gray-600 cursor-pointer outline-none relative z-50" disabled>
+                            <option value="">No Folder</option>
+                        </select>
+        
+                        <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50" disabled>
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                         </button>
+                         <button id="delete-btn" onclick="deleteCurrentDoc()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50" disabled>
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                         </button>
+                     </div>
                 </div>
             </main>
         </div>
@@ -448,11 +522,27 @@
         
         initTheme();
 
-        // --- INIT EDITOR ---
+        // // --- INIT EDITOR ---
+        // var quill = new Quill('#editor-container', {
+        //     theme: 'snow',
+        //     placeholder: 'Start writing...',
+        //     modules: { toolbar: [[{'header':[1,2,3,false]}], ['bold','italic','underline','strike', {'color':[]},{'background':[]}], [{'list':'ordered'},{'list':'bullet'},{'align':[]}], ['image','link','clean']] }
+        // });
+
+        // --- INIT EDITOR WITH CHECKBOXES ---
         var quill = new Quill('#editor-container', {
             theme: 'snow',
             placeholder: 'Start writing...',
-            modules: { toolbar: [[{'header':[1,2,3,false]}], ['bold','italic','underline','strike', {'color':[]},{'background':[]}], [{'list':'ordered'},{'list':'bullet'},{'align':[]}], ['image','link','clean']] }
+            modules: { 
+                toolbar: [
+                    [{'header':[1,2,3,false]}], 
+                    ['bold','italic','underline','strike'], 
+                    [{'color':[]},{'background':[]}], 
+                    [{'list':'ordered'},{'list':'bullet'}, {'list': 'check'}], // Added 'check' here
+                    [{'align':[]}], 
+                    ['image','link','clean']
+                ] 
+            }
         });
 
         // --- AUTH FLOW ---
@@ -522,18 +612,54 @@
             });
         }
 
-        // --- RENDER UI ---
-        function renderFolders() {
-            els.folderList.innerHTML = '';
-            state.folders.forEach(f => {
+        // // --- RENDER UI ---
+        // function renderFolders() {
+        //     els.folderList.innerHTML = '';
+        //     state.folders.forEach(f => {
+        //         const div = document.createElement('div');
+        //         const isActive = state.activeFilter === f.id;
+        //         div.className = `flex justify-between items-center group p-2 rounded cursor-pointer transition ${isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-gray-400'}`;
+        //         div.innerHTML = `<div class="flex items-center gap-2" onclick="filterDocs('${f.id}')"><span>${f.emoji}</span> <span class="text-sm">${f.name}</span></div><button onclick="deleteFolder('${f.id}')" class="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-1">×</button>`;
+        //         els.folderList.appendChild(div);
+        //     });
+        // }
+
+        function renderDocs() {
+            els.docList.innerHTML = '';
+            let filtered = state.docs;
+            if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
+            else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
+        
+            filtered.forEach((d, index) => {
                 const div = document.createElement('div');
-                const isActive = state.activeFilter === f.id;
-                div.className = `flex justify-between items-center group p-2 rounded cursor-pointer transition ${isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-gray-400'}`;
-                div.innerHTML = `<div class="flex items-center gap-2" onclick="filterDocs('${f.id}')"><span>${f.emoji}</span> <span class="text-sm">${f.name}</span></div><button onclick="deleteFolder('${f.id}')" class="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-1">×</button>`;
-                els.folderList.appendChild(div);
+                const isActive = d.id === state.docId;
+                
+                // Find Folder Name
+                const folderObj = state.folders.find(f => f.id === d.folderId);
+                const folderBadge = folderObj 
+                    ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[9px] bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">${folderObj.emoji} ${folderObj.name}</span>` 
+                    : '';
+        
+                div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 doc-item-anim ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
+                div.style.animationDelay = `${index * 0.05}s`;
+                
+                // Added folderBadge to the innerHTML
+                div.innerHTML = `
+                    <div class="font-medium text-xs truncate flex items-center justify-between">
+                        <span>${d.title || 'Untitled'}</span>
+                    </div>
+                    <div class="text-[9px] opacity-60 flex justify-between mt-1 items-center">
+                        <div class="flex items-center">
+                            <span>${new Date(d.updatedAt?.toDate()).toLocaleDateString()}</span>
+                            ${folderBadge}
+                        </div>
+                        ${d.isFavorite ? '<span class="text-gold">★</span>' : ''}
+                    </div>`;
+                div.onclick = () => openDoc(d.id, d);
+                els.docList.appendChild(div);
             });
         }
-
+        
         function updateFolderSelect() {
             els.folderSelect.innerHTML = '<option value="">No Folder (Root)</option>';
             state.folders.forEach(f => {
@@ -675,6 +801,69 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url; a.download = title + ".doc"; a.click();
+        };
+
+        // --- SHARING & IMPORTING ---
+
+        // 1. Share: Generates a compressed code of the note
+        window.shareCurrentNote = () => {
+            if(!state.docId) return;
+            const noteData = {
+                t: els.title.value,
+                c: quill.getContents(),
+                d: new Date().toISOString()
+            };
+            // Convert to a string (base64 encoded for safety)
+            const shareCode = btoa(unescape(encodeURIComponent(JSON.stringify(noteData))));
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(shareCode).then(() => {
+                alert("Note copied to clipboard!\n\nSend this code to your friend. They can use the 'Import' button to add it to their notes.");
+            });
+        };
+        
+        // 2. Import: Reads the code and creates a new doc
+        window.importSharedNote = async () => {
+            const shareCode = prompt("Paste the Shared Note Code here:");
+            if(!shareCode) return;
+        
+            try {
+                els.loadingScreen.classList.remove('hidden'); // Show loading
+                
+                const decoded = JSON.parse(decodeURIComponent(escape(atob(shareCode))));
+                
+                // Create new doc with this content
+                const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
+                    title: decoded.t + " (Imported)", 
+                    content: decoded.c, 
+                    isFavorite: false, 
+                    folderId: null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+        
+                // Open the new doc immediately
+                els.loadingScreen.classList.add('hidden');
+                alert("Note Imported Successfully!");
+                
+                // Wait for listener to sync then open
+                setTimeout(() => {
+                   const newDoc = state.docs.find(d => d.id === ref.id);
+                   if(newDoc) openDoc(ref.id, newDoc);
+                }, 500);
+        
+            } catch(e) {
+                els.loadingScreen.classList.add('hidden');
+                alert("Invalid Note Code or Import Failed.");
+                console.error(e);
+            }
+        };
+        
+        // UPDATE: Enable share button when doc opens
+        const originalOpenDoc = window.openDoc;
+        window.openDoc = (id, data) => {
+            originalOpenDoc(id, data);
+            document.getElementById('share-btn').disabled = false;
         };
 
         // Helpers
