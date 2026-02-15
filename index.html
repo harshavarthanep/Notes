@@ -717,7 +717,6 @@
         els.docList.appendChild(div);
     });
 }
-
         window.openDoc = (id, data) => {
             state.docId = id; state.isFav = data.isFavorite || false;
             if(state.importedUnsubscribe) { state.importedUnsubscribe(); state.importedUnsubscribe = null; }
