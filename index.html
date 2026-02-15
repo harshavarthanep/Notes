@@ -125,16 +125,38 @@
             #editor-wrapper { padding: 0; background: var(--bg-color); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
             .ql-editor { padding: 20px; background-image: none; }
-            /* Toolbar Scroll Fix */
-            .ql-toolbar { margin: 0 !important; width: 100% !important; border-radius: 0 !important; background: var(--surface-color) !important; display: flex !important; flex-wrap: nowrap !important; gap: 8px; padding: 12px 10px !important; overflow-x: auto !important; white-space: nowrap !important; -webkit-overflow-scrolling: touch; }
-            .ql-toolbar::-webkit-scrollbar { display: none; }
-            .ql-formats { display: flex !important; flex-shrink: 0 !important; margin-right: 12px !important; }
-            /* Safari Dropdown Fix */
-            .ql-toolbar .ql-picker-options { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 80% !important; max-height: 300px !important; overflow-y: auto !important; background: var(--surface-color); border: 1px solid var(--border-color) !important; border-radius: 12px !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important; z-index: 99999 !important; }
+            
+            /* Revised Toolbar for Mobile: Wrap instead of Scroll */
+            .ql-toolbar { 
+                margin: 0 !important; 
+                width: 100% !important; 
+                border-radius: 0 !important; 
+                background: var(--surface-color) !important; 
+                display: flex !important; 
+                flex-wrap: wrap !important; /* ALLOW WRAPPING */
+                justify-content: center;
+                gap: 5px; 
+                padding: 10px !important; 
+                height: auto !important;
+                overflow: visible !important; /* Allow dropdowns to spill out */
+            }
+            .ql-formats { margin-right: 5px !important; margin-bottom: 5px !important; }
+            
+            /* Reset Dropdown Positioning to default so they appear below */
+            .ql-toolbar .ql-picker-options { 
+                position: absolute !important; 
+                top: 100% !important;
+                transform: none !important;
+                left: 0 !important;
+                max-height: 200px !important;
+                z-index: 9999 !important;
+                background: var(--surface-color);
+                border: 1px solid var(--border-color) !important;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            }
             .ql-editor::after { display: none; }
         }
 
-        /* Sidebar Animations */
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
@@ -143,8 +165,8 @@
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
 
     <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md">
-        <span>👀 Viewing shared note</span>
-        <button onclick="document.getElementById('auth-screen').classList.remove('hidden')" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100">Login to Save & Edit</button>
+        <span>👀 Viewing shared note (Read Only)</span>
+        <button onclick="openLoginModal()" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 shadow">Login to Save & Edit</button>
     </div>
 
     <div id="loading-screen" class="absolute inset-0 z-[100] bg-bg flex items-center justify-center transition-opacity duration-500">
@@ -158,6 +180,9 @@
 
         <div id="auth-screen" class="absolute inset-0 z-[80] bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0 transform transition-all duration-500" id="auth-box">
+                <div class="flex justify-end">
+                    <button id="auth-close-btn" onclick="document.getElementById('auth-screen').classList.add('hidden')" class="text-gray-400 hover:text-white hidden">✕</button>
+                </div>
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
                 <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
                 <form id="auth-form" class="space-y-4">
@@ -193,22 +218,27 @@
                     <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1 hover:rotate-90 duration-300" title="New Note">+</button>
                 </div>
                 <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
-                    <div class="space-y-1 mb-6">
-                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition hover:translate-x-1 duration-200"><span>📄</span> All Files</div>
-                        <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition hover:translate-x-1 duration-200"><span>⭐</span> Important</div>
+                    <div id="sidebar-user-options">
+                        <div class="space-y-1 mb-6">
+                            <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition hover:translate-x-1 duration-200"><span>📄</span> All Files</div>
+                            <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition hover:translate-x-1 duration-200"><span>⭐</span> Important</div>
+                        </div>
+                        <div class="mb-2 px-2 flex justify-between items-center group">
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
+                            <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
+                        </div>
+                        <div id="folder-list" class="space-y-1 mb-6"></div>
+                        <div class="mb-2 px-2 border-t border-gray-700 pt-4">
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Recent</span>
+                        </div>
+                        <div id="doc-list" class="space-y-1"></div>
                     </div>
-                    <div class="mb-2 px-2 flex justify-between items-center group">
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
-                        <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
+                    <div id="sidebar-guest-msg" class="hidden text-center mt-10 p-4 text-gray-500 text-sm">
+                        <p>Login to access your files and folders.</p>
                     </div>
-                    <div id="folder-list" class="space-y-1 mb-6"></div>
-                    <div class="mb-2 px-2 border-t border-gray-700 pt-4">
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Recent</span>
-                    </div>
-                    <div id="doc-list" class="space-y-1"></div>
                 </div>
                 <div class="p-4 bg-[#181818] border-t border-gray-800">
-                    <div class="flex items-center justify-between mb-2">
+                    <div id="user-profile-section" class="flex items-center justify-between mb-2">
                         <span id="user-email" class="text-xs text-white font-medium truncate max-w-[140px]"></span>
                         <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300 transition font-medium">Sign Out</button>
                     </div>
@@ -222,7 +252,7 @@
                 <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-3 md:px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
                     
                     <div class="flex items-center gap-2 flex-1 min-w-0">
-                        <button class="md:hidden text-muted p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" onclick="toggleSidebar()">
+                        <button id="sidebar-toggle-btn" class="md:hidden text-muted p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" onclick="toggleSidebar()">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                         </button>
                         
@@ -243,31 +273,33 @@
                             <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                         </button>
 
-                        <div class="hidden md:flex items-center gap-2">
+                        <div id="user-toolbar-actions" class="hidden md:flex items-center gap-2">
                              <select id="folder-select" class="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 outline-none cursor-pointer" disabled>
                                 <option value="">No Folder</option>
                             </select>
                             <button id="fav-btn" onclick="toggleFavorite()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gold transition disabled:opacity-50" disabled>★</button>
-                            <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50" disabled>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            </button>
                             <button id="delete-btn" onclick="deleteCurrentDoc()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                         </div>
 
-                        <div class="md:hidden relative mobile-menu-container">
+                        <button id="download-btn" onclick="downloadAsWord()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50" disabled title="Download">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        </button>
+
+                        <div id="mobile-menu-container" class="md:hidden relative mobile-menu-container">
                             <button onclick="toggleMobileMenu()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                             </button>
                             <div id="mobile-menu-dropdown" class="hidden absolute right-0 top-12 w-48 bg-surface dark:bg-[#2d2d2d] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 py-2 z-[70]">
-                                <button onclick="toggleFavorite(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2">
-                                    <span id="mobile-fav-icon">★</span> <span id="mobile-fav-text">Mark Important</span>
-                                </button>
-                                <button onclick="toggleMobileFolderMenu(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>📁</span> Move to Folder</button>
-                                <button onclick="downloadAsWord(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>⬇</span> Download</button>
-                                <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
-                                <button onclick="deleteCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2 text-danger"><span>🗑</span> Delete</button>
+                                <div id="mobile-user-options">
+                                    <button onclick="toggleFavorite(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2">
+                                        <span id="mobile-fav-icon">★</span> <span id="mobile-fav-text">Mark Important</span>
+                                    </button>
+                                    <button onclick="toggleMobileFolderMenu(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>📁</span> Move to Folder</button>
+                                    <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    <button onclick="deleteCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2 text-danger"><span>🗑</span> Delete</button>
+                                </div>
                             </div>
                         </div>
 
@@ -315,13 +347,15 @@
         let state = {
             user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
             isFav: false, saveTimer: null, firstLoad: true,
-            pendingShareData: null 
+            pendingShareData: null,
+            isGuestMode: false
         };
 
         const els = {
             loadingScreen: document.getElementById('loading-screen'),
             authScreen: document.getElementById('auth-screen'), 
             authBox: document.getElementById('auth-box'),
+            authCloseBtn: document.getElementById('auth-close-btn'),
             dashboard: document.getElementById('dashboard-screen'),
             email: document.getElementById('email'), pass: document.getElementById('password'),
             authError: document.getElementById('auth-error'), docList: document.getElementById('doc-list'),
@@ -337,7 +371,16 @@
             previewBanner: document.getElementById('preview-banner'),
             mobileMenuDropdown: document.getElementById('mobile-menu-dropdown'),
             mobileFavIcon: document.getElementById('mobile-fav-icon'),
-            mobileFavText: document.getElementById('mobile-fav-text')
+            mobileFavText: document.getElementById('mobile-fav-text'),
+            
+            // UI Sections to Toggle
+            sidebar: document.getElementById('sidebar'),
+            sidebarUserOptions: document.getElementById('sidebar-user-options'),
+            sidebarToggleBtn: document.getElementById('sidebar-toggle-btn'),
+            userToolbarActions: document.getElementById('user-toolbar-actions'),
+            userProfileSection: document.getElementById('user-profile-section'),
+            mobileUserOptions: document.getElementById('mobile-user-options'),
+            mobileMenuContainer: document.getElementById('mobile-menu-container')
         };
 
         // --- THEME SYNC LOGIC ---
@@ -393,20 +436,31 @@
                 try {
                     const decoded = JSON.parse(decodeURIComponent(escape(atob(shareData))));
                     state.pendingShareData = decoded;
+                    state.isGuestMode = true;
                     
+                    // APPLY SHARED THEME
+                    if(decoded.theme) {
+                        applyTheme(decoded.theme === 'dark');
+                    }
+
+                    // Show Preview Mode
                     els.loadingScreen.classList.add('hidden');
                     els.authScreen.classList.add('hidden');
                     els.dashboard.classList.remove('hidden');
                     els.dashboard.classList.add('animate-fade-in');
                     
+                    // Set Content Read-Only
                     els.title.value = decoded.t;
                     quill.setContents(decoded.c);
                     quill.disable();
                     els.title.disabled = true;
-                    els.status.textContent = "Read Only View";
+                    els.status.textContent = "Read Only";
                     els.previewBanner.classList.remove('hidden');
-                    
-                    toggleSidebar(false);
+                    els.downBtn.disabled = false;
+                    document.getElementById('share-btn').disabled = false;
+
+                    // HIDE USER FEATURES FOR GUEST
+                    setupGuestUI(true);
                     
                 } catch (e) {
                     console.error("Invalid Share Link", e);
@@ -418,17 +472,42 @@
             return false;
         }
 
+        function setupGuestUI(isGuest) {
+            if(isGuest) {
+                // HIDE sidebar toggle, sidebar content, user actions
+                els.sidebar.style.display = 'none';
+                els.sidebarToggleBtn.style.display = 'none';
+                els.userToolbarActions.classList.remove('md:flex');
+                els.userToolbarActions.style.display = 'none';
+                els.mobileUserOptions.style.display = 'none';
+                // Close button in auth for guests
+                els.authCloseBtn.classList.remove('hidden');
+            } else {
+                // SHOW Everything
+                els.sidebar.style.display = 'flex';
+                els.sidebarToggleBtn.style.display = 'block';
+                els.userToolbarActions.classList.add('md:flex');
+                els.userToolbarActions.style.display = '';
+                els.mobileUserOptions.style.display = 'block';
+                els.authCloseBtn.classList.add('hidden');
+            }
+        }
+
         // --- AUTH FLOW ---
         auth.onAuthStateChanged(u => {
             state.user = u;
             
             if(u) {
+                // LOGGED IN
+                state.isGuestMode = false;
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
                 els.previewBanner.classList.add('hidden'); 
                 els.dashboard.classList.remove('hidden');
                 els.dashboard.classList.add('animate-fade-in'); 
                 
+                setupGuestUI(false); // Restore UI
+
                 db.collection('users').doc(u.uid).onSnapshot(doc => {
                     if(doc.exists && doc.data().settings?.theme) {
                         const dbTheme = doc.data().settings.theme;
@@ -444,6 +523,7 @@
                 }
 
             } else {
+                // LOGGED OUT
                 if(!checkUrlForShare()) {
                     els.loadingScreen.classList.add('hidden'); 
                     els.authScreen.classList.remove('hidden');
@@ -452,6 +532,12 @@
                 }
             }
         });
+
+        // Open Login from Guest Mode
+        window.openLoginModal = () => {
+            els.authScreen.classList.remove('hidden');
+            els.authBox.classList.add('animate-fade-in-up');
+        };
 
         document.getElementById('auth-form').onsubmit = (e) => {
             e.preventDefault();
@@ -650,7 +736,7 @@
                 await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({folderId: newFolderId});
                 els.folderSelect.value = newFolderId;
                 els.status.textContent = "Moved to New Folder";
-                renderDocs(); // Ensure UI updates immediately
+                renderDocs(); 
             } else {
                  els.folderSelect.value = state.docs.find(d => d.id === state.docId)?.folderId || "";
             }
@@ -702,12 +788,20 @@
 
         window.shareCurrentNote = () => {
             if(!state.docId) return;
-            const noteData = { t: els.title.value, c: quill.getContents(), email: state.user.email };
+            // Include Theme in Share Data
+            const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            
+            const noteData = { 
+                t: els.title.value, 
+                c: quill.getContents(), 
+                email: state.user.email,
+                theme: currentTheme 
+            };
             const shareString = btoa(unescape(encodeURIComponent(JSON.stringify(noteData))));
             const url = new URL(window.location.href);
             url.searchParams.set('share', shareString);
             navigator.clipboard.writeText(url.toString()).then(() => {
-                alert("Link Copied! \n\nAnyone with this link can view the note.\nIf they login, they can edit a copy.");
+                alert("Link Copied! \n\nRecipients will view the note in the " + currentTheme + " theme.");
             });
         };
 
@@ -768,14 +862,12 @@
             state.isFav = !state.isFav; 
             updateFavIcon(); 
             triggerSave(); 
-            // Force re-render to update sidebar immediately
             renderDocs();
         };
 
         function updateFavIcon() { 
             const cls = `p-2 rounded-full transition ${state.isFav ? 'text-gold' : 'text-muted hover:text-gold'}`;
             els.favBtn.className = cls; 
-            // Update Mobile Menu Text
             if(els.mobileFavText) {
                 els.mobileFavText.textContent = state.isFav ? 'Unmark Important' : 'Mark Important';
                 els.mobileFavIcon.style.color = state.isFav ? '#fbbc04' : 'inherit';
@@ -791,7 +883,7 @@
         };
         window.focusEditor = () => { if(state.docId) quill.focus(); };
 
-        // --- GLOBAL CLICK LISTENER (Fix for "Click Anywhere to Close") ---
+        // --- GLOBAL CLICK LISTENER ---
         document.addEventListener('click', (e) => {
             // Close Mobile Menu if clicked outside
             const menu = els.mobileMenuDropdown;
