@@ -414,36 +414,42 @@
             }
         });
 
-        // --- MOBILE CHECKBOX FIX ---
-        // This listens for clicks on the editor and manually toggles checkboxes 
-        // if the user taps the bullet point area.
-        document.querySelector('.ql-editor').addEventListener('click', function(e) {
-            // 1. Find the closest list item being clicked
+        // --- MOBILE CHECKBOX FIX (UPDATED) ---
+        const editorEl = document.querySelector('.ql-editor');
+
+        // Logic to toggle checkbox
+        function handleCheckboxTap(e, clientX) {
             const li = e.target.closest('li[data-list="checked"], li[data-list="unchecked"]');
-            
             if (li) {
-                // 2. Get the bounding box of the list item
                 const rect = li.getBoundingClientRect();
                 
-                // 3. Check if the click was on the "checkbox" icon (approx. first 30px from left)
-                // Adjust '35' if your padding is wider
-                if (e.clientX >= rect.left && e.clientX <= rect.left + 35) {
-                    
-                    // 4. Find the Quill internal object for this line
+                // Hit detection: Check if tap is within the first 45px (increased for mobile touch area)
+                if (clientX >= rect.left && clientX <= rect.left + 45) {
                     const blot = Quill.find(li);
                     if (blot) {
                         const index = quill.getIndex(blot);
                         const isChecked = li.dataset.list === 'checked';
-                        
-                        // 5. Toggle the format
                         quill.formatLine(index, 1, 'list', isChecked ? 'unchecked' : 'checked');
                         
-                        // 6. Stop the browser from moving the text cursor
-                        e.preventDefault(); 
+                        // Critical: Stop the keyboard from opening or cursor moving
+                        e.preventDefault();
+                        e.stopPropagation();
                     }
                 }
             }
+        }
+
+        // Handle Desktop Clicks
+        editorEl.addEventListener('click', (e) => {
+            handleCheckboxTap(e, e.clientX);
         });
+
+        // Handle Mobile Touches (Fixes the issue)
+        editorEl.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length > 0) {
+                handleCheckboxTap(e, e.touches[0].clientX);
+            }
+        }, { passive: false });
 
         function getShareIdFromUrl() { return new URLSearchParams(window.location.search).get('shareId'); }
 
