@@ -414,42 +414,58 @@
             }
         });
 
-        // --- MOBILE CHECKBOX FIX (UPDATED) ---
+        // --- ROBUST MOBILE CHECKBOX FIX (TOUCH API) ---
         const editorEl = document.querySelector('.ql-editor');
-
-        // Logic to toggle checkbox
-        function handleCheckboxTap(e, clientX) {
-            const li = e.target.closest('li[data-list="checked"], li[data-list="unchecked"]');
-            if (li) {
-                const rect = li.getBoundingClientRect();
+        let touchStartX = 0;
+        let touchStartY = 0;
+    
+        // 1. Record where the finger landed
+        editorEl.addEventListener('touchstart', (e) => {
+            if(e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true }); // Allow scrolling to start
+    
+        // 2. Detect when finger lifts
+        editorEl.addEventListener('touchend', (e) => {
+            if(e.changedTouches.length === 1) {
+                const x = e.changedTouches[0].clientX;
+                const y = e.changedTouches[0].clientY;
                 
-                // Hit detection: Check if tap is within the first 45px (increased for mobile touch area)
-                if (clientX >= rect.left && clientX <= rect.left + 45) {
-                    const blot = Quill.find(li);
-                    if (blot) {
-                        const index = quill.getIndex(blot);
-                        const isChecked = li.dataset.list === 'checked';
-                        quill.formatLine(index, 1, 'list', isChecked ? 'unchecked' : 'checked');
+                // 3. Check if it was a Tap (minimal movement < 10px)
+                // If user scrolled, this will be false, preventing accidental toggles
+                if(Math.abs(x - touchStartX) < 10 && Math.abs(y - touchStartY) < 10) {
+                    
+                    // 4. Find the element under the finger
+                    const targetEl = document.elementFromPoint(x, y);
+                    if(!targetEl) return;
+    
+                    const li = targetEl.closest('li[data-list="checked"], li[data-list="unchecked"]');
+                    
+                    if (li) {
+                        const rect = li.getBoundingClientRect();
                         
-                        // Critical: Stop the keyboard from opening or cursor moving
-                        e.preventDefault();
-                        e.stopPropagation();
+                        // 5. Check if tap was in the "Checkbox Zone" (Left 45px)
+                        if (x >= rect.left && x <= rect.left + 45) {
+                            
+                            // 6. Toggle the Checkbox
+                            const blot = Quill.find(li);
+                            if (blot) {
+                                const index = quill.getIndex(blot);
+                                const isChecked = li.dataset.list === 'checked';
+                                
+                                // Apply formatting
+                                quill.formatLine(index, 1, 'list', isChecked ? 'unchecked' : 'checked');
+                                
+                                // Prevent the browser from turning this tap into a cursor focus event
+                                e.preventDefault(); 
+                            }
+                        }
                     }
                 }
             }
-        }
-
-        // Handle Desktop Clicks
-        editorEl.addEventListener('click', (e) => {
-            handleCheckboxTap(e, e.clientX);
-        });
-
-        // Handle Mobile Touches (Fixes the issue)
-        editorEl.addEventListener('touchstart', (e) => {
-            if (e.touches && e.touches.length > 0) {
-                handleCheckboxTap(e, e.touches[0].clientX);
-            }
-        }, { passive: false });
+        }, { passive: false }); // Allow us to cancel the event if we used it
 
         function getShareIdFromUrl() { return new URLSearchParams(window.location.search).get('shareId'); }
 
