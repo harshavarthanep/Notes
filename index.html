@@ -255,7 +255,6 @@
                         <div class="flex flex-col w-full min-w-0">
                             <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300 min-w-0" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-muted font-medium h-3 truncate"></span>
-                            <span id="perm-status" class="text-[10px] text-gray-400"></span>
                         </div>
                     </div>
 
@@ -263,17 +262,6 @@
                         
                         <button id="share-btn" onclick="shareCurrentNote()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded-full md:rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-1" disabled title="Share Link">
                             <span>🔗</span> <span class="hidden md:inline">Share</span>
-                        </button>
-                        <button id="request-edit-btn"
-                          class="hidden p-2 text-xs bg-yellow-100 dark:bg-yellow-900
-                                 text-yellow-700 dark:text-yellow-300 rounded-full">
-                          ✋ Request Edit
-                        </button>
-
-                        <button id="notif-btn"
-                              class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 relative"
-                              title="Notifications">
-                              🔔
                         </button>
 
                         <div id="logged-in-controls" class="flex items-center gap-2">
@@ -295,13 +283,8 @@
                             </button>
 
                             <div class="md:hidden relative mobile-menu-container">
-                                <button onclick="toggleMobileMenu()" class="relative p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800">
-                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 5v.01M12 12v.01M12 19v.01" />
-                                  </svg>
-                                  <span id="mobile-red-dot"
-                                    class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                                <button onclick="toggleMobileMenu()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                                 </button>
                                 <div id="mobile-menu-dropdown" class="hidden absolute right-0 top-12 w-48 bg-surface dark:bg-[#2d2d2d] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 py-2 z-[70]">
                                     <button onclick="toggleFavorite(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2">
@@ -312,18 +295,6 @@
                                     <button onclick="duplicateCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>❐</span> Duplicate</button>
                                     <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
                                     <button onclick="deleteCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2 text-danger"><span>🗑</span> Delete</button>
-                                    <!-- Mobile Collaboration Actions -->
-                                    <div id="mobile-collab-actions" class="border-b border-gray-200 dark:border-gray-700 mb-1 hidden">
-                                      <button id="mobile-request-btn"
-                                        class="w-full text-left px-4 py-2 text-sm flex gap-2 items-center text-yellow-600">
-                                        ✋ Request Edit Access
-                                      </button>
-                                    
-                                      <button id="mobile-notif-btn"
-                                        class="w-full text-left px-4 py-2 text-sm flex gap-2 items-center hidden">
-                                        🔔 Notifications
-                                      </button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -567,10 +538,6 @@
             state.user = u;
             if (u) {
                 state.isGuest = false;
-            
-                // ✅ FORCE hide loader once user is authenticated
-                els.loadingScreen.classList.add('hidden');
-            
                 if(state.guestUnsubscribe) state.guestUnsubscribe();
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
@@ -581,13 +548,11 @@
                 els.hamburgerBtn.classList.remove('hidden');
                 els.guestDownloadBtn.classList.add('hidden');
                 els.dashboard.classList.add('animate-fade-in'); 
-            
                 db.collection('users').doc(u.uid).onSnapshot(doc => {
                     if(doc.exists && doc.data().settings?.theme) {
                         applyTheme(doc.data().settings.theme === 'dark');
                     }
                 });
-            
                 initData();
             } else {
                 handleRoute();
@@ -791,10 +756,6 @@
             }
 
             if(window.innerWidth < 850 && !state.isGuest) toggleSidebar(false);
-            // ✅ Start collaboration if shared
-            if (data.shareId) {
-                loadSharedCollab(data.shareId);
-            }
         };
 
         window.createNewDoc = async () => {
@@ -890,13 +851,9 @@
                 let shareId = activeDoc.shareId;
                 if (!shareId) {
                     const noteData = { 
-                      t: els.title.value,
-                      c: JSON.parse(JSON.stringify(quill.getContents())),
-                      email: state.user.email,
-                      ownerId: state.user.uid,
-                      permissions: {}, // ✅ IMPORTANT
-                      theme: localStorage.getItem('theme') || 'light',
-                      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        t: els.title.value, c: JSON.parse(JSON.stringify(quill.getContents())), 
+                        email: state.user.email, ownerId: state.user.uid,
+                        theme: localStorage.getItem('theme') || 'light', createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     const docRef = await db.collection('shared_docs').add(noteData);
                     shareId = docRef.id;
@@ -971,234 +928,6 @@
         document.addEventListener('click', (e) => { const menu = els.mobileMenuDropdown; const btn = e.target.closest('.mobile-menu-container'); if (!menu.classList.contains('hidden') && !btn && !menu.contains(e.target)) menu.classList.add('hidden'); const folderMenu = els.mobileFolderMenu; if(!folderMenu.classList.contains('hidden') && !e.target.closest('.folder-menu-container') && !e.target.closest('[onclick*="toggleMobileFolderMenu"]')) folderMenu.classList.add('hidden'); });
 
         initTheme(); 
-    </script>
-    <!-- Notifications -->
-    <div id="notif-panel"
-     class="hidden fixed right-4 top-16 w-80 bg-white dark:bg-[#2d2d2d]
-     rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999]">
-      <div class="p-3 border-b font-semibold">Notifications</div>
-      <div id="notif-list" class="max-h-80 overflow-y-auto text-sm"></div>
-    </div>
-    <script>
-    /* ===============================
-       COLLABORATION LAYER (SINGLE FILE)
-       =============================== */
-    
-    let collab = {
-      shareId: null,
-      permission: 'viewer',
-      editingUid: null,
-      cursorColor: '#' + Math.floor(Math.random()*16777215).toString(16),
-      lockTimer: null
-    };
-
-    function updateMobileCollabUI({ needsAccess, hasNotif }) {
-      const wrap = document.getElementById('mobile-collab-actions');
-      const req = document.getElementById('mobile-request-btn');
-      const bell = document.getElementById('mobile-notif-btn');
-      const dot = document.getElementById('mobile-red-dot');
-    
-      if (!wrap) return;
-    
-      wrap.classList.remove('hidden');
-      req.classList.toggle('hidden', !needsAccess);
-      bell.classList.toggle('hidden', !hasNotif);
-      dot.classList.toggle('hidden', !hasNotif);
-    }
-    
-    /* ---------- Helpers ---------- */
-    
-    function getPermission(doc) {
-      if (!state.user) return 'guest';
-      if (doc.ownerId === state.user.uid) return 'owner';
-      return doc.permissions?.[state.user.uid] || 'viewer';
-    }
-    
-    /* ---------- Load Shared Doc ---------- */
-    
-    async function loadSharedCollab(shareId) {
-      collab.shareId = shareId;
-    
-      db.collection('shared_docs').doc(shareId)
-        .onSnapshot(doc => {
-          if (!doc.exists) {
-            els.loadingScreen.classList.add('hidden');
-            return;
-          }
-
-        const reqBtn = document.getElementById('request-edit-btn');
-
-        const data = doc.data();
-    
-        // Ensure permissions object exists
-        if (!data.permissions) data.permissions = {};
-        
-        // ✅ FIRST resolve permission
-        collab.permission = getPermission(data);
-
-            if (window.innerWidth < 768) {
-              updateMobileCollabUI({
-                needsAccess: collab.permission === 'viewer',
-                hasNotif: false // updated by notification listener
-              });
-            }
-        
-        // Update permission label
-        const permEl = document.getElementById('perm-status');
-        if (permEl) {
-          permEl.textContent =
-            collab.permission === 'owner' ? 'Owner' :
-            collab.permission === 'editor' ? 'Editor' :
-            collab.permission === 'viewer' ? 'View only' :
-            'Guest';
-        }
-        
-        // Request edit button logic
-        const reqBtn = document.getElementById('request-edit-btn');
-        if (collab.permission === 'viewer') {
-          reqBtn.classList.remove('hidden');
-          reqBtn.onclick = requestEditAccess;
-        } else {
-          reqBtn.classList.add('hidden');
-        }
-    
-          // Apply permission
-          if (collab.permission === 'viewer' || collab.permission === 'guest') {
-            quill.disable();
-            els.previewBanner.classList.remove('hidden');
-          } else {
-            quill.enable();
-            els.previewBanner.classList.add('hidden');
-          }
-    
-          // Editor lock
-          if (data.editing && data.editing.uid !== state.user?.uid) {
-            quill.disable();
-            els.status.textContent = `${data.editing.email} is editing…`;
-          } else {
-            els.status.textContent = "Synced";
-          }
-    
-          // Sync content safely
-          if (data.c) {
-            const local = JSON.stringify(quill.getContents());
-            const remote = JSON.stringify(data.c);
-            if (local !== remote) {
-              const r = quill.getSelection();
-              quill.setContents(data.c, 'silent');
-              if (r) quill.setSelection(r);
-            }
-          }
-    
-          // ✅ ALWAYS hide loader once snapshot fires
-          els.loadingScreen.classList.add('hidden');
-        }, err => {
-          console.error(err);
-          els.loadingScreen.classList.add('hidden');
-        });
-    }
-
-    async function grantEditor(uid) {
-      await db.collection('shared_docs')
-        .doc(collab.shareId)
-        .update({
-          [`permissions.${uid}`]: 'editor'
-        });
-    }
-    
-    /* ---------- Editor Lock ---------- */
-    
-    quill.on('text-change', (d,o,src) => {
-      if (src !== 'user') return;
-      if (!collab.shareId) return;
-      if (collab.permission !== 'editor' && collab.permission !== 'owner') return;
-    
-      db.collection('shared_docs').doc(collab.shareId).update({
-        editing: {
-          uid: state.user.uid,
-          email: state.user.email,
-          color: collab.cursorColor,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }
-      });
-    
-      clearTimeout(collab.lockTimer);
-      collab.lockTimer = setTimeout(() => {
-        db.collection('shared_docs').doc(collab.shareId).update({
-          editing: null
-        });
-      }, 1200);
-    });
-    
-    /* ---------- Access Request ---------- */
-    
-    async function requestEditAccess() {
-      if (!state.user) return alert("Login required");
-    
-      await db.collection('shared_docs')
-        .doc(collab.shareId)
-        .collection('requests')
-        .add({
-          uid: state.user.uid,
-          email: state.user.email,
-          status: 'pending',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    
-      alert("Access request sent");
-    }
-    
-    /* ---------- Notifications ---------- */
-    
-    function initNotifications() {
-      if (!state.user) return;
-    
-      db.collection('users')
-        .doc(state.user.uid)
-        .collection('notifications')
-        .orderBy('createdAt','desc')
-        .onSnapshot(snap => {
-          const list = document.getElementById('notif-list');
-          list.innerHTML = '';
-          snap.forEach(d => {
-            const n = d.data();
-            const div = document.createElement('div');
-            div.className = 'p-3 border-b hover:bg-gray-100 dark:hover:bg-gray-700';
-            div.textContent = n.message;
-            list.appendChild(div);
-          });
-        });
-    }
-
-        let hasNotif = false;
-
-        snap.forEach(d => {
-          hasNotif = true;
-          ...
-        });
-        
-        if (window.innerWidth < 768) {
-          updateMobileCollabUI({
-            needsAccess: collab.permission === 'viewer',
-            hasNotif
-          });
-        }
-    
-    document.getElementById('notif-btn')?.addEventListener('click', () => {
-      document.getElementById('notif-panel').classList.toggle('hidden');
-    });
-    
-    /* ---------- Hook into existing flow ---------- */
-    
-    const originalLoadGuest = loadGuestView;
-    loadGuestView = async function(shareId) {
-      await originalLoadGuest(shareId);
-      loadSharedCollab(shareId);
-    };
-    
-    auth.onAuthStateChanged(u => {
-      if (u) initNotifications();
-    });
     </script>
 </body>
 </html>
