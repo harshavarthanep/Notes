@@ -255,6 +255,7 @@
                         <div class="flex flex-col w-full min-w-0">
                             <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300 min-w-0" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-muted font-medium h-3 truncate"></span>
+                            <span id="perm-status" class="text-[10px] text-gray-400"></span>
                         </div>
                     </div>
 
@@ -262,6 +263,17 @@
                         
                         <button id="share-btn" onclick="shareCurrentNote()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded-full md:rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-1" disabled title="Share Link">
                             <span>🔗</span> <span class="hidden md:inline">Share</span>
+                        </button>
+                        <button id="request-edit-btn"
+                          class="hidden p-2 text-xs bg-yellow-100 dark:bg-yellow-900
+                                 text-yellow-700 dark:text-yellow-300 rounded-full">
+                          ✋ Request Edit
+                        </button>
+
+                        <button id="notif-btn"
+                              class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 relative"
+                              title="Notifications">
+                              🔔
                         </button>
 
                         <div id="logged-in-controls" class="flex items-center gap-2">
@@ -982,6 +994,15 @@
             els.loadingScreen.classList.add('hidden');
             return;
           }
+
+        const reqBtn = document.getElementById('request-edit-btn');
+
+        if (collab.permission === 'viewer') {
+          reqBtn.classList.remove('hidden');
+          reqBtn.onclick = requestEditAccess;
+        } else {
+          reqBtn.classList.add('hidden');
+        }
     
           const data = doc.data();
     
@@ -989,6 +1010,14 @@
           if (!data.permissions) {
             data.permissions = {};
           }
+            const permEl = document.getElementById('perm-status');
+            if (permEl) {
+              permEl.textContent =
+                collab.permission === 'owner' ? 'Owner' :
+                collab.permission === 'editor' ? 'Editor' :
+                collab.permission === 'viewer' ? 'View only' :
+                'Guest';
+            }
     
           collab.permission = getPermission(data);
     
@@ -1025,6 +1054,14 @@
         }, err => {
           console.error(err);
           els.loadingScreen.classList.add('hidden');
+        });
+    }
+
+    async function grantEditor(uid) {
+      await db.collection('shared_docs')
+        .doc(collab.shareId)
+        .update({
+          [`permissions.${uid}`]: 'editor'
         });
     }
     
