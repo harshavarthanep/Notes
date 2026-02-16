@@ -562,14 +562,57 @@
         function initData() {
             if(!state.user) return;
             const uid = state.user.uid;
+            
+            // Folder Listener (Keep this as is)
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderFolders(); updateFolderSelect();
                 if(state.docs.length > 0) renderDocs();
             });
+
+            // --- UPDATED DOCS LISTENER START ---
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(async (snap) => {
+                // 1. Update the local state list
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderDocs();
+
+                // 2. [NEW CODE] Real-time Sync for the OPEN document
+                // If a document is currently open, check if the incoming snapshot has updates for it
+                if (state.docId && !state.isGuest) {
+                    const activeDocData = state.docs.find(d => d.id === state.docId);
+                    
+                    if (activeDocData) {
+                        // A. Fix Title Sync: If title changed on Desktop, update Mobile Input
+                        if (els.title.value !== activeDocData.title) {
+                            els.title.value = activeDocData.title;
+                        }
+
+                        // B. Fix Content Sync: Check if content is different before overwriting
+                        // (We compare stringified versions to avoid unnecessary redraws)
+                        const currentEditorJson = JSON.stringify(quill.getContents());
+                        const newDbJson = JSON.stringify(activeDocData.content);
+
+                        if (currentEditorJson !== newDbJson) {
+                            // Preserve user's cursor position if they happen to be typing
+                            const range = quill.getSelection();
+                            
+                            // 'silent' is CRITICAL here. It prevents the editor from thinking 
+                            // this is a user change, which would trigger an infinite save loop.
+                            quill.setContents(activeDocData.content, 'silent'); 
+                            
+                            if (range) quill.setSelection(range);
+                        }
+                    } else {
+                        // Edge Case: The open document was deleted on the other device
+                        // alert("This document was deleted."); // Optional: notify user
+                        state.docId = null;
+                        els.title.value = "";
+                        quill.setText("");
+                        quill.disable();
+                    }
+                }
+
+                // 3. Handle Initial Load / URL Routing (Existing Logic)
                 const shareId = getShareIdFromUrl();
                 if (shareId && state.firstLoad) {
                     state.firstLoad = false;
@@ -597,6 +640,7 @@
                     state.docs.length > 0 ? openDoc(state.docs[0].id, state.docs[0]) : createNewDoc();
                 }
             });
+            // --- UPDATED DOCS LISTENER END ---
         }
 
         async function checkAndHandleDeletedOwner(shareId) {
