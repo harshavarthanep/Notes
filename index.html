@@ -851,9 +851,13 @@
                 let shareId = activeDoc.shareId;
                 if (!shareId) {
                     const noteData = { 
-                        t: els.title.value, c: JSON.parse(JSON.stringify(quill.getContents())), 
-                        email: state.user.email, ownerId: state.user.uid,
-                        theme: localStorage.getItem('theme') || 'light', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                      t: els.title.value,
+                      c: JSON.parse(JSON.stringify(quill.getContents())),
+                      email: state.user.email,
+                      ownerId: state.user.uid,
+                      permissions: {}, // ✅ IMPORTANT
+                      theme: localStorage.getItem('theme') || 'light',
+                      createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     const docRef = await db.collection('shared_docs').add(noteData);
                     shareId = docRef.id;
@@ -964,9 +968,18 @@
     
       db.collection('shared_docs').doc(shareId)
         .onSnapshot(doc => {
-          if (!doc.exists) return;
+          if (!doc.exists) {
+            els.loadingScreen.classList.add('hidden');
+            return;
+          }
     
           const data = doc.data();
+    
+          // ✅ Ensure permissions object exists
+          if (!data.permissions) {
+            data.permissions = {};
+          }
+    
           collab.permission = getPermission(data);
     
           // Apply permission
@@ -978,22 +991,30 @@
             els.previewBanner.classList.add('hidden');
           }
     
-          // Lock handling
+          // Editor lock
           if (data.editing && data.editing.uid !== state.user?.uid) {
             quill.disable();
             els.status.textContent = `${data.editing.email} is editing…`;
-          } else if (collab.permission === 'editor' || collab.permission === 'owner') {
-            quill.enable();
+          } else {
+            els.status.textContent = "Synced";
           }
     
-          // Sync content
-          const local = JSON.stringify(quill.getContents());
-          const remote = JSON.stringify(data.c);
-          if (local !== remote) {
-            const r = quill.getSelection();
-            quill.setContents(data.c, 'silent');
-            if (r) quill.setSelection(r);
+          // Sync content safely
+          if (data.c) {
+            const local = JSON.stringify(quill.getContents());
+            const remote = JSON.stringify(data.c);
+            if (local !== remote) {
+              const r = quill.getSelection();
+              quill.setContents(data.c, 'silent');
+              if (r) quill.setSelection(r);
+            }
           }
+    
+          // ✅ ALWAYS hide loader once snapshot fires
+          els.loadingScreen.classList.add('hidden');
+        }, err => {
+          console.error(err);
+          els.loadingScreen.classList.add('hidden');
         });
     }
     
@@ -1074,9 +1095,16 @@
     };
     
     const originalOpenDoc = window.openDoc;
-    window.openDoc = function(id,data) {
-      originalOpenDoc(id,data);
-      if (data.shareId) loadSharedCollab(data.shareId);
+    window.openDoc = function(id, data) {
+      originalOpenDoc(id, data);
+    
+      // ✅ ALWAYS hide loading screen once a doc is open
+      els.loadingScreen.classList.add('hidden');
+    
+      // Load collaboration only if shared
+      if (data.shareId) {
+        loadSharedCollab(data.shareId);
+      }
     };
     
     auth.onAuthStateChanged(u => {
