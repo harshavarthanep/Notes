@@ -151,28 +151,6 @@
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
-/* --- ADD THIS TO YOUR <style> BLOCK --- */
-
-        /* Fix for Dark Mode Dropdown Menu Visibility */
-        html.dark .ql-picker-options {
-            background-color: #2d2d2d !important;
-            border: 1px solid #404040 !important;
-            color: #e0e0e0 !important;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        /* Hover effect for items in the dropdown */
-        html.dark .ql-picker-item:hover {
-            color: #1a73e8 !important; /* Blue accent on hover */
-            background-color: #383838;
-        }
-        
-        /* Ensure the selected item is also visible */
-        html.dark .ql-picker-item.ql-selected {
-            color: #1a73e8 !important;
-            font-weight: bold;
-        }
-        
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
@@ -421,22 +399,6 @@
         }
 
         var quill = new Quill('#editor-container', {
-            // --- ADD THIS RIGHT AFTER 'var quill = ...' ---
-
-        // FIX: Close keyboard when opening dropdowns on mobile
-        const pickerLabels = document.querySelectorAll('.ql-picker-label');
-        pickerLabels.forEach(label => {
-            label.addEventListener('click', (e) => {
-                // If on mobile (screen < 850px), hide the keyboard
-                if (window.innerWidth < 850) {
-                    // This creates a small delay to let the menu open, then kills the keyboard
-                    setTimeout(() => {
-                         if (document.activeElement) document.activeElement.blur(); 
-                    }, 0);
-                }
-            });
-        });
-        
             theme: 'snow',
             placeholder: 'Start writing...',
             modules: { 
