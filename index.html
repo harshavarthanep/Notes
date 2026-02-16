@@ -997,29 +997,32 @@
 
         const reqBtn = document.getElementById('request-edit-btn');
 
+        const data = doc.data();
+    
+        // Ensure permissions object exists
+        if (!data.permissions) data.permissions = {};
+        
+        // ✅ FIRST resolve permission
+        collab.permission = getPermission(data);
+        
+        // Update permission label
+        const permEl = document.getElementById('perm-status');
+        if (permEl) {
+          permEl.textContent =
+            collab.permission === 'owner' ? 'Owner' :
+            collab.permission === 'editor' ? 'Editor' :
+            collab.permission === 'viewer' ? 'View only' :
+            'Guest';
+        }
+        
+        // Request edit button logic
+        const reqBtn = document.getElementById('request-edit-btn');
         if (collab.permission === 'viewer') {
           reqBtn.classList.remove('hidden');
           reqBtn.onclick = requestEditAccess;
         } else {
           reqBtn.classList.add('hidden');
         }
-    
-          const data = doc.data();
-    
-          // ✅ Ensure permissions object exists
-          if (!data.permissions) {
-            data.permissions = {};
-          }
-            const permEl = document.getElementById('perm-status');
-            if (permEl) {
-              permEl.textContent =
-                collab.permission === 'owner' ? 'Owner' :
-                collab.permission === 'editor' ? 'Editor' :
-                collab.permission === 'viewer' ? 'View only' :
-                'Guest';
-            }
-    
-          collab.permission = getPermission(data);
     
           // Apply permission
           if (collab.permission === 'viewer' || collab.permission === 'guest') {
