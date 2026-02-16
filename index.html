@@ -295,8 +295,13 @@
                             </button>
 
                             <div class="md:hidden relative mobile-menu-container">
-                                <button onclick="toggleMobileMenu()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                                <button onclick="toggleMobileMenu()" class="relative p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800">
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 5v.01M12 12v.01M12 19v.01" />
+                                  </svg>
+                                  <span id="mobile-red-dot"
+                                    class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                                 </button>
                                 <div id="mobile-menu-dropdown" class="hidden absolute right-0 top-12 w-48 bg-surface dark:bg-[#2d2d2d] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 py-2 z-[70]">
                                     <button onclick="toggleFavorite(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2">
@@ -307,6 +312,18 @@
                                     <button onclick="duplicateCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>❐</span> Duplicate</button>
                                     <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
                                     <button onclick="deleteCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2 text-danger"><span>🗑</span> Delete</button>
+                                    <!-- Mobile Collaboration Actions -->
+                                    <div id="mobile-collab-actions" class="border-b border-gray-200 dark:border-gray-700 mb-1 hidden">
+                                      <button id="mobile-request-btn"
+                                        class="w-full text-left px-4 py-2 text-sm flex gap-2 items-center text-yellow-600">
+                                        ✋ Request Edit Access
+                                      </button>
+                                    
+                                      <button id="mobile-notif-btn"
+                                        class="w-full text-left px-4 py-2 text-sm flex gap-2 items-center hidden">
+                                        🔔 Notifications
+                                      </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -974,6 +991,20 @@
       cursorColor: '#' + Math.floor(Math.random()*16777215).toString(16),
       lockTimer: null
     };
+
+    function updateMobileCollabUI({ needsAccess, hasNotif }) {
+      const wrap = document.getElementById('mobile-collab-actions');
+      const req = document.getElementById('mobile-request-btn');
+      const bell = document.getElementById('mobile-notif-btn');
+      const dot = document.getElementById('mobile-red-dot');
+    
+      if (!wrap) return;
+    
+      wrap.classList.remove('hidden');
+      req.classList.toggle('hidden', !needsAccess);
+      bell.classList.toggle('hidden', !hasNotif);
+      dot.classList.toggle('hidden', !hasNotif);
+    }
     
     /* ---------- Helpers ---------- */
     
@@ -1004,6 +1035,13 @@
         
         // ✅ FIRST resolve permission
         collab.permission = getPermission(data);
+
+            if (window.innerWidth < 768) {
+              updateMobileCollabUI({
+                needsAccess: collab.permission === 'viewer',
+                hasNotif: false // updated by notification listener
+              });
+            }
         
         // Update permission label
         const permEl = document.getElementById('perm-status');
@@ -1131,6 +1169,20 @@
           });
         });
     }
+
+        let hasNotif = false;
+
+        snap.forEach(d => {
+          hasNotif = true;
+          ...
+        });
+        
+        if (window.innerWidth < 768) {
+          updateMobileCollabUI({
+            needsAccess: collab.permission === 'viewer',
+            hasNotif
+          });
+        }
     
     document.getElementById('notif-btn')?.addEventListener('click', () => {
       document.getElementById('notif-panel').classList.toggle('hidden');
