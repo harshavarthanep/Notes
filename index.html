@@ -538,6 +538,10 @@
             state.user = u;
             if (u) {
                 state.isGuest = false;
+            
+                // ✅ FORCE hide loader once user is authenticated
+                els.loadingScreen.classList.add('hidden');
+            
                 if(state.guestUnsubscribe) state.guestUnsubscribe();
                 els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
@@ -548,11 +552,13 @@
                 els.hamburgerBtn.classList.remove('hidden');
                 els.guestDownloadBtn.classList.add('hidden');
                 els.dashboard.classList.add('animate-fade-in'); 
+            
                 db.collection('users').doc(u.uid).onSnapshot(doc => {
                     if(doc.exists && doc.data().settings?.theme) {
                         applyTheme(doc.data().settings.theme === 'dark');
                     }
                 });
+            
                 initData();
             } else {
                 handleRoute();
@@ -756,6 +762,10 @@
             }
 
             if(window.innerWidth < 850 && !state.isGuest) toggleSidebar(false);
+            // ✅ Start collaboration if shared
+            if (data.shareId) {
+                loadSharedCollab(data.shareId);
+            }
         };
 
         window.createNewDoc = async () => {
@@ -1092,19 +1102,6 @@
     loadGuestView = async function(shareId) {
       await originalLoadGuest(shareId);
       loadSharedCollab(shareId);
-    };
-    
-    const originalOpenDoc = window.openDoc;
-    window.openDoc = function(id, data) {
-      originalOpenDoc(id, data);
-    
-      // ✅ ALWAYS hide loading screen once a doc is open
-      els.loadingScreen.classList.add('hidden');
-    
-      // Load collaboration only if shared
-      if (data.shareId) {
-        loadSharedCollab(data.shareId);
-      }
     };
     
     auth.onAuthStateChanged(u => {
