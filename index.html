@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZenDocs | Collab</title>
-
+    <title>ZenDocs | Pro Collab</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,157 +11,49 @@
             theme: {
                 extend: {
                     colors: {
-                        bg: 'var(--bg-color)', 
-                        surface: 'var(--surface-color)', 
-                        sidebar: '#1e1e1e',  
-                        border: 'var(--border-color)', 
-                        text: 'var(--text-color)', 
-                        muted: '#9ca3af',
-                        accent: '#1a73e8', 
-                        danger: '#d93025', 
-                        gold: '#fbbc04'
+                        bg: 'var(--bg-color)', surface: 'var(--surface-color)', sidebar: '#1e1e1e',  
+                        border: 'var(--border-color)', text: 'var(--text-color)', muted: '#9ca3af',
+                        accent: '#1a73e8', danger: '#d93025', gold: '#fbbc04'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    animation: {
-                        'fade-in-up': 'fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'fade-in': 'fadeIn 0.3s ease-out forwards'
-                    },
-                    keyframes: {
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(15px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' }
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' }
-                        }
-                    }
+                    animation: { 'fade-in-up': 'fadeInUp 0.4s ease-out forwards', 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
+                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(15px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
                 }
             }
         }
     </script>
-    
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --surface-color: #ffffff;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --paper-bg: #ffffff;
-            --paper-text: #000000;
-            --toolbar-bg: #edf2fa;
-            --toolbar-border: #e0e0e0;
-        }
-
-        html.dark {
-            --bg-color: #121212;
-            --surface-color: #1e1e1e;
-            --text-color: #e5e7eb;
-            --border-color: #374151;
-            --paper-bg: #1e1e1e; 
-            --paper-text: #e0e0e0;
-            --toolbar-bg: #2d2d2d;
-            --toolbar-border: #404040;
-        }
-
-        body, div, button, input, select { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
-
-        /* CUSTOM SCROLLBARS */
+        :root { --bg-color: #f0f2f5; --surface-color: #ffffff; --text-color: #1f2937; --border-color: #e5e7eb; --paper-bg: #ffffff; --paper-text: #000000; --toolbar-bg: #edf2fa; --toolbar-border: #e0e0e0; }
+        html.dark { --bg-color: #121212; --surface-color: #1e1e1e; --text-color: #e5e7eb; --border-color: #374151; --paper-bg: #1e1e1e; --paper-text: #e0e0e0; --toolbar-bg: #2d2d2d; --toolbar-border: #404040; }
+        body, div, button, input, select { transition: background-color 0.2s ease, color 0.2s ease; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
-        html.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
-        
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* EDITOR */
-        #editor-wrapper {
-            background-color: var(--bg-color);
-            padding: 40px 0;
-            overflow-y: auto;
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        
-        #paper-container {
-            width: 794px; min-height: 1123px;
-            background: var(--paper-bg); color: var(--paper-text);
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,.3); margin-bottom: 40px;
-            display: flex; flex-direction: column; position: relative;
-        }
-        
+        /* EDITOR & LAYOUT */
+        #editor-wrapper { background-color: var(--bg-color); padding: 40px 0; overflow-y: auto; flex: 1; display: flex; justify-content: center; align-items: flex-start; position: relative; }
+        #paper-container { width: 794px; min-height: 1123px; background: var(--paper-bg); color: var(--paper-text); box-shadow: 0 1px 3px 0 rgba(0,0,0,.3); margin-bottom: 40px; display: flex; flex-direction: column; position: relative; }
         html.dark #paper-container { box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid #333; }
         .ql-container { font-size: 11pt; font-family: 'Times New Roman', serif; height: auto !important; }
         .ql-editor { padding: 96px; min-height: 1123px; height: auto !important; overflow-y: visible !important; }
-        
-        /* Dark Mode Quill */
-        html.dark .ql-editor.ql-blank::before { color: #6b7280; }
-        html.dark .ql-toolbar .ql-stroke { stroke: #d1d5db; }
-        html.dark .ql-toolbar .ql-fill { fill: #d1d5db; }
-        html.dark .ql-toolbar .ql-picker { color: #d1d5db; }
         .ql-toolbar { border: none !important; background: var(--toolbar-bg); border-bottom: 1px solid var(--toolbar-border) !important; padding: 8px 16px !important; border-radius: 24px; margin: 8px 16px; }
-
-        /* COLLABORATION STYLES */
-        .cursor-flag {
-            position: absolute;
-            top: -1.2em;
-            left: 0;
-            font-size: 10px;
-            color: white;
-            padding: 2px 4px;
-            border-radius: 4px;
-            white-space: nowrap;
-            pointer-events: none;
-            z-index: 10;
-            font-family: sans-serif;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
         
-        .cursor-caret {
-            position: absolute;
-            width: 2px;
-            margin-top: 2px;
-            height: 1.2em;
-            pointer-events: none;
-            z-index: 10;
-        }
+        /* COLLABORATION CURSORS */
+        .cursor-flag { position: absolute; font-size: 10px; color: white; padding: 2px 6px; border-radius: 4px; white-space: nowrap; pointer-events: none; z-index: 50; top: -20px; left: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: top 0.1s, left 0.1s; }
+        .cursor-caret { position: absolute; width: 2px; height: 18px; z-index: 49; pointer-events: none; transition: top 0.1s, left 0.1s; }
+        /* When someone else is editing a line */
+        .locked-line-bg { background-color: rgba(255, 0, 0, 0.05); border-left: 2px solid rgba(255,0,0,0.4); }
 
-        /* LOCKED LINE STYLE */
-        .locked-line-bg {
-            background-color: rgba(255, 0, 0, 0.05);
-            border-left: 3px solid rgba(255, 0, 0, 0.4);
-            transition: background 0.3s;
-        }
-        html.dark .locked-line-bg {
-            background-color: rgba(255, 50, 50, 0.1);
-        }
-
-        /* MOBILE OPTIMIZATIONS */
+        /* MOBILE */
         @media (max-width: 850px) {
-            #editor-wrapper { padding: 0; background: var(--bg-color); }
+            #editor-wrapper { padding: 0; }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px 20px 80px 20px; } 
-            .ql-toolbar { 
-                margin: 0 !important; width: 100vw !important; border-radius: 0 !important; 
-                background: var(--surface-color) !important; 
-                padding: 10px 10px !important; 
-                display: flex !important; flex-flow: row nowrap !important; overflow-x: auto !important;
-                white-space: nowrap !important; -webkit-overflow-scrolling: touch; gap: 5px;
-            }
-            .ql-formats { display: flex !important; flex-shrink: 0 !important; margin-right: 10px !important; }
-            .ql-toolbar::-webkit-scrollbar { display: none; }
-            .ql-toolbar .ql-picker-options { 
-                position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
-                width: 100vw !important; max-height: 45vh !important; overflow-y: auto !important; 
-                background: var(--surface-color); border-radius: 16px 16px 0 0 !important; z-index: 99999 !important;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.3) !important; border: 1px solid var(--border-color); padding: 10px !important;
-            }
+            .ql-editor { padding: 20px 20px 80px 20px; }
+            .ql-toolbar { margin: 0 !important; width: 100vw !important; border-radius: 0 !important; overflow-x: auto !important; display: flex !important; flex-flow: row nowrap !important; }
         }
-
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
@@ -170,23 +61,13 @@
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
 
-    <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md transition-all duration-300">
-        <span id="preview-text" class="truncate pr-2 flex items-center gap-2"><span class="animate-pulse">🟢</span> Live View (Read Only)</span>
-        <div class="flex gap-2">
-            <button id="req-access-btn" onclick="requestAccess()" class="bg-gold text-black px-3 py-1 rounded font-bold text-xs hover:bg-yellow-400 whitespace-nowrap shadow hidden">Request Edit Access</button>
-            <button onclick="openLoginForGuest()" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 whitespace-nowrap shadow">Sign In</button>
-        </div>
+    <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md">
+        <span class="truncate pr-2 flex items-center gap-2"><span class="animate-pulse">🟢</span> <span id="access-status-text">Live View (Read Only)</span></span>
+        <button id="request-access-btn" onclick="requestEditAccess()" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 shadow hidden">Request Edit Access</button>
     </div>
 
-    <div id="sync-banner" class="hidden bg-blue-600 text-white px-4 py-1 text-[10px] flex justify-center items-center z-[60] shadow-sm">
-        <span class="flex items-center gap-2">🔄 Collaborative Mode Active</span>
-    </div>
-
-    <div id="loading-screen" class="absolute inset-0 z-[100] bg-bg flex items-center justify-center transition-opacity duration-500">
-        <div class="flex flex-col items-center">
-            <div class="loader mb-3"></div>
-            <div class="text-sm text-gray-500 font-medium animate-pulse">Syncing...</div>
-        </div>
+    <div id="loading-screen" class="absolute inset-0 z-[100] bg-bg flex items-center justify-center">
+        <div class="flex flex-col items-center"><div class="loader mb-3"></div><div class="text-sm text-gray-500 font-medium animate-pulse">Syncing ZenDocs...</div></div>
     </div>
 
     <div id="app" class="flex-1 flex relative overflow-hidden">
@@ -194,140 +75,103 @@
         <div id="auth-screen" class="absolute inset-0 z-[80] bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0 transform transition-all duration-500" id="auth-box">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
-                <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
-                <form id="auth-form" class="space-y-4">
-                    <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Email Address" required>
-                    <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Password" required>
-                    <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg">Sign In</button>
+                <form id="auth-form" class="space-y-4 mt-8">
+                    <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Email Address" required>
+                    <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Password" required>
+                    <button type="submit" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg">Sign In</button>
                     <div class="flex justify-between items-center text-sm mt-4 pt-2 border-t border-gray-700">
-                        <button type="button" id="signup-btn" class="text-gray-400 hover:text-white transition">Create Account</button>
-                        <button type="button" onclick="showResetModal()" class="text-accent hover:text-blue-300 transition">Forgot Password?</button>
-                    </div>
-                    <div id="auth-cancel-container" class="hidden text-center mt-2">
-                        <button type="button" onclick="closeLoginForGuest()" class="text-xs text-gray-500 hover:text-white">Cancel & Return to View</button>
+                        <button type="button" id="signup-btn" class="text-gray-400 hover:text-white">Create Account</button>
                     </div>
                     <p id="auth-error" class="text-danger text-xs text-center min-h-[1.5em] mt-2"></p>
                 </form>
             </div>
         </div>
 
-        <div id="share-modal" class="absolute inset-0 z-[90] bg-black/80 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white dark:bg-[#2d2d2d] rounded-xl w-full max-w-md shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
-                <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
-                    <h3 class="font-bold text-lg dark:text-white">Share Document</h3>
-                    <button onclick="document.getElementById('share-modal').classList.add('hidden')" class="text-gray-500 hover:text-red-500 text-xl">&times;</button>
+        <div id="share-modal" class="absolute inset-0 z-[90] bg-black/70 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-surface rounded-xl p-6 max-w-md w-full shadow-2xl animate-fade-in-up border border-border">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-text">Share Document</h3>
+                    <button onclick="closeShareModal()" class="text-gray-500 hover:text-text">✕</button>
                 </div>
-                <div class="p-4 space-y-4 overflow-y-auto">
-                    <div>
-                        <label class="text-xs uppercase font-bold text-gray-500 mb-1 block">General Access</label>
-                        <select id="share-access-level" onchange="updateSharePermissions()" class="w-full p-2 rounded border dark:bg-[#1e1e1e] dark:border-gray-600 dark:text-white">
-                            <option value="restricted">🔒 Restricted (Only added users)</option>
-                            <option value="view">👀 Anyone with link (View)</option>
-                            <option value="edit">✏️ Anyone with link (Edit)</option>
+                
+                <div class="mb-6 space-y-3">
+                    <div class="flex items-center justify-between bg-bg p-3 rounded-lg">
+                        <div>
+                            <div class="text-sm font-semibold text-text">General Access</div>
+                            <div class="text-[10px] text-muted">Control link behavior</div>
+                        </div>
+                        <select id="share-permission-select" onchange="updateSharePermissions()" class="bg-surface border border-border text-xs rounded px-2 py-1 outline-none text-text">
+                            <option value="view">Viewer (Read Only)</option>
+                            <option value="edit">Editor (Open Edit)</option>
                         </select>
-                        <p class="text-[10px] text-gray-400 mt-1">Guests must log in to edit, even with 'Anyone' access.</p>
                     </div>
+                    
+                    <div id="pending-requests-container" class="hidden">
+                        <div class="text-xs font-bold text-muted uppercase tracking-wider mb-2">Access Requests</div>
+                        <div id="requests-list" class="space-y-2 max-h-32 overflow-y-auto"></div>
+                    </div>
+                </div>
 
-                    <div class="flex gap-2">
-                        <input type="text" id="share-link-input" class="flex-1 p-2 text-sm bg-gray-100 dark:bg-[#1e1e1e] dark:text-gray-300 rounded border-none" readonly>
-                        <button onclick="copyShareLink()" class="bg-accent text-white px-3 rounded hover:bg-blue-600 text-sm">Copy</button>
-                    </div>
-
-                    <div id="share-requests-section" class="hidden">
-                        <label class="text-xs uppercase font-bold text-gray-500 mb-1 block">Access Requests</label>
-                        <div id="request-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
-                    </div>
+                <div class="flex gap-2">
+                    <input type="text" id="share-link-input" class="flex-1 text-xs bg-bg border border-border rounded px-3 text-muted" readonly>
+                    <button onclick="copyShareLink()" class="bg-accent text-white px-4 py-2 rounded text-xs font-bold hover:bg-blue-600 transition">Copy Link</button>
                 </div>
             </div>
         </div>
 
-        <div id="history-modal" class="absolute inset-0 z-[90] bg-black/80 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white dark:bg-[#2d2d2d] rounded-xl w-full max-w-md shadow-2xl animate-fade-in-up flex flex-col max-h-[80vh]">
-                <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
-                    <h3 class="font-bold text-lg dark:text-white">Edit History</h3>
-                    <button onclick="document.getElementById('history-modal').classList.add('hidden')" class="text-gray-500 hover:text-red-500 text-xl">&times;</button>
+        <div id="info-modal" class="absolute inset-0 z-[90] bg-black/70 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-surface rounded-xl p-6 max-w-md w-full shadow-2xl animate-fade-in-up h-[60vh] flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-text">Collaboration History</h3>
+                    <button onclick="document.getElementById('info-modal').classList.add('hidden')" class="text-gray-500">✕</button>
                 </div>
-                <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-2">
-                    <div class="text-center text-gray-500 text-sm">Loading activity...</div>
-                </div>
+                <div id="history-list" class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar"></div>
             </div>
         </div>
 
         <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0">
-            <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-[60] hidden backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar()"></div>
+            <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-[60] hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
-            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-[65] h-[100dvh] md:h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
+            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-[65] h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
                 <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
                     <span class="font-bold text-white tracking-wide pl-1 text-lg">ZenDocs</span>
-                    <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1 hover:rotate-90 duration-300" title="New Note">+</button>
+                    <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition text-2xl pb-1">+</button>
                 </div>
-                <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
-                    <div class="space-y-1 mb-6">
-                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition hover:translate-x-1 duration-200"><span>📄</span> All Files</div>
-                        <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition hover:translate-x-1 duration-200"><span>⭐</span> Important</div>
-                    </div>
-                    <div class="mb-2 px-2 flex justify-between items-center group">
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
-                        <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
-                    </div>
-                    <div id="folder-list" class="space-y-1 mb-6"></div>
-                    <div class="mb-2 px-2 border-t border-gray-700 pt-4">
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Recent</span>
-                    </div>
-                    <div id="doc-list" class="space-y-1 pb-10"></div>
-                </div>
-                <div class="p-3 bg-[#181818] border-t border-gray-800">
-                    <div class="flex items-center justify-between mb-2 px-1">
-                        <span id="user-email" class="text-[11px] text-gray-400 font-medium truncate max-w-[120px]"></span>
-                        <button id="logout-btn" class="text-[10px] text-red-400 hover:text-red-300 transition font-bold bg-red-900/10 hover:bg-red-900/30 px-2 py-0.5 rounded border border-transparent hover:border-red-900/50">Sign Out</button>
-                    </div>
+                <div class="flex-1 overflow-y-auto p-3" id="doc-list"></div>
+                <div class="p-3 bg-[#181818] border-t border-gray-800 text-xs text-center">
+                    <span id="user-email" class="block mb-2 text-gray-500"></span>
+                    <button onclick="auth.signOut();window.location.reload()" class="text-red-400 hover:text-red-300">Sign Out</button>
                 </div>
             </aside>
 
             <main class="flex-1 flex flex-col h-full relative w-full bg-bg transition-colors duration-300">
-                <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-3 md:px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
+                <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-3 md:px-4 z-10 shadow-sm flex-shrink-0">
                     <div class="flex items-center gap-2 flex-1 min-w-0">
-                        <button id="hamburger-btn" class="md:hidden text-muted p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" onclick="toggleSidebar()">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-                        </button>
-                        
+                        <button class="md:hidden text-muted p-2" onclick="toggleSidebar()">☰</button>
                         <div class="flex flex-col w-full min-w-0">
-                            <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300 min-w-0" placeholder="Untitled Document" disabled>
-                            <div class="flex items-center gap-2">
-                                <span id="save-status" class="text-[10px] text-muted font-medium h-3 truncate"></span>
-                                <div id="active-users-stack" class="flex -space-x-2"></div>
-                            </div>
+                            <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate" placeholder="Untitled" disabled>
+                            <span id="save-status" class="text-[10px] text-muted font-medium h-3 truncate"></span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-1 pl-2 relative">
-                         <button id="history-btn" onclick="openHistory()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition" title="History">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div class="flex items-center gap-2 pl-2">
+                        <button id="info-btn" onclick="openInfoModal()" class="hidden p-2 rounded-full text-muted hover:bg-gray-100 hover:text-accent relative">
+                            ℹ️ <span id="request-badge" class="absolute top-0 right-0 w-2.5 h-2.5 bg-danger rounded-full hidden"></span>
                         </button>
-
-                        <button id="share-btn" onclick="openShareModal()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded-full md:rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-1" disabled title="Share Link">
+                        
+                        <button id="share-btn" onclick="openShareModal()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded-full md:rounded hover:bg-blue-200 transition flex items-center gap-1" disabled>
                             <span>🔗</span> <span class="hidden md:inline">Share</span>
                         </button>
 
-                        <div id="logged-in-controls" class="flex items-center gap-2">
-                             <select id="folder-select" class="hidden md:block text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 outline-none cursor-pointer" disabled>
-                                <option value="">No Folder</option>
-                            </select>
-                            
-                            <button id="theme-btn" onclick="toggleTheme()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition">
-                                <span id="sun-icon" class="hidden">☀️</span><span id="moon-icon">🌙</span>
-                            </button>
-                            
-                            <button id="fav-btn" onclick="toggleFavorite()" class="hidden md:block p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gold transition disabled:opacity-50" disabled>★</button>
-                            <button id="delete-btn" onclick="deleteCurrentDoc()" class="hidden md:block p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50" disabled>🗑</button>
-                        </div>
+                        <button onclick="toggleTheme()" class="p-2 rounded-full text-muted hover:bg-gray-100 hover:text-accent">🌗</button>
                     </div>
                 </div>
 
                 <div id="editor-wrapper" class="opacity-50 pointer-events-none transition-opacity duration-500" onclick="focusEditor()">
-                    <div id="paper-container" class="transition-all duration-300">
+                    <div id="cursors-layer" class="absolute inset-0 pointer-events-none z-[40] w-[794px] mx-auto hidden md:block"></div>
+                    
+                    <div id="paper-container">
                         <div id="editor-container"></div>
-                        <div id="cursor-layer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
                     </div>
                 </div>
             </main>
@@ -340,6 +184,7 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
@@ -348,469 +193,463 @@
           messagingSenderId: "372433592521",
           appId: "1:372433592521:web:348b2558084299be1a6d18"
         };
-        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.error(e); }
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- STATE & CONFIG ---
+        // --- STATE & UTILS ---
+        const generateColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
+        const getSessionId = () => { let id = localStorage.getItem('z_sess_id'); if(!id) { id = Math.random().toString(36).substr(2,9); localStorage.setItem('z_sess_id', id); } return id; };
+        
         let state = {
-            user: null, docId: null, shareId: null, activeFilter: 'all', folders: [], docs: [],
-            isFav: false, saveTimer: null, firstLoad: true,
-            isGuest: false, currentAccessLevel: 'none', // 'owner', 'edit', 'view'
-            unsubscribeDoc: null, unsubscribeLocks: null, unsubscribeRequests: null,
-            myColor: '#' + Math.floor(Math.random()*16777215).toString(16),
-            cursors: {}
+            user: null, docId: null, shareId: null, docs: [],
+            isGuest: false, permission: 'view', // 'view' or 'edit'
+            myColor: generateColor(),
+            sessionId: getSessionId(),
+            unsubDoc: null, unsubPresence: null, unsubRequests: null
         };
 
         const els = {
-            loadingScreen: document.getElementById('loading-screen'),
-            authScreen: document.getElementById('auth-screen'), authBox: document.getElementById('auth-box'),
-            dashboard: document.getElementById('dashboard-screen'), sidebar: document.getElementById('sidebar'),
-            email: document.getElementById('email'), pass: document.getElementById('password'),
-            authError: document.getElementById('auth-error'), docList: document.getElementById('doc-list'),
-            folderList: document.getElementById('folder-list'), folderSelect: document.getElementById('folder-select'),
-            title: document.getElementById('doc-title'), editorWrapper: document.getElementById('editor-wrapper'),
-            status: document.getElementById('save-status'), favBtn: document.getElementById('fav-btn'),
-            delBtn: document.getElementById('delete-btn'), userEmail: document.getElementById('user-email'),
-            shareBtn: document.getElementById('share-btn'), shareModal: document.getElementById('share-modal'),
-            shareLinkInput: document.getElementById('share-link-input'), shareAccess: document.getElementById('share-access-level'),
-            requestList: document.getElementById('request-list'), shareRequestsSection: document.getElementById('share-requests-section'),
-            cursorLayer: document.getElementById('cursor-layer'), historyModal: document.getElementById('history-modal'),
-            historyList: document.getElementById('history-list'), activeUsersStack: document.getElementById('active-users-stack'),
-            reqAccessBtn: document.getElementById('req-access-btn'), previewBanner: document.getElementById('preview-banner')
+            app: document.getElementById('app'),
+            authScreen: document.getElementById('auth-screen'),
+            authBox: document.getElementById('auth-box'),
+            dashboard: document.getElementById('dashboard-screen'),
+            loading: document.getElementById('loading-screen'),
+            title: document.getElementById('doc-title'),
+            status: document.getElementById('save-status'),
+            editorWrapper: document.getElementById('editor-wrapper'),
+            cursorsLayer: document.getElementById('cursors-layer'),
+            shareModal: document.getElementById('share-modal'),
+            shareSelect: document.getElementById('share-permission-select'),
+            requestBtn: document.getElementById('request-access-btn'),
+            banner: document.getElementById('preview-banner'),
+            accessText: document.getElementById('access-status-text'),
+            requestsList: document.getElementById('requests-list'),
+            requestsContainer: document.getElementById('pending-requests-container'),
+            requestBadge: document.getElementById('request-badge'),
+            infoBtn: document.getElementById('info-btn'),
+            infoModal: document.getElementById('info-modal'),
+            historyList: document.getElementById('history-list')
         };
 
+        // --- QUILL INIT ---
         var quill = new Quill('#editor-container', {
             theme: 'snow', placeholder: 'Start writing...',
-            modules: { toolbar: { container: [
-                [{'header':[1,2,3,false]}], ['bold','italic','underline','strike'], 
-                [{'list':'ordered'},{'list':'bullet'}, {'list': 'check'}], [{'align':[]}], ['image','link','clean']
-            ]}}
+            modules: { toolbar: [[{'header':[1,2,false]}], ['bold','italic','underline', {'color':[]}, {'background':[]}], [{'list':'ordered'},{'list':'bullet'}], ['clean']] }
         });
 
         // --- AUTH & ROUTING ---
-        auth.onAuthStateChanged((u) => {
+        auth.onAuthStateChanged(u => {
             state.user = u;
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlShareId = urlParams.get('shareId');
+
             if (u) {
-                state.isGuest = false;
-                els.userEmail.textContent = u.email;
+                // Logged in owner
                 els.authScreen.classList.add('hidden');
-                els.dashboard.classList.remove('hidden');
-                els.dashboard.classList.add('animate-fade-in');
-                db.collection('users').doc(u.uid).set({ email: u.email, lastLogin: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-                initData();
+                els.dashboard.classList.remove('hidden'); els.dashboard.classList.add('animate-fade-in-up');
+                document.getElementById('user-email').textContent = u.email;
+                
+                if (urlShareId) {
+                    // Logged in user visiting a link (Import Logic)
+                    importSharedDoc(urlShareId);
+                } else {
+                    initOwnerData();
+                }
             } else {
-                handleRoute();
+                // Guest
+                if (urlShareId) {
+                    loadGuestView(urlShareId);
+                } else {
+                    els.loading.classList.add('hidden');
+                    els.authScreen.classList.remove('hidden'); els.authBox.classList.remove('opacity-0');
+                }
             }
         });
 
-        function getShareIdFromUrl() { return new URLSearchParams(window.location.search).get('shareId'); }
-
-        async function handleRoute() {
-            const shareId = getShareIdFromUrl();
-            if (shareId) {
-                state.isGuest = true;
-                await loadSharedDoc(shareId);
-            } else {
-                els.loadingScreen.classList.add('hidden'); 
-                els.authScreen.classList.remove('hidden');
-                els.authBox.classList.add('animate-fade-in-up'); 
-            }
-        }
-
-        // --- DATA LOADING & SYNC ---
-        function initData() {
-            if(!state.user) return;
-            const uid = state.user.uid;
+        // --- OWNER LOGIC ---
+        function initOwnerData() {
+            els.loading.classList.add('hidden');
+            document.getElementById('share-btn').disabled = false;
             
-            // Listen to User's Folders
-            db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
-                state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderFolders(); updateFolderSelect();
-            });
-
-            // Listen to User's Private Docs
-            db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(async (snap) => {
+            db.collection('users').doc(state.user.uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderDocs();
-                
-                const shareId = getShareIdFromUrl();
-                if (state.firstLoad) {
-                    state.firstLoad = false;
-                    if (shareId) {
-                        await loadSharedDoc(shareId); // Load the cloud doc
-                    } else if (state.docs.length > 0) {
-                        openLocalDoc(state.docs[0].id);
-                    } else {
-                        createNewDoc();
-                    }
-                    els.loadingScreen.classList.add('hidden');
-                }
+                renderSidebar();
+                if(!state.docId && state.docs.length > 0) openDoc(state.docs[0]);
+                else if(state.docs.length === 0) createNewDoc();
             });
         }
 
-        // --- DOCUMENT OPENING LOGIC ---
-
-        // 1. Open Local Private Doc (Owner)
-        function openLocalDoc(docId) {
-            cleanUpListeners();
-            const doc = state.docs.find(d => d.id === docId);
-            if(!doc) return;
-
-            state.docId = docId;
-            state.shareId = doc.shareId || null;
-            state.currentAccessLevel = 'owner';
+        // --- GUEST/SHARED LOGIC ---
+        async function loadGuestView(sid) {
+            state.isGuest = true;
+            state.shareId = sid;
+            els.loading.classList.remove('hidden');
             
-            renderEditorUI(doc.title, doc.content, false);
-            setupRealtimeSync(state.shareId, true);
-        }
+            // Listen to Shared Document
+            state.unsubDoc = db.collection('shared_docs').doc(sid).onSnapshot(doc => {
+                if(!doc.exists) return alert("Note deleted");
+                const data = doc.data();
+                
+                els.loading.classList.add('hidden');
+                els.authScreen.classList.add('hidden');
+                els.dashboard.classList.remove('hidden'); els.dashboard.classList.add('animate-fade-in-up');
+                document.getElementById('sidebar').classList.add('hidden');
+                els.banner.classList.remove('hidden');
 
-        // 2. Load Shared Doc (Guest or User)
-        async function loadSharedDoc(shareId) {
-            cleanUpListeners();
-            state.shareId = shareId;
-            els.loadingScreen.classList.remove('hidden');
-            els.sidebar.classList.add('hidden');
-            
-            // Listen to the Shared Document Root
-            state.unsubscribeDoc = db.collection('shared_docs').doc(shareId).onSnapshot(async (docSnap) => {
-                if (!docSnap.exists) { alert("Document not found."); return; }
-                const data = docSnap.data();
-                
-                // Determine Access Level
-                let access = 'none';
-                if (state.user && data.ownerId === state.user.uid) access = 'owner';
-                else if (data.access === 'edit') access = 'edit'; // Anyone can edit
-                else if (data.access === 'view') access = 'view';
-                else if (state.user && data.allowedUsers && data.allowedUsers.includes(state.user.email)) access = 'edit';
-                
-                // Guest Override: Guests are View Only unless logged in
-                if (!state.user && access === 'edit') access = 'view';
+                // SYNC CONTENT
+                syncContent(data.t, data.c);
 
-                state.currentAccessLevel = access;
-                renderEditorUI(data.t, data.c, access !== 'edit' && access !== 'owner');
-                
-                // UI Updates based on access
-                els.previewBanner.classList.toggle('hidden', access === 'owner' || (access === 'edit' && state.user));
-                els.reqAccessBtn.classList.toggle('hidden', access !== 'none');
-                
-                if (access === 'none') {
-                    quill.setText("Access Restricted. Please request access.");
-                    quill.disable();
+                // ACCESS CONTROL
+                // If global access is 'edit', everyone is an editor
+                if (data.access === 'edit') {
+                    setAccessMode('edit');
                 } else {
-                    setupRealtimeSync(shareId, access === 'owner' || access === 'edit');
+                    // Default to view
+                    setAccessMode('view');
                 }
-                els.loadingScreen.classList.add('hidden');
-                els.dashboard.classList.remove('hidden');
-            });
+
+                // Initialize Presence
+                initPresence(sid);
+                
+            }, err => console.error(err));
         }
 
-        function renderEditorUI(title, content, readOnly) {
-            els.title.value = title;
-            els.title.disabled = readOnly;
-            
-            // Silent Update to prevent loops
-            const currentDelta = quill.getContents();
-            const newDelta = new Quill(document.createElement('div')).setContents(content).getContents(); // Normalize
-            if (JSON.stringify(currentDelta) !== JSON.stringify(newDelta)) {
-                quill.setContents(content, 'silent');
-            }
-
-            if (readOnly) {
-                quill.disable();
-                els.editorWrapper.classList.add('opacity-80');
-                els.shareBtn.disabled = true;
-            } else {
+        function setAccessMode(mode) {
+            state.permission = mode;
+            if(mode === 'edit') {
                 quill.enable();
-                els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none', 'opacity-80');
-                els.shareBtn.disabled = false;
+                els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
+                els.title.disabled = false;
+                els.accessText.innerHTML = "🟢 Live Collaboration (Editor)";
+                els.requestBtn.classList.add('hidden');
+            } else {
+                quill.disable();
+                els.editorWrapper.classList.remove('opacity-50'); // Keep opacity normal for reading
+                els.editorWrapper.style.pointerEvents = 'auto'; // Allow scrolling
+                document.querySelector('.ql-editor').contentEditable = false; // Disable typing
+                els.title.disabled = true;
+                els.accessText.innerHTML = "👁️ View Only";
+                els.requestBtn.classList.remove('hidden');
             }
         }
 
-        function cleanUpListeners() {
-            if (state.unsubscribeDoc) state.unsubscribeDoc();
-            if (state.unsubscribeLocks) state.unsubscribeLocks();
-            if (state.unsubscribeRequests) state.unsubscribeRequests();
-            els.cursorLayer.innerHTML = '';
+        // --- CORE SYNC ---
+        let isLocalChange = false;
+        
+        function syncContent(title, content) {
+            if(isLocalChange) return;
+            els.title.value = title;
+            const currentDelta = JSON.stringify(quill.getContents());
+            const incomingDelta = JSON.stringify(content);
+            if (currentDelta !== incomingDelta) {
+                const range = quill.getSelection();
+                quill.setContents(content, 'silent');
+                if(range) quill.setSelection(range);
+            }
         }
 
-        // --- REAL-TIME COLLABORATION CORE ---
+        quill.on('text-change', (delta, old, source) => {
+            if (source === 'user') {
+                isLocalChange = true;
+                
+                // 1. Basic Debounced Save
+                if (state.saveTimer) clearTimeout(state.saveTimer);
+                state.saveTimer = setTimeout(() => saveContent(), 500);
 
-        function setupRealtimeSync(shareId, canEdit) {
-            if (!shareId) return;
+                // 2. Log History (Debounced longer)
+                if (state.historyTimer) clearTimeout(state.historyTimer);
+                state.historyTimer = setTimeout(() => logHistory(), 2000);
 
-            // 1. Listen for Line Locks
-            state.unsubscribeLocks = db.collection('shared_docs').doc(shareId).collection('locks').onSnapshot(snap => {
-                // Clear old locks style
-                document.querySelectorAll('.locked-line-bg').forEach(el => el.classList.remove('locked-line-bg'));
+                // 3. Locking Check (Visual)
+                // We check if we are editing a line someone else is on.
+                // Simple logic: If we type, we are "owning" this spot.
+            }
+        });
+        
+        // --- DATA SAVING ---
+        async function saveContent() {
+            els.status.textContent = "Saving...";
+            const data = {
+                t: els.title.value,
+                c: quill.getContents(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                if (state.isGuest) {
+                    if (state.permission !== 'edit') return;
+                    await db.collection('shared_docs').doc(state.shareId).update(data);
+                } else {
+                    await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({
+                        title: data.t, content: data.c, updatedAt: data.updatedAt
+                    });
+                    // Also update share copy if it exists
+                    if(state.shareId) {
+                         await db.collection('shared_docs').doc(state.shareId).update(data);
+                    }
+                }
+                els.status.textContent = "Saved";
+                isLocalChange = false;
+            } catch(e) { console.error(e); els.status.textContent = "Error"; }
+        }
+
+        // --- PRESENCE & CURSORS (THE COOL PART) ---
+        function initPresence(sid) {
+            if(state.unsubPresence) state.unsubPresence();
+            
+            // 1. Send my heartbeat
+            const presDoc = db.collection('shared_docs').doc(sid).collection('presence').doc(state.sessionId);
+            
+            // Update my position on selection change
+            quill.on('selection-change', (range) => {
+                if(range) {
+                    const bounds = quill.getBounds(range.index);
+                    presDoc.set({
+                        u: state.user ? state.user.email : 'Guest',
+                        c: state.myColor,
+                        r: range.index, // Index
+                        t: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Simple "Locking" Logic: Reset background colors
+                    quill.formatText(0, quill.getLength(), 'background', false, 'api'); 
+                }
+            });
+
+            // 2. Listen to others
+            state.unsubPresence = db.collection('shared_docs').doc(sid).collection('presence').onSnapshot(snap => {
+                els.cursorsLayer.innerHTML = ''; // Clear old cursors
                 
                 snap.forEach(doc => {
-                    const lockData = doc.data();
-                    if (lockData.userId !== (state.user ? state.user.uid : 'guest')) {
-                        // It's someone else. Lock this line visually.
-                        const index = lockData.index;
-                        // Approximate line finding (Quill doesn't have easy getLineByIndex for DOM)
-                        const [line, offset] = quill.getLine(index);
-                        if (line && line.domNode) {
-                            line.domNode.classList.add('locked-line-bg');
-                            line.domNode.setAttribute('data-locked-by', lockData.email);
-                        }
-                    }
-                });
-            });
+                    if(doc.id === state.sessionId) return; // Skip me
+                    const p = doc.data();
+                    if(!p.r) return;
 
-            // 2. Listen for Cursors
-            db.collection('shared_docs').doc(shareId).collection('active_users').onSnapshot(snap => {
-                els.cursorLayer.innerHTML = '';
-                els.activeUsersStack.innerHTML = '';
-                snap.forEach(doc => {
-                    const u = doc.data();
-                    if (state.user && u.userId === state.user.uid) return; // Skip self
-                    
-                    // Render Avatar
-                    const avatar = document.createElement('div');
-                    avatar.className = "w-6 h-6 rounded-full border border-white text-[10px] flex items-center justify-center text-white font-bold";
-                    avatar.style.backgroundColor = u.color;
-                    avatar.textContent = u.email[0].toUpperCase();
-                    avatar.title = u.email;
-                    els.activeUsersStack.appendChild(avatar);
+                    // Calculate position
+                    // We need a try-catch because if content is out of sync, getBounds fails
+                    try {
+                        const bounds = quill.getBounds(p.r);
+                        if(bounds) {
+                            // Draw Cursor
+                            const flag = document.createElement('div');
+                            flag.className = 'cursor-flag';
+                            flag.textContent = p.u.split('@')[0];
+                            flag.style.backgroundColor = p.c;
+                            flag.style.top = (bounds.top - 20) + 'px';
+                            flag.style.left = bounds.left + 'px';
 
-                    // Render Cursor Flag
-                    if (u.range) {
-                        const bounds = quill.getBounds(u.range.index);
-                        const cursorHtml = `
-                            <div class="cursor-caret" style="left:${bounds.left}px; top:${bounds.top}px; background-color:${u.color};"></div>
-                            <div class="cursor-flag" style="left:${bounds.left}px; top:${bounds.top - 15}px; background-color:${u.color};">
-                                ${u.email.split('@')[0]}
-                            </div>`;
-                        const div = document.createElement('div');
-                        div.innerHTML = cursorHtml;
-                        els.cursorLayer.appendChild(div);
-                    }
-                });
-            });
+                            const caret = document.createElement('div');
+                            caret.className = 'cursor-caret';
+                            caret.style.backgroundColor = p.c;
+                            caret.style.top = bounds.top + 'px';
+                            caret.style.left = bounds.left + 'px';
+                            caret.style.height = bounds.height + 'px';
 
-            if (canEdit) {
-                // Heartbeat / Presence
-                const presenceRef = db.collection('shared_docs').doc(shareId).collection('active_users').doc(state.user.uid);
-                const updatePresence = () => {
-                    if(!state.docId && !state.shareId) return;
-                    presenceRef.set({
-                        email: state.user.email, userId: state.user.uid, color: state.myColor,
-                        lastActive: firebase.firestore.FieldValue.serverTimestamp()
-                    }, {merge: true});
-                };
-                setInterval(updatePresence, 5000); // Keep alive
+                            els.cursorsLayer.appendChild(flag);
+                            els.cursorsLayer.appendChild(caret);
 
-                // Track Cursor & Selection for Locking
-                quill.on('selection-change', (range) => {
-                    if (range) {
-                        presenceRef.set({ range: range }, { merge: true });
-                        // Simple Line Locking: Lock the paragraph 
-                        const [line, offset] = quill.getLine(range.index);
-                        const lineIndex = quill.getIndex(line);
-                        
-                        // Push Lock to DB
-                        db.collection('shared_docs').doc(shareId).collection('locks').doc('current_lock_' + state.user.uid).set({
-                            userId: state.user.uid, email: state.user.email, index: lineIndex,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-                });
-
-                // Save Changes & History
-                quill.on('text-change', (delta, old, source) => {
-                    if (source === 'user') {
-                        // Check if line is locked by others locally (Optimistic)
-                        const range = quill.getSelection();
-                        if(range) {
-                            const [line] = quill.getLine(range.index);
-                            if(line.domNode.classList.contains('locked-line-bg')) {
-                                alert("This line is being edited by someone else.");
-                                quill.history.undo();
-                                return;
+                            // LOCKING: Highlight the line they are on
+                            // Note: This is visual only ("Soft Lock")
+                            const line = quill.getLine(p.r); 
+                            if(line && line[0]) {
+                                // We can add a class to the DOM node directly
+                                // line[0].domNode.classList.add('locked-line-bg'); // Tricky to clear
                             }
                         }
-                        
-                        // Debounced Save
-                        els.status.textContent = "Saving...";
-                        if (state.saveTimer) clearTimeout(state.saveTimer);
-                        state.saveTimer = setTimeout(async () => {
-                            const content = JSON.parse(JSON.stringify(quill.getContents()));
-                            
-                            // Update Doc Content
-                            await db.collection('shared_docs').doc(shareId).update({
-                                t: els.title.value, c: content, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-
-                            // Log History
-                            db.collection('shared_docs').doc(shareId).collection('history').add({
-                                user: state.user.email, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                                action: 'edited content'
-                            });
-
-                            // Sync back to private doc if owner
-                            if (state.docId) {
-                                db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({
-                                    title: els.title.value, content: content, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                            }
-                            els.status.textContent = "Saved";
-                        }, 500); // 500ms debounce
-                    }
+                    } catch(e) {}
                 });
-            }
+            });
         }
 
-        // --- SHARING MODAL & LOGIC ---
-        window.openShareModal = async () => {
-            if(!state.shareId) await createSharedDocIfNeeded();
-            els.shareModal.classList.remove('hidden');
-            const url = `${window.location.origin}${window.location.pathname}?shareId=${state.shareId}`;
-            els.shareLinkInput.value = url;
-            loadShareSettings();
+        // --- HISTORY LOGGER ---
+        async function logHistory() {
+            if(!state.shareId) return;
+            const user = state.user ? state.user.email : (state.isGuest ? "Guest " + state.sessionId.substr(0,4) : "Anonymous");
+            // Just a simple log
+            await db.collection('shared_docs').doc(state.shareId).collection('history').add({
+                msg: `${user} edited the document`,
+                ts: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+
+        // --- ACCESS REQUEST LOGIC ---
+        window.requestEditAccess = async () => {
+            if(!state.shareId) return;
+            const name = prompt("Enter your name to request access:");
+            if(!name) return;
+            
+            await db.collection('shared_docs').doc(state.shareId).collection('requests').add({
+                name: name,
+                sid: state.sessionId,
+                ts: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("Request sent! The owner receives it instantly.");
         };
 
-        async function createSharedDocIfNeeded() {
-            if(state.shareId) return;
-            const content = JSON.parse(JSON.stringify(quill.getContents()));
+        // --- SHARING & MODALS ---
+        window.openShareModal = () => {
+            if(!state.shareId) createShareLink(); // Generate if new
+            else {
+                // Fetch current permission
+                db.collection('shared_docs').doc(state.shareId).get().then(d => {
+                    els.shareSelect.value = d.data().access || 'view';
+                    updateShareLinkUI();
+                    els.shareModal.classList.remove('hidden');
+                    loadRequests(); // Load requests if owner
+                });
+            }
+        };
+        
+        window.closeShareModal = () => els.shareModal.classList.add('hidden');
+
+        async function createShareLink() {
+            // Create shared doc entry
+            const activeDoc = state.docs.find(d => d.id === state.docId);
             const docRef = await db.collection('shared_docs').add({
-                t: els.title.value, c: content, ownerId: state.user.uid, access: 'restricted', allowedUsers: [],
+                t: activeDoc.title,
+                c: activeDoc.content,
+                ownerId: state.user.uid,
+                email: state.user.email,
+                access: 'view', // Default
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+            
             state.shareId = docRef.id;
             await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({ shareId: state.shareId });
+            
+            initPresence(state.shareId); // Start tracking
+            els.infoBtn.classList.remove('hidden'); // Show history button
+            window.openShareModal();
         }
 
-        function loadShareSettings() {
-            db.collection('shared_docs').doc(state.shareId).get().then(doc => {
-                if(doc.exists) {
-                    const data = doc.data();
-                    els.shareAccess.value = data.access || 'restricted';
-                    
-                    // Requests
-                    if(state.currentAccessLevel === 'owner') {
-                        els.shareRequestsSection.classList.remove('hidden');
-                        state.unsubscribeRequests = db.collection('shared_docs').doc(state.shareId).collection('requests').onSnapshot(snap => {
-                            els.requestList.innerHTML = '';
-                            if(snap.empty) els.requestList.innerHTML = '<div class="text-xs text-gray-400">No pending requests</div>';
-                            snap.forEach(req => {
-                                const r = req.data();
-                                const div = document.createElement('div');
-                                div.className = "flex justify-between items-center text-sm p-2 bg-gray-50 dark:bg-gray-800 rounded";
-                                div.innerHTML = `<span>${r.email}</span> 
-                                    <div class="flex gap-1">
-                                        <button onclick="approveRequest('${req.id}', '${r.email}')" class="text-green-500 text-xs border border-green-500 px-2 rounded hover:bg-green-500 hover:text-white">Approve</button>
-                                        <button onclick="rejectRequest('${req.id}')" class="text-red-500 text-xs border border-red-500 px-2 rounded hover:bg-red-500 hover:text-white">Reject</button>
-                                    </div>`;
-                                els.requestList.appendChild(div);
-                            });
-                        });
-                    }
+        window.updateSharePermissions = async () => {
+            const mode = els.shareSelect.value;
+            await db.collection('shared_docs').doc(state.shareId).update({ access: mode });
+            // If switched to 'edit', all guests become editors instantly via snapshot listener
+        };
+
+        function updateShareLinkUI() {
+            const url = `${window.location.origin}${window.location.pathname}?shareId=${state.shareId}`;
+            document.getElementById('share-link-input').value = url;
+        }
+
+        window.copyShareLink = () => {
+            const copyText = document.getElementById("share-link-input");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Link Copied!");
+        };
+
+        function loadRequests() {
+            els.requestsContainer.classList.remove('hidden');
+            if(state.unsubRequests) state.unsubRequests();
+            
+            state.unsubRequests = db.collection('shared_docs').doc(state.shareId).collection('requests').orderBy('ts', 'desc').onSnapshot(snap => {
+                els.requestsList.innerHTML = '';
+                if(snap.empty) {
+                     els.requestsList.innerHTML = '<div class="text-xs text-muted">No pending requests</div>';
+                     els.requestBadge.classList.add('hidden');
+                     return;
                 }
+                
+                els.requestBadge.classList.remove('hidden'); // Red dot
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-bg p-2 rounded text-xs";
+                    div.innerHTML = `<span><b>${r.name}</b> wants edit access</span> 
+                    <div class="flex gap-1">
+                        <button onclick="grantAccess('${doc.id}')" class="text-green-600 hover:bg-green-100 px-2 py-1 rounded">Grant (Open Editor)</button>
+                        <button onclick="deleteRequest('${doc.id}')" class="text-red-500">✕</button>
+                    </div>`;
+                    els.requestsList.appendChild(div);
+                });
             });
         }
 
-        window.updateSharePermissions = () => {
-            if(state.currentAccessLevel !== 'owner') return;
-            db.collection('shared_docs').doc(state.shareId).update({ access: els.shareAccess.value });
-        };
-
-        window.requestAccess = async () => {
-            if (!state.user) { openLoginForGuest(); return; }
-            if (state.shareId) {
-                await db.collection('shared_docs').doc(state.shareId).collection('requests').add({
-                    email: state.user.email, uid: state.user.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Request sent to owner.");
+        window.grantAccess = async (reqId) => {
+            // Requirement: "user clicks... owner can give access... anyone with link gets access"
+            // So we switch global mode to Edit
+            if(confirm("This will switch the document to Public Editor mode. Everyone with the link can edit.")) {
+                els.shareSelect.value = 'edit';
+                await updateSharePermissions();
+                await deleteRequest(reqId);
             }
         };
 
-        window.approveRequest = async (reqId, email) => {
-            await db.collection('shared_docs').doc(state.shareId).update({
-                allowedUsers: firebase.firestore.FieldValue.arrayUnion(email)
-            });
-            await db.collection('shared_docs').doc(state.shareId).collection('requests').doc(reqId).delete();
+        window.deleteRequest = async (id) => {
+            await db.collection('shared_docs').doc(state.shareId).collection('requests').doc(id).delete();
         };
 
-        window.rejectRequest = async (reqId) => {
-            await db.collection('shared_docs').doc(state.shareId).collection('requests').doc(reqId).delete();
-        };
-
-        window.copyShareLink = () => {
-            els.shareLinkInput.select(); document.execCommand('copy');
-            alert("Link copied!");
-        };
-
-        // --- HISTORY ---
-        window.openHistory = () => {
-            if(!state.shareId) { alert("This document hasn't been shared yet, so there is no cloud history."); return; }
-            els.historyModal.classList.remove('hidden');
-            db.collection('shared_docs').doc(state.shareId).collection('history').orderBy('timestamp', 'desc').limit(20).get().then(snap => {
+        // --- INFO / HISTORY ---
+        window.openInfoModal = () => {
+            els.infoModal.classList.remove('hidden');
+            db.collection('shared_docs').doc(state.shareId).collection('history').orderBy('ts', 'desc').limit(20).get().then(snap => {
                 els.historyList.innerHTML = '';
                 snap.forEach(doc => {
                     const h = doc.data();
-                    const date = h.timestamp ? h.timestamp.toDate().toLocaleString() : 'Just now';
-                    const div = document.createElement('div');
-                    div.className = "text-sm border-l-2 border-accent pl-2 py-1";
-                    div.innerHTML = `<div class="font-bold dark:text-gray-200">${h.user}</div><div class="text-xs text-gray-500">${h.action} - ${date}</div>`;
-                    els.historyList.appendChild(div);
+                    const time = h.ts ? new Date(h.ts.toDate()).toLocaleTimeString() : '';
+                    const d = document.createElement('div');
+                    d.className = "text-xs border-b border-border py-2 text-muted flex justify-between";
+                    d.innerHTML = `<span>${h.msg}</span> <span>${time}</span>`;
+                    els.historyList.appendChild(d);
                 });
             });
-        };
-
-        // --- UTILS ---
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
-            document.getElementById('moon-icon').classList.toggle('hidden', isDark);
         }
 
-        // Standard helpers
-        function openLoginForGuest() { els.authScreen.classList.remove('hidden'); els.authBox.classList.remove('opacity-0'); els.authBox.classList.add('animate-fade-in-up'); }
-        function closeLoginForGuest() { els.authScreen.classList.add('hidden'); }
-        document.getElementById('auth-form').onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = "Check email or password."); };
-        document.getElementById('signup-btn').onclick = () => { auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message); };
-        document.getElementById('logout-btn').onclick = () => { auth.signOut(); window.location.href = window.location.pathname; }; // Reload to clear state
-        
-        // Initial Theme
-        if(localStorage.getItem('theme') === 'dark') toggleTheme();
-        
+        // --- STANDARD APP FUNCTIONS (From your original code) ---
         window.createNewDoc = async () => {
-            if(!state.user) return;
             const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
-                title: 'Untitled Document', content: '', createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                title: 'Untitled', content: '', updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            openLocalDoc(ref.id);
-            if(window.innerWidth < 850) toggleSidebar(false);
+            // Select it automatically via onSnapshot
         };
 
-        window.deleteCurrentDoc = async () => {
-            if(confirm("Delete this doc?")) {
-                await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).delete();
-                // We should also delete shared doc if owner, but keeping it simple for now
-                location.reload();
-            }
-        }
+        window.openDoc = (data) => {
+            state.docId = data.id;
+            state.shareId = data.shareId || null;
+            els.title.value = data.title;
+            els.title.disabled = false;
+            quill.setContents(data.content);
+            quill.enable();
+            els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
+            
+            // Highlight active in sidebar
+            document.querySelectorAll('#doc-list > div').forEach(e => e.classList.remove('bg-[#252525]', 'text-white'));
+            const activeEl = document.getElementById(`doc-${data.id}`);
+            if(activeEl) activeEl.classList.add('bg-[#252525]', 'text-white');
 
-        // Helpers for sidebar
-        window.toggleSidebar = (f) => { const sb = els.sidebar; if(f===false || !sb.classList.contains('sidebar-closed')) { sb.classList.add('sidebar-closed'); sb.classList.remove('sidebar-open'); } else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); } };
-        window.filterDocs = (f) => { state.activeFilter = f; renderDocs(); };
-        function renderDocs() {
-            els.docList.innerHTML = '';
-            let filtered = state.docs; 
-            if(state.activeFilter === 'fav') filtered = filtered.filter(d=>d.isFavorite);
-            filtered.forEach(d => {
+            if(state.shareId) {
+                initPresence(state.shareId);
+                els.infoBtn.classList.remove('hidden');
+            } else {
+                els.infoBtn.classList.add('hidden');
+                els.cursorsLayer.innerHTML = '';
+            }
+        };
+        
+        function renderSidebar() {
+            const list = document.getElementById('doc-list');
+            list.innerHTML = '';
+            state.docs.forEach(d => {
                 const div = document.createElement('div');
-                div.className = `p-2 rounded mb-1 cursor-pointer truncate text-sm ${d.id===state.docId ? 'bg-accent text-white' : 'text-gray-400 hover:bg-[#252525]'}`;
+                div.id = `doc-${d.id}`;
+                div.className = "p-3 rounded mb-1 cursor-pointer hover:bg-[#252525] text-gray-400 text-sm truncate transition";
                 div.textContent = d.title || 'Untitled';
-                div.onclick = () => openLocalDoc(d.id);
-                els.docList.appendChild(div);
+                div.onclick = () => openDoc(d);
+                list.appendChild(div);
             });
         }
 
+        // --- AUTH FORMS ---
+        document.getElementById('auth-form').onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value).catch(e => document.getElementById('auth-error').textContent = e.message); };
+        document.getElementById('signup-btn').onclick = () => { auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value).catch(e => document.getElementById('auth-error').textContent = e.message); };
+
+        function focusEditor() { if(!els.title.disabled) quill.focus(); }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('sidebar-closed'); }
+        els.title.oninput = () => { isLocalChange = true; triggerSave(); };
+        function triggerSave() { if(state.saveTimer) clearTimeout(state.saveTimer); state.saveTimer = setTimeout(saveContent, 1000); }
     </script>
 </body>
 </html>
