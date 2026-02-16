@@ -929,5 +929,159 @@
 
         initTheme(); 
     </script>
+    <!-- Notifications -->
+    <div id="notif-panel"
+     class="hidden fixed right-4 top-16 w-80 bg-white dark:bg-[#2d2d2d]
+     rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999]">
+      <div class="p-3 border-b font-semibold">Notifications</div>
+      <div id="notif-list" class="max-h-80 overflow-y-auto text-sm"></div>
+    </div>
+    <script>
+    /* ===============================
+       COLLABORATION LAYER (SINGLE FILE)
+       =============================== */
+    
+    let collab = {
+      shareId: null,
+      permission: 'viewer',
+      editingUid: null,
+      cursorColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+      lockTimer: null
+    };
+    
+    /* ---------- Helpers ---------- */
+    
+    function getPermission(doc) {
+      if (!state.user) return 'guest';
+      if (doc.ownerId === state.user.uid) return 'owner';
+      return doc.permissions?.[state.user.uid] || 'viewer';
+    }
+    
+    /* ---------- Load Shared Doc ---------- */
+    
+    async function loadSharedCollab(shareId) {
+      collab.shareId = shareId;
+    
+      db.collection('shared_docs').doc(shareId)
+        .onSnapshot(doc => {
+          if (!doc.exists) return;
+    
+          const data = doc.data();
+          collab.permission = getPermission(data);
+    
+          // Apply permission
+          if (collab.permission === 'viewer' || collab.permission === 'guest') {
+            quill.disable();
+            els.previewBanner.classList.remove('hidden');
+          } else {
+            quill.enable();
+            els.previewBanner.classList.add('hidden');
+          }
+    
+          // Lock handling
+          if (data.editing && data.editing.uid !== state.user?.uid) {
+            quill.disable();
+            els.status.textContent = `${data.editing.email} is editing…`;
+          } else if (collab.permission === 'editor' || collab.permission === 'owner') {
+            quill.enable();
+          }
+    
+          // Sync content
+          const local = JSON.stringify(quill.getContents());
+          const remote = JSON.stringify(data.c);
+          if (local !== remote) {
+            const r = quill.getSelection();
+            quill.setContents(data.c, 'silent');
+            if (r) quill.setSelection(r);
+          }
+        });
+    }
+    
+    /* ---------- Editor Lock ---------- */
+    
+    quill.on('text-change', (d,o,src) => {
+      if (src !== 'user') return;
+      if (!collab.shareId) return;
+      if (collab.permission !== 'editor' && collab.permission !== 'owner') return;
+    
+      db.collection('shared_docs').doc(collab.shareId).update({
+        editing: {
+          uid: state.user.uid,
+          email: state.user.email,
+          color: collab.cursorColor,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }
+      });
+    
+      clearTimeout(collab.lockTimer);
+      collab.lockTimer = setTimeout(() => {
+        db.collection('shared_docs').doc(collab.shareId).update({
+          editing: null
+        });
+      }, 1200);
+    });
+    
+    /* ---------- Access Request ---------- */
+    
+    async function requestEditAccess() {
+      if (!state.user) return alert("Login required");
+    
+      await db.collection('shared_docs')
+        .doc(collab.shareId)
+        .collection('requests')
+        .add({
+          uid: state.user.uid,
+          email: state.user.email,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    
+      alert("Access request sent");
+    }
+    
+    /* ---------- Notifications ---------- */
+    
+    function initNotifications() {
+      if (!state.user) return;
+    
+      db.collection('users')
+        .doc(state.user.uid)
+        .collection('notifications')
+        .orderBy('createdAt','desc')
+        .onSnapshot(snap => {
+          const list = document.getElementById('notif-list');
+          list.innerHTML = '';
+          snap.forEach(d => {
+            const n = d.data();
+            const div = document.createElement('div');
+            div.className = 'p-3 border-b hover:bg-gray-100 dark:hover:bg-gray-700';
+            div.textContent = n.message;
+            list.appendChild(div);
+          });
+        });
+    }
+    
+    document.getElementById('notif-btn')?.addEventListener('click', () => {
+      document.getElementById('notif-panel').classList.toggle('hidden');
+    });
+    
+    /* ---------- Hook into existing flow ---------- */
+    
+    const originalLoadGuest = loadGuestView;
+    loadGuestView = async function(shareId) {
+      await originalLoadGuest(shareId);
+      loadSharedCollab(shareId);
+    };
+    
+    const originalOpenDoc = window.openDoc;
+    window.openDoc = function(id,data) {
+      originalOpenDoc(id,data);
+      if (data.shareId) loadSharedCollab(data.shareId);
+    };
+    
+    auth.onAuthStateChanged(u => {
+      if (u) initNotifications();
+    });
+    </script>
 </body>
 </html>
