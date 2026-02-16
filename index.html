@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZenDocs | Pro Collab</title>
+    <title>ZenDocs | Pro</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,49 +12,142 @@
             theme: {
                 extend: {
                     colors: {
-                        bg: 'var(--bg-color)', surface: 'var(--surface-color)', sidebar: '#1e1e1e',  
-                        border: 'var(--border-color)', text: 'var(--text-color)', muted: '#9ca3af',
-                        accent: '#1a73e8', danger: '#d93025', gold: '#fbbc04'
+                        bg: 'var(--bg-color)', 
+                        surface: 'var(--surface-color)', 
+                        sidebar: '#1e1e1e',  
+                        border: 'var(--border-color)', 
+                        text: 'var(--text-color)', 
+                        muted: '#9ca3af',
+                        accent: '#1a73e8', 
+                        danger: '#d93025', 
+                        gold: '#fbbc04'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    animation: { 'fade-in-up': 'fadeInUp 0.4s ease-out forwards', 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
-                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(15px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-in': 'fadeIn 0.3s ease-out forwards'
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(15px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
+                    }
                 }
             }
         }
     </script>
+    
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
-        :root { --bg-color: #f0f2f5; --surface-color: #ffffff; --text-color: #1f2937; --border-color: #e5e7eb; --paper-bg: #ffffff; --paper-text: #000000; --toolbar-bg: #edf2fa; --toolbar-border: #e0e0e0; }
-        html.dark { --bg-color: #121212; --surface-color: #1e1e1e; --text-color: #e5e7eb; --border-color: #374151; --paper-bg: #1e1e1e; --paper-text: #e0e0e0; --toolbar-bg: #2d2d2d; --toolbar-border: #404040; }
-        body, div, button, input, select { transition: background-color 0.2s ease, color 0.2s ease; }
+        :root {
+            --bg-color: #f0f2f5;
+            --surface-color: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --paper-bg: #ffffff;
+            --paper-text: #000000;
+            --toolbar-bg: #edf2fa;
+            --toolbar-border: #e0e0e0;
+        }
+
+        html.dark {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-color: #e5e7eb;
+            --border-color: #374151;
+            --paper-bg: #1e1e1e; 
+            --paper-text: #e0e0e0;
+            --toolbar-bg: #2d2d2d;
+            --toolbar-border: #404040;
+        }
+
+        body, div, button, input, select { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+
+        /* CUSTOM SCROLLBARS */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
+        html.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* EDITOR & LAYOUT */
-        #editor-wrapper { background-color: var(--bg-color); padding: 40px 0; overflow-y: auto; flex: 1; display: flex; justify-content: center; align-items: flex-start; position: relative; }
-        #paper-container { width: 794px; min-height: 1123px; background: var(--paper-bg); color: var(--paper-text); box-shadow: 0 1px 3px 0 rgba(0,0,0,.3); margin-bottom: 40px; display: flex; flex-direction: column; position: relative; }
+        /* EDITOR */
+        #editor-wrapper {
+            background-color: var(--bg-color);
+            padding: 40px 0;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        #paper-container {
+            width: 794px; min-height: 1123px;
+            background: var(--paper-bg); color: var(--paper-text);
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,.3); margin-bottom: 40px;
+            display: flex; flex-direction: column; position: relative;
+        }
+        
         html.dark #paper-container { box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid #333; }
         .ql-container { font-size: 11pt; font-family: 'Times New Roman', serif; height: auto !important; }
         .ql-editor { padding: 96px; min-height: 1123px; height: auto !important; overflow-y: visible !important; }
-        .ql-toolbar { border: none !important; background: var(--toolbar-bg); border-bottom: 1px solid var(--toolbar-border) !important; padding: 8px 16px !important; border-radius: 24px; margin: 8px 16px; }
         
-        /* COLLABORATION CURSORS */
-        .cursor-flag { position: absolute; font-size: 10px; color: white; padding: 2px 6px; border-radius: 4px; white-space: nowrap; pointer-events: none; z-index: 50; top: -20px; left: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: top 0.1s, left 0.1s; }
-        .cursor-caret { position: absolute; width: 2px; height: 18px; z-index: 49; pointer-events: none; transition: top 0.1s, left 0.1s; }
-        /* When someone else is editing a line */
-        .locked-line-bg { background-color: rgba(255, 0, 0, 0.05); border-left: 2px solid rgba(255,0,0,0.4); }
+        /* Dark Mode Quill */
+        html.dark .ql-editor.ql-blank::before { color: #6b7280; }
+        html.dark .ql-toolbar .ql-stroke { stroke: #d1d5db; }
+        html.dark .ql-toolbar .ql-fill { fill: #d1d5db; }
+        html.dark .ql-toolbar .ql-picker { color: #d1d5db; }
+        .ql-toolbar { border: none !important; background: var(--toolbar-bg); border-bottom: 1px solid var(--toolbar-border) !important; padding: 8px 16px !important; border-radius: 24px; margin: 8px 16px; }
 
-        /* MOBILE */
+        /* MOBILE OPTIMIZATIONS */
         @media (max-width: 850px) {
-            #editor-wrapper { padding: 0; }
+            #editor-wrapper { padding: 0; background: var(--bg-color); }
             #paper-container { box-shadow: none; width: 100%; min-height: 100vh; margin: 0; }
-            .ql-editor { padding: 20px 20px 80px 20px; }
-            .ql-toolbar { margin: 0 !important; width: 100vw !important; border-radius: 0 !important; overflow-x: auto !important; display: flex !important; flex-flow: row nowrap !important; }
+            .ql-editor { padding: 20px 20px 80px 20px; } 
+            
+            /* Horizontal Scroll Toolbar (Single Line, Neat) */
+            .ql-toolbar { 
+                margin: 0 !important; width: 100vw !important; border-radius: 0 !important; 
+                background: var(--surface-color) !important; 
+                padding: 10px 10px !important; 
+                display: flex !important;
+                flex-flow: row nowrap !important; /* Force Single Line */
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                -webkit-overflow-scrolling: touch;
+                gap: 5px;
+            }
+            
+            /* Ensure Format groups don't wrap */
+            .ql-formats {
+                display: flex !important;
+                flex-shrink: 0 !important;
+                margin-right: 10px !important;
+            }
+
+            /* Hide scrollbar visually */
+            .ql-toolbar::-webkit-scrollbar { display: none; }
+            .ql-toolbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+            /* Bottom Sheet Dropdowns */
+            .ql-toolbar .ql-picker-options { 
+                position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
+                width: 100vw !important; max-height: 45vh !important; overflow-y: auto !important; 
+                background: var(--surface-color); border-radius: 16px 16px 0 0 !important; z-index: 99999 !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.3) !important;
+                border: 1px solid var(--border-color);
+                padding: 10px !important;
+            }
+            .ql-picker-expanded .ql-picker-options { display: block; }
         }
+
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
@@ -61,116 +155,167 @@
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
 
-    <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md">
-        <span class="truncate pr-2 flex items-center gap-2"><span class="animate-pulse">🟢</span> <span id="access-status-text">Live View (Read Only)</span></span>
-        <button id="request-access-btn" onclick="requestEditAccess()" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 shadow hidden">Request Edit Access</button>
+    <div id="preview-banner" class="hidden bg-accent text-white px-4 py-2 text-sm flex justify-between items-center z-[70] shadow-md transition-all duration-300">
+        <span class="truncate pr-2 flex items-center gap-2"><span class="animate-pulse">🟢</span> Live View (Read Only)</span>
+        <button onclick="openLoginForGuest()" class="bg-white text-accent px-3 py-1 rounded font-bold text-xs hover:bg-gray-100 whitespace-nowrap shadow">Save Copy</button>
     </div>
 
-    <div id="loading-screen" class="absolute inset-0 z-[100] bg-bg flex items-center justify-center">
-        <div class="flex flex-col items-center"><div class="loader mb-3"></div><div class="text-sm text-gray-500 font-medium animate-pulse">Syncing ZenDocs...</div></div>
+    <div id="sync-banner" class="hidden bg-blue-600 text-white px-4 py-1 text-[10px] flex justify-center items-center z-[60] shadow-sm">
+        <span class="flex items-center gap-2">🔄 Synced with Owner</span>
+    </div>
+
+    <div id="loading-screen" class="absolute inset-0 z-[100] bg-bg flex items-center justify-center transition-opacity duration-500">
+        <div class="flex flex-col items-center">
+            <div class="loader mb-3"></div>
+            <div class="text-sm text-gray-500 font-medium animate-pulse">Syncing...</div>
+        </div>
     </div>
 
     <div id="app" class="flex-1 flex relative overflow-hidden">
-        
         <div id="auth-screen" class="absolute inset-0 z-[80] bg-[#1e1e1e] flex items-center justify-center p-4 hidden">
             <div class="w-full max-w-sm bg-[#2d2d2d] p-8 rounded-xl shadow-2xl border border-gray-700 opacity-0 transform transition-all duration-500" id="auth-box">
                 <h1 class="text-3xl font-light text-white text-center mb-1">Zen<span class="text-accent font-bold">Docs</span></h1>
-                <form id="auth-form" class="space-y-4 mt-8">
-                    <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Email Address" required>
-                    <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none" placeholder="Password" required>
-                    <button type="submit" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg">Sign In</button>
+                <p class="text-gray-400 text-center text-sm mb-8">Professional Cloud Editor</p>
+                <form id="auth-form" class="space-y-4">
+                    <input type="email" id="email" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Email Address" required>
+                    <input type="password" id="password" class="w-full bg-[#1e1e1e] border border-gray-600 rounded-lg p-3 text-white focus:border-accent outline-none transition" placeholder="Password" required>
+                    <button type="submit" id="login-btn" class="w-full bg-accent text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition shadow-lg">Sign In</button>
                     <div class="flex justify-between items-center text-sm mt-4 pt-2 border-t border-gray-700">
-                        <button type="button" id="signup-btn" class="text-gray-400 hover:text-white">Create Account</button>
+                        <button type="button" id="signup-btn" class="text-gray-400 hover:text-white transition">Create Account</button>
+                        <button type="button" onclick="showResetModal()" class="text-accent hover:text-blue-300 transition">Forgot Password?</button>
+                    </div>
+                    <div id="auth-cancel-container" class="hidden text-center mt-2">
+                        <button type="button" onclick="closeLoginForGuest()" class="text-xs text-gray-500 hover:text-white">Cancel & Return to View</button>
                     </div>
                     <p id="auth-error" class="text-danger text-xs text-center min-h-[1.5em] mt-2"></p>
                 </form>
             </div>
         </div>
 
-        <div id="share-modal" class="absolute inset-0 z-[90] bg-black/70 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-surface rounded-xl p-6 max-w-md w-full shadow-2xl animate-fade-in-up border border-border">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-lg text-text">Share Document</h3>
-                    <button onclick="closeShareModal()" class="text-gray-500 hover:text-text">✕</button>
-                </div>
-                
-                <div class="mb-6 space-y-3">
-                    <div class="flex items-center justify-between bg-bg p-3 rounded-lg">
-                        <div>
-                            <div class="text-sm font-semibold text-text">General Access</div>
-                            <div class="text-[10px] text-muted">Control link behavior</div>
-                        </div>
-                        <select id="share-permission-select" onchange="updateSharePermissions()" class="bg-surface border border-border text-xs rounded px-2 py-1 outline-none text-text">
-                            <option value="view">Viewer (Read Only)</option>
-                            <option value="edit">Editor (Open Edit)</option>
-                        </select>
-                    </div>
-                    
-                    <div id="pending-requests-container" class="hidden">
-                        <div class="text-xs font-bold text-muted uppercase tracking-wider mb-2">Access Requests</div>
-                        <div id="requests-list" class="space-y-2 max-h-32 overflow-y-auto"></div>
-                    </div>
-                </div>
-
-                <div class="flex gap-2">
-                    <input type="text" id="share-link-input" class="flex-1 text-xs bg-bg border border-border rounded px-3 text-muted" readonly>
-                    <button onclick="copyShareLink()" class="bg-accent text-white px-4 py-2 rounded text-xs font-bold hover:bg-blue-600 transition">Copy Link</button>
+        <div id="reset-modal" class="absolute inset-0 z-[90] bg-black/80 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white dark:bg-[#2d2d2d] rounded-xl p-6 max-w-xs w-full shadow-2xl animate-fade-in-up">
+                <h3 class="font-bold text-lg mb-2 text-gray-800 dark:text-white">Reset Password</h3>
+                <input type="email" id="reset-email" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1e1e1e] dark:text-white rounded p-2 mb-4 focus:outline-none focus:border-accent" placeholder="your@email.com">
+                <div class="flex justify-end gap-2">
+                    <button onclick="document.getElementById('reset-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition">Cancel</button>
+                    <button onclick="sendResetLink()" class="px-4 py-2 bg-accent text-white rounded hover:bg-blue-600 shadow transition transform active:scale-95">Send Link</button>
                 </div>
             </div>
         </div>
 
-        <div id="info-modal" class="absolute inset-0 z-[90] bg-black/70 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-surface rounded-xl p-6 max-w-md w-full shadow-2xl animate-fade-in-up h-[60vh] flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-lg text-text">Collaboration History</h3>
-                    <button onclick="document.getElementById('info-modal').classList.add('hidden')" class="text-gray-500">✕</button>
-                </div>
-                <div id="history-list" class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar"></div>
-            </div>
-        </div>
+        <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0" id="dashboard-container">
+            <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-[60] hidden backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar()"></div>
 
-        <div id="dashboard-screen" class="hidden flex-1 flex w-full h-full relative opacity-0">
-            <div id="mobile-overlay" class="md:hidden absolute inset-0 bg-black/50 z-[60] hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
-
-            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-[65] h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
+            <aside id="sidebar" class="w-72 bg-sidebar text-gray-300 flex flex-col absolute md:relative z-[65] h-[100dvh] md:h-full sidebar-transition sidebar-closed md:transform-none border-r border-gray-800 shadow-xl">
                 <div class="p-4 border-b border-gray-700 flex justify-between items-center h-16 bg-[#252525]">
                     <span class="font-bold text-white tracking-wide pl-1 text-lg">ZenDocs</span>
-                    <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition text-2xl pb-1">+</button>
+                    <button onclick="createNewDoc()" class="bg-white text-accent w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition shadow text-2xl leading-none pb-1 hover:rotate-90 duration-300" title="New Note">+</button>
                 </div>
-                <div class="flex-1 overflow-y-auto p-3" id="doc-list"></div>
-                <div class="p-3 bg-[#181818] border-t border-gray-800 text-xs text-center">
-                    <span id="user-email" class="block mb-2 text-gray-500"></span>
-                    <button onclick="auth.signOut();window.location.reload()" class="text-red-400 hover:text-red-300">Sign Out</button>
+                <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                    <div class="space-y-1 mb-6">
+                        <div onclick="filterDocs('all')" id="filter-all" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 bg-white/10 text-white font-medium hover:bg-white/20 transition hover:translate-x-1 duration-200"><span>📄</span> All Files</div>
+                        <div onclick="filterDocs('fav')" id="filter-fav" class="cursor-pointer p-2 rounded-lg flex items-center gap-3 hover:bg-white/5 transition hover:translate-x-1 duration-200"><span>⭐</span> Important</div>
+                    </div>
+                    <div class="mb-2 px-2 flex justify-between items-center group">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Folders</span>
+                        <button onclick="createNewFolder()" class="text-accent hover:text-white text-xs bg-white/5 px-2 py-1 rounded transition hover:bg-white/10">+ Add</button>
+                    </div>
+                    <div id="folder-list" class="space-y-1 mb-6"></div>
+                    <div class="mb-2 px-2 border-t border-gray-700 pt-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Recent</span>
+                    </div>
+                    <div id="doc-list" class="space-y-1 pb-10"></div>
+                </div>
+                <div class="p-3 bg-[#181818] border-t border-gray-800">
+    
+                    <a href="https://harshavarthanep.github.io/apps" target="_blank" class="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-accent text-[10px] font-medium py-1.5 rounded transition mb-3 border border-transparent hover:border-gray-700 group">
+                        <span>🚀</span> <span class="group-hover:underline decoration-accent/50 underline-offset-2">Explore More Apps</span>
+                    </a>
+                
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <span id="user-email" class="text-[11px] text-gray-400 font-medium truncate max-w-[120px]"></span>
+                        <button id="logout-btn" class="text-[10px] text-red-400 hover:text-red-300 transition font-bold bg-red-900/10 hover:bg-red-900/30 px-2 py-0.5 rounded border border-transparent hover:border-red-900/50">Sign Out</button>
+                    </div>
+                
+                    <div class="text-[9px] text-gray-600 text-center border-t border-gray-800 pt-2 cursor-default select-none">
+                        Made with love ❤️ by <span class="text-gray-500 hover:text-gray-300 transition cursor-pointer">Harsha Varthan E P</span>
+                    </div>
+                
                 </div>
             </aside>
 
             <main class="flex-1 flex flex-col h-full relative w-full bg-bg transition-colors duration-300">
-                <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-3 md:px-4 z-10 shadow-sm flex-shrink-0">
+                <div class="h-16 bg-surface border-b border-border flex items-center justify-between px-3 md:px-4 z-10 shadow-sm flex-shrink-0 transition-colors duration-300">
+                    
                     <div class="flex items-center gap-2 flex-1 min-w-0">
-                        <button class="md:hidden text-muted p-2" onclick="toggleSidebar()">☰</button>
+                        <button id="hamburger-btn" class="md:hidden text-muted p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full" onclick="toggleSidebar()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                        </button>
+                        
                         <div class="flex flex-col w-full min-w-0">
-                            <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate" placeholder="Untitled" disabled>
+                            <input type="text" id="doc-title" onfocus="this.select()" class="bg-transparent text-lg font-semibold text-text outline-none w-full placeholder-gray-400 truncate transition-colors duration-300 min-w-0" placeholder="Untitled Document" disabled>
                             <span id="save-status" class="text-[10px] text-muted font-medium h-3 truncate"></span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 pl-2">
-                        <button id="info-btn" onclick="openInfoModal()" class="hidden p-2 rounded-full text-muted hover:bg-gray-100 hover:text-accent relative">
-                            ℹ️ <span id="request-badge" class="absolute top-0 right-0 w-2.5 h-2.5 bg-danger rounded-full hidden"></span>
-                        </button>
+                    <div class="flex items-center gap-1 pl-2 relative">
                         
-                        <button id="share-btn" onclick="openShareModal()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded-full md:rounded hover:bg-blue-200 transition flex items-center gap-1" disabled>
+                        <button id="share-btn" onclick="shareCurrentNote()" class="p-2 text-xs bg-blue-100 dark:bg-blue-900 text-accent rounded-full md:rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-1" disabled title="Share Link">
                             <span>🔗</span> <span class="hidden md:inline">Share</span>
                         </button>
 
-                        <button onclick="toggleTheme()" class="p-2 rounded-full text-muted hover:bg-gray-100 hover:text-accent">🌗</button>
+                        <div id="logged-in-controls" class="flex items-center gap-2">
+                             <select id="folder-select" class="hidden md:block text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 border-none rounded p-2 outline-none cursor-pointer" disabled>
+                                <option value="">No Folder</option>
+                            </select>
+                            
+                            <button id="theme-btn" onclick="toggleTheme()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition">
+                            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707M12.728 6.343l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                            </button>
+                            
+                            <button id="fav-btn" onclick="toggleFavorite()" class="hidden md:block p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gold transition disabled:opacity-50" disabled>★</button>
+                            <button id="download-btn" onclick="downloadAsWord()" class="hidden md:block p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition disabled:opacity-50" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            </button>
+                            <button id="delete-btn" onclick="deleteCurrentDoc()" class="hidden md:block p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-danger transition disabled:opacity-50" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+
+                            <div class="md:hidden relative mobile-menu-container">
+                                <button onclick="toggleMobileMenu()" class="p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                                </button>
+                                <div id="mobile-menu-dropdown" class="hidden absolute right-0 top-12 w-48 bg-surface dark:bg-[#2d2d2d] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 py-2 z-[70]">
+                                    <button onclick="toggleFavorite(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2">
+                                        <span id="mobile-fav-icon">★</span> <span id="mobile-fav-text">Mark Important</span>
+                                    </button>
+                                    <button onclick="toggleMobileFolderMenu(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>📁</span> Move to Folder</button>
+                                    <button onclick="downloadAsWord(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>⬇</span> Download</button>
+                                    <button onclick="duplicateCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2"><span>❐</span> Duplicate</button>
+                                    <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    <button onclick="deleteCurrentDoc(); toggleMobileMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex gap-2 text-danger"><span>🗑</span> Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="guest-download-btn" onclick="downloadAsWord()" class="hidden p-2 rounded-full text-muted hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-accent transition" title="Download">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        </button>
+
+                        <div id="mobile-folder-menu" class="hidden absolute top-14 right-10 bg-surface dark:bg-[#2d2d2d] shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 w-56 z-[75] py-1 flex flex-col animate-fade-in-up folder-menu-container">
+                            <div id="mobile-folder-list-items" class="max-h-60 overflow-y-auto"></div>
+                            <div class="border-t border-gray-100 dark:border-gray-700 mt-1 pt-1">
+                                <button onclick="handleCreateFolderAction()" class="w-full text-left px-4 py-3 text-accent text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+                                    <span>➕</span> Create New Folder...
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div id="editor-wrapper" class="opacity-50 pointer-events-none transition-opacity duration-500" onclick="focusEditor()">
-                    <div id="cursors-layer" class="absolute inset-0 pointer-events-none z-[40] w-[794px] mx-auto hidden md:block"></div>
-                    
-                    <div id="paper-container">
+                    <div id="paper-container" class="transition-all duration-300">
                         <div id="editor-container"></div>
                     </div>
                 </div>
@@ -184,7 +329,6 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
-        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
           apiKey: "AIzaSyCFmwO9aa5RZgOwQ5b3tN8NPha_1UfrCjA",
           authDomain: "notes-b4daa.firebaseapp.com",
@@ -193,463 +337,597 @@
           messagingSenderId: "372433592521",
           appId: "1:372433592521:web:348b2558084299be1a6d18"
         };
-        firebase.initializeApp(firebaseConfig);
+        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.error(e); }
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- STATE & UTILS ---
-        const generateColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
-        const getSessionId = () => { let id = localStorage.getItem('z_sess_id'); if(!id) { id = Math.random().toString(36).substr(2,9); localStorage.setItem('z_sess_id', id); } return id; };
-        
         let state = {
-            user: null, docId: null, shareId: null, docs: [],
-            isGuest: false, permission: 'view', // 'view' or 'edit'
-            myColor: generateColor(),
-            sessionId: getSessionId(),
-            unsubDoc: null, unsubPresence: null, unsubRequests: null
+            user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
+            isFav: false, saveTimer: null, firstLoad: true,
+            pendingShareId: null, guestUnsubscribe: null, importedUnsubscribe: null, isGuest: false,
+            restorableData: null
         };
 
         const els = {
-            app: document.getElementById('app'),
-            authScreen: document.getElementById('auth-screen'),
+            loadingScreen: document.getElementById('loading-screen'),
+            authScreen: document.getElementById('auth-screen'), 
             authBox: document.getElementById('auth-box'),
             dashboard: document.getElementById('dashboard-screen'),
-            loading: document.getElementById('loading-screen'),
-            title: document.getElementById('doc-title'),
-            status: document.getElementById('save-status'),
-            editorWrapper: document.getElementById('editor-wrapper'),
-            cursorsLayer: document.getElementById('cursors-layer'),
-            shareModal: document.getElementById('share-modal'),
-            shareSelect: document.getElementById('share-permission-select'),
-            requestBtn: document.getElementById('request-access-btn'),
-            banner: document.getElementById('preview-banner'),
-            accessText: document.getElementById('access-status-text'),
-            requestsList: document.getElementById('requests-list'),
-            requestsContainer: document.getElementById('pending-requests-container'),
-            requestBadge: document.getElementById('request-badge'),
-            infoBtn: document.getElementById('info-btn'),
-            infoModal: document.getElementById('info-modal'),
-            historyList: document.getElementById('history-list')
+            sidebar: document.getElementById('sidebar'),
+            email: document.getElementById('email'), pass: document.getElementById('password'),
+            authError: document.getElementById('auth-error'), docList: document.getElementById('doc-list'),
+            folderList: document.getElementById('folder-list'), folderSelect: document.getElementById('folder-select'),
+            title: document.getElementById('doc-title'), editorWrapper: document.getElementById('editor-wrapper'),
+            status: document.getElementById('save-status'), favBtn: document.getElementById('fav-btn'),
+            delBtn: document.getElementById('delete-btn'), downBtn: document.getElementById('download-btn'),
+            userEmail: document.getElementById('user-email'),
+            mobileFolderMenu: document.getElementById('mobile-folder-menu'),
+            mobileFolderListItems: document.getElementById('mobile-folder-list-items'),
+            sunIcon: document.getElementById('sun-icon'), moonIcon: document.getElementById('moon-icon'),
+            previewBanner: document.getElementById('preview-banner'),
+            syncBanner: document.getElementById('sync-banner'),
+            mobileMenuDropdown: document.getElementById('mobile-menu-dropdown'),
+            mobileFavIcon: document.getElementById('mobile-fav-icon'),
+            mobileFavText: document.getElementById('mobile-fav-text'),
+            loggedInControls: document.getElementById('logged-in-controls'),
+            guestDownloadBtn: document.getElementById('guest-download-btn'),
+            hamburgerBtn: document.getElementById('hamburger-btn'),
+            authCancelContainer: document.getElementById('auth-cancel-container'),
+            shareBtn: document.getElementById('share-btn')
         };
 
-        // --- QUILL INIT ---
-        var quill = new Quill('#editor-container', {
-            theme: 'snow', placeholder: 'Start writing...',
-            modules: { toolbar: [[{'header':[1,2,false]}], ['bold','italic','underline', {'color':[]}, {'background':[]}], [{'list':'ordered'},{'list':'bullet'}], ['clean']] }
-        });
-
-        // --- AUTH & ROUTING ---
-        auth.onAuthStateChanged(u => {
-            state.user = u;
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlShareId = urlParams.get('shareId');
-
-            if (u) {
-                // Logged in owner
-                els.authScreen.classList.add('hidden');
-                els.dashboard.classList.remove('hidden'); els.dashboard.classList.add('animate-fade-in-up');
-                document.getElementById('user-email').textContent = u.email;
-                
-                if (urlShareId) {
-                    // Logged in user visiting a link (Import Logic)
-                    importSharedDoc(urlShareId);
-                } else {
-                    initOwnerData();
-                }
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            applyTheme(savedTheme === 'dark');
+        }
+        function applyTheme(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                els.sunIcon.classList.remove('hidden'); els.moonIcon.classList.add('hidden');
             } else {
-                // Guest
-                if (urlShareId) {
-                    loadGuestView(urlShareId);
-                } else {
-                    els.loading.classList.add('hidden');
-                    els.authScreen.classList.remove('hidden'); els.authBox.classList.remove('opacity-0');
+                document.documentElement.classList.remove('dark');
+                els.sunIcon.classList.add('hidden'); els.moonIcon.classList.remove('hidden');
+            }
+        }
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            applyTheme(isDark);
+            if(state.user) db.collection('users').doc(state.user.uid).set({ settings: { theme: isDark ? 'dark' : 'light' } }, { merge: true });
+            if (state.docId && !state.isGuest) triggerSave();
+        }
+
+        var quill = new Quill('#editor-container', {
+            theme: 'snow',
+            placeholder: 'Start writing...',
+            modules: { 
+                toolbar: {
+                    container: [
+                        [{'header':[1,2,3,false]}], 
+                        ['bold','italic','underline','strike', {'color':[]},{'background':[]}], 
+                        [{'list':'ordered'},{'list':'bullet'}, {'list': 'check'}], 
+                        [{'align':[]}], 
+                        ['image','link','clean']
+                    ]
                 }
             }
         });
 
-        // --- OWNER LOGIC ---
-        function initOwnerData() {
-            els.loading.classList.add('hidden');
-            document.getElementById('share-btn').disabled = false;
+        // --- ROBUST MOBILE CHECKBOX FIX (TOUCH API) ---
+        const editorEl = document.querySelector('.ql-editor');
+        let touchStartX = 0;
+        let touchStartY = 0;
+    
+        // 1. Record where the finger landed
+        editorEl.addEventListener('touchstart', (e) => {
+            if(e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true }); // Allow scrolling to start
+    
+        // 2. Detect when finger lifts
+        editorEl.addEventListener('touchend', (e) => {
+            if(e.changedTouches.length === 1) {
+                const x = e.changedTouches[0].clientX;
+                const y = e.changedTouches[0].clientY;
+                
+                // 3. Check if it was a Tap (minimal movement < 10px)
+                // If user scrolled, this will be false, preventing accidental toggles
+                if(Math.abs(x - touchStartX) < 10 && Math.abs(y - touchStartY) < 10) {
+                    
+                    // 4. Find the element under the finger
+                    const targetEl = document.elementFromPoint(x, y);
+                    if(!targetEl) return;
+    
+                    const li = targetEl.closest('li[data-list="checked"], li[data-list="unchecked"]');
+                    
+                    if (li) {
+                        const rect = li.getBoundingClientRect();
+                        
+                        // 5. Check if tap was in the "Checkbox Zone" (Left 45px)
+                        if (x >= rect.left && x <= rect.left + 45) {
+                            
+                            // 6. Toggle the Checkbox
+                            const blot = Quill.find(li);
+                            if (blot) {
+                                const index = quill.getIndex(blot);
+                                const isChecked = li.dataset.list === 'checked';
+                                
+                                // Apply formatting
+                                quill.formatLine(index, 1, 'list', isChecked ? 'unchecked' : 'checked');
+                                
+                                // Prevent the browser from turning this tap into a cursor focus event
+                                e.preventDefault(); 
+                            }
+                        }
+                    }
+                }
+            }
+        }, { passive: false }); // Allow us to cancel the event if we used it
+
+        function getShareIdFromUrl() { return new URLSearchParams(window.location.search).get('shareId'); }
+
+        async function handleRoute() {
+            const shareId = getShareIdFromUrl();
+            if (auth.currentUser) {
+                if (shareId) state.pendingShareId = shareId; 
+            } else {
+                if (shareId) {
+                    await loadGuestView(shareId);
+                } else {
+                    els.loadingScreen.classList.add('hidden'); 
+                    els.authScreen.classList.remove('hidden');
+                    els.authBox.classList.add('animate-fade-in-up'); 
+                }
+            }
+        }
+
+        async function loadGuestView(shareId) {
+            state.isGuest = true;
+            state.pendingShareId = shareId;
+            els.loadingScreen.classList.remove('hidden');
+
+            if (state.guestUnsubscribe) state.guestUnsubscribe();
             
-            db.collection('users').doc(state.user.uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(snap => {
-                state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderSidebar();
-                if(!state.docId && state.docs.length > 0) openDoc(state.docs[0]);
-                else if(state.docs.length === 0) createNewDoc();
+            // Safety timeout to prevent infinite loading
+            const safetyTimeout = setTimeout(() => {
+                if(!els.loadingScreen.classList.contains('hidden')) {
+                    alert("Loading timed out. The note may be deleted.");
+                    els.loadingScreen.classList.add('hidden');
+                }
+            }, 8000);
+
+            state.guestUnsubscribe = db.collection('shared_docs').doc(shareId).onSnapshot(doc => {
+                clearTimeout(safetyTimeout);
+                if (doc.exists) {
+                    const data = doc.data();
+                    if(data.theme) applyTheme(data.theme === 'dark');
+                    els.loadingScreen.classList.add('hidden');
+                    els.authScreen.classList.add('hidden');
+                    els.dashboard.classList.remove('hidden');
+                    els.dashboard.classList.add('animate-fade-in');
+                    els.loggedInControls.classList.add('hidden');
+                    els.sidebar.classList.add('hidden');
+                    els.hamburgerBtn.classList.add('hidden');
+                    els.guestDownloadBtn.classList.remove('hidden');
+                    els.previewBanner.classList.remove('hidden');
+                    els.title.value = data.t;
+                    const range = quill.getSelection();
+                    quill.setContents(data.c);
+                    if(range) quill.setSelection(range);
+                    quill.disable();
+                    els.title.disabled = true;
+                    els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
+                    els.status.textContent = "Live View";
+                } else {
+                    alert("Shared note not found.");
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    window.location.reload();
+                }
+            }, error => { 
+                clearTimeout(safetyTimeout);
+                console.error(error); 
+                alert("Error loading.");
+                els.loadingScreen.classList.add('hidden');
             });
         }
 
-        // --- GUEST/SHARED LOGIC ---
-        async function loadGuestView(sid) {
-            state.isGuest = true;
-            state.shareId = sid;
-            els.loading.classList.remove('hidden');
-            
-            // Listen to Shared Document
-            state.unsubDoc = db.collection('shared_docs').doc(sid).onSnapshot(doc => {
-                if(!doc.exists) return alert("Note deleted");
-                const data = doc.data();
-                
-                els.loading.classList.add('hidden');
+        auth.onAuthStateChanged((u) => {
+            state.user = u;
+            if (u) {
+                state.isGuest = false;
+                if(state.guestUnsubscribe) state.guestUnsubscribe();
+                els.userEmail.textContent = u.email;
                 els.authScreen.classList.add('hidden');
-                els.dashboard.classList.remove('hidden'); els.dashboard.classList.add('animate-fade-in-up');
-                document.getElementById('sidebar').classList.add('hidden');
-                els.banner.classList.remove('hidden');
-
-                // SYNC CONTENT
-                syncContent(data.t, data.c);
-
-                // ACCESS CONTROL
-                // If global access is 'edit', everyone is an editor
-                if (data.access === 'edit') {
-                    setAccessMode('edit');
-                } else {
-                    // Default to view
-                    setAccessMode('view');
-                }
-
-                // Initialize Presence
-                initPresence(sid);
-                
-            }, err => console.error(err));
-        }
-
-        function setAccessMode(mode) {
-            state.permission = mode;
-            if(mode === 'edit') {
-                quill.enable();
-                els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
-                els.title.disabled = false;
-                els.accessText.innerHTML = "🟢 Live Collaboration (Editor)";
-                els.requestBtn.classList.add('hidden');
+                els.previewBanner.classList.add('hidden'); 
+                els.dashboard.classList.remove('hidden');
+                els.loggedInControls.classList.remove('hidden');
+                els.sidebar.classList.remove('hidden');
+                els.hamburgerBtn.classList.remove('hidden');
+                els.guestDownloadBtn.classList.add('hidden');
+                els.dashboard.classList.add('animate-fade-in'); 
+                db.collection('users').doc(u.uid).onSnapshot(doc => {
+                    if(doc.exists && doc.data().settings?.theme) {
+                        applyTheme(doc.data().settings.theme === 'dark');
+                    }
+                });
+                initData();
             } else {
-                quill.disable();
-                els.editorWrapper.classList.remove('opacity-50'); // Keep opacity normal for reading
-                els.editorWrapper.style.pointerEvents = 'auto'; // Allow scrolling
-                document.querySelector('.ql-editor').contentEditable = false; // Disable typing
-                els.title.disabled = true;
-                els.accessText.innerHTML = "👁️ View Only";
-                els.requestBtn.classList.remove('hidden');
-            }
-        }
-
-        // --- CORE SYNC ---
-        let isLocalChange = false;
-        
-        function syncContent(title, content) {
-            if(isLocalChange) return;
-            els.title.value = title;
-            const currentDelta = JSON.stringify(quill.getContents());
-            const incomingDelta = JSON.stringify(content);
-            if (currentDelta !== incomingDelta) {
-                const range = quill.getSelection();
-                quill.setContents(content, 'silent');
-                if(range) quill.setSelection(range);
-            }
-        }
-
-        quill.on('text-change', (delta, old, source) => {
-            if (source === 'user') {
-                isLocalChange = true;
-                
-                // 1. Basic Debounced Save
-                if (state.saveTimer) clearTimeout(state.saveTimer);
-                state.saveTimer = setTimeout(() => saveContent(), 500);
-
-                // 2. Log History (Debounced longer)
-                if (state.historyTimer) clearTimeout(state.historyTimer);
-                state.historyTimer = setTimeout(() => logHistory(), 2000);
-
-                // 3. Locking Check (Visual)
-                // We check if we are editing a line someone else is on.
-                // Simple logic: If we type, we are "owning" this spot.
+                handleRoute();
             }
         });
-        
-        // --- DATA SAVING ---
-        async function saveContent() {
-            els.status.textContent = "Saving...";
-            const data = {
-                t: els.title.value,
-                c: quill.getContents(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
 
-            try {
-                if (state.isGuest) {
-                    if (state.permission !== 'edit') return;
-                    await db.collection('shared_docs').doc(state.shareId).update(data);
-                } else {
-                    await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({
-                        title: data.t, content: data.c, updatedAt: data.updatedAt
-                    });
-                    // Also update share copy if it exists
-                    if(state.shareId) {
-                         await db.collection('shared_docs').doc(state.shareId).update(data);
+        function initData() {
+            if(!state.user) return;
+            const uid = state.user.uid;
+            db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
+                state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderFolders(); updateFolderSelect();
+                if(state.docs.length > 0) renderDocs();
+            });
+            db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(async (snap) => {
+                state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderDocs();
+                const shareId = getShareIdFromUrl();
+                if (shareId && state.firstLoad) {
+                    state.firstLoad = false;
+                    const myOwnedDoc = state.docs.find(d => d.shareId === shareId);
+                    const myImportedDoc = state.docs.find(d => d.importedFromShareId === shareId);
+                    
+                    try {
+                        if (myOwnedDoc) {
+                            openDoc(myOwnedDoc.id, myOwnedDoc);
+                            window.history.replaceState({}, document.title, window.location.pathname); 
+                        } else if (myImportedDoc) {
+                            openDoc(myImportedDoc.id, myImportedDoc);
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        } else {
+                            await checkAndHandleDeletedOwner(shareId);
+                        }
+                    } catch(e) {
+                        console.error("Init Error", e);
+                        els.loadingScreen.classList.add('hidden');
                     }
+                } 
+                else if (state.firstLoad && !state.docId) {
+                    state.firstLoad = false;
+                    els.loadingScreen.classList.add('hidden');
+                    state.docs.length > 0 ? openDoc(state.docs[0].id, state.docs[0]) : createNewDoc();
+                }
+            });
+        }
+
+        async function checkAndHandleDeletedOwner(shareId) {
+            els.loadingScreen.classList.remove('hidden');
+            try {
+                const snap = await db.collection('shared_docs').doc(shareId).get();
+                if(snap.exists) {
+                    const data = snap.data();
+                    if (data.ownerId === state.user.uid) {
+                         alert("Restoring your deleted shared note...");
+                         restoreDeletedFile(shareId, data);
+                    } else {
+                        importSharedNote(shareId);
+                    }
+                } else {
+                     alert("Note not found or deleted."); 
+                     els.loadingScreen.classList.add('hidden');
+                     window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            } catch(e) { 
+                console.error(e); 
+                els.loadingScreen.classList.add('hidden');
+            }
+        }
+
+        async function restoreDeletedFile(shareId, data) {
+            try {
+                const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
+                    title: data.t, content: data.c, isFavorite: false, folderId: null, shareId: shareId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                window.history.replaceState({}, document.title, window.location.pathname);
+                els.loadingScreen.classList.add('hidden');
+            } catch(e) { alert("Restore failed"); }
+        }
+
+        async function importSharedNote(shareId) {
+            els.loadingScreen.classList.remove('hidden');
+            try {
+                const snap = await db.collection('shared_docs').doc(shareId).get();
+                if (!snap.exists) { alert("Shared note not found."); els.loadingScreen.classList.add('hidden'); return; }
+                const data = snap.data();
+                const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
+                    title: data.t, content: data.c, isFavorite: false, folderId: null,
+                    importedFromShareId: shareId, // CRITICAL FOR SYNC
+                    sharedBy: data.email || 'Anonymous',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                window.history.replaceState({}, document.title, window.location.pathname);
+                els.loadingScreen.classList.add('hidden');
+            } catch (e) { console.error(e); alert("Error importing note."); els.loadingScreen.classList.add('hidden'); }
+        }
+
+        function renderFolders() {
+            els.folderList.innerHTML = '';
+            state.folders.forEach(f => {
+                const div = document.createElement('div');
+                const isActive = state.activeFilter === f.id;
+                div.className = `flex justify-between items-center group p-2 rounded cursor-pointer transition ${isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-gray-400'}`;
+                div.innerHTML = `<div class="flex items-center gap-2" onclick="filterDocs('${f.id}')"><span>${f.emoji}</span> <span class="text-sm">${f.name}</span></div><button onclick="deleteFolder('${f.id}')" class="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-1">×</button>`;
+                els.folderList.appendChild(div);
+            });
+        }
+        function updateFolderSelect() {
+            els.folderSelect.innerHTML = '<option value="">No Folder</option>';
+            state.folders.forEach(f => {
+                const opt = document.createElement('option'); opt.value = f.id; opt.textContent = `${f.emoji} ${f.name}`; els.folderSelect.appendChild(opt);
+            });
+            const newOpt = document.createElement('option'); newOpt.value = 'create_new'; newOpt.textContent = "➕ Create New..."; newOpt.style.color = "#1a73e8"; els.folderSelect.appendChild(newOpt);
+        }
+        function renderDocs() {
+    els.docList.innerHTML = '';
+    let filtered = state.docs;
+    
+    // Filter Logic
+    if(state.activeFilter === 'fav') filtered = state.docs.filter(d => d.isFavorite);
+    else if (state.activeFilter !== 'all') filtered = state.docs.filter(d => d.folderId === state.activeFilter);
+
+    filtered.forEach((d, index) => {
+        const div = document.createElement('div');
+        const isActive = d.id === state.docId;
+        
+        // Folder Badge
+        const folderObj = state.folders.find(f => f.id === d.folderId);
+        const folderBadge = folderObj ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[9px] bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">${folderObj.emoji} ${folderObj.name}</span>` : '';
+        
+        // Share/From Badges
+        let badges = '';
+        if (d.sharedBy) badges += `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">from: ${d.sharedBy}</span>`;
+        if (d.shareId) badges += `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">Shared</span>`;
+
+        // Item Container Style
+        div.className = `p-2 rounded mb-1 cursor-pointer transition flex flex-col border-l-2 group relative ${isActive ? 'bg-[#252525] border-accent text-white' : 'border-transparent hover:bg-[#252525] text-gray-400'}`;
+        
+        // HTML Content
+        div.innerHTML = `
+            <div class="font-medium text-xs flex items-center justify-between h-5">
+                <span class="truncate pr-2 select-none">${d.title || 'Untitled'}</span>
+                
+                <button onclick="duplicateDocFromSidebar(event, '${d.id}')" title="Duplicate File" 
+                    class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-500 hover:text-white hover:bg-white/20 transition-all opacity-60 hover:opacity-100 active:scale-95">
+                    <span class="text-[12px] pb-[1px]">❐</span>
+                </button>
+            </div>
+            
+            <div class="text-[9px] opacity-60 flex justify-between mt-1 items-center flex-wrap gap-1 select-none">
+                <div class="flex items-center flex-wrap gap-1">
+                    <span>${d.updatedAt ? new Date(d.updatedAt.toDate()).toLocaleDateString() : 'Just now'}</span>
+                    ${folderBadge} ${badges}
+                </div>
+                ${d.isFavorite ? '<span class="text-gold text-[10px]">★</span>' : ''}
+            </div>`;
+            
+        div.onclick = (e) => { 
+            // Only open if NOT clicking the duplicate button
+            if(!e.target.closest('button')) openDoc(d.id, d); 
+        }
+        els.docList.appendChild(div);
+    });
+}
+        window.openDoc = (id, data) => {
+            state.docId = id; state.isFav = data.isFavorite || false;
+            if(state.importedUnsubscribe) { state.importedUnsubscribe(); state.importedUnsubscribe = null; }
+
+            els.title.value = data.title; els.title.disabled = false;
+            els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
+            els.favBtn.disabled = false; els.delBtn.disabled = false; els.downBtn.disabled = false;
+            els.shareBtn.disabled = false;
+            els.folderSelect.disabled = false; 
+            els.folderSelect.value = data.folderId || "";
+            els.syncBanner.classList.add('hidden'); 
+
+            updateFavIcon();
+            quill.setContents(data.content, 'api');
+            quill.enable(); 
+            els.status.textContent = "Synced";
+
+            // If imported, sync from owner
+            if (data.importedFromShareId) {
+                els.syncBanner.classList.remove('hidden');
+                state.importedUnsubscribe = db.collection('shared_docs').doc(data.importedFromShareId).onSnapshot(doc => {
+                    if(doc.exists) {
+                        const publicData = doc.data();
+                        const cur = JSON.stringify(quill.getContents());
+                        const inc = JSON.stringify(publicData.c);
+                        if (cur !== inc) {
+                            const range = quill.getSelection();
+                            quill.setContents(publicData.c, 'silent'); 
+                            els.title.value = publicData.t;
+                            if(range) quill.setSelection(range);
+                            db.collection('users').doc(state.user.uid).collection('docs').doc(id).update({
+                                title: publicData.t, content: publicData.c, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                });
+            }
+
+            if(window.innerWidth < 850 && !state.isGuest) toggleSidebar(false);
+        };
+
+        window.createNewDoc = async () => {
+            if(!state.user) return;
+            
+            // 1. Check if we are inside a specific folder
+            const folderId = (state.activeFilter !== 'all' && state.activeFilter !== 'fav') ? state.activeFilter : null;
+            
+            try {
+                // 2. Create the file in the database
+                const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
+                    title: 'Untitled Document', 
+                    content: '', 
+                    isFavorite: false, 
+                    folderId: folderId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+        
+                // 3. FIX: Manually construct the new data object immediately
+                const newDocData = {
+                    title: 'Untitled Document', 
+                    content: '', 
+                    isFavorite: false, 
+                    folderId: folderId
+                };
+        
+                // 4. FIX: Force the editor to open this new ID right now
+                openDoc(ref.id, newDocData);
+                
+                // 5. UX: On mobile, automatically close the sidebar so you can start typing
+                if(window.innerWidth < 850) toggleSidebar(false);
+        
+            } catch(e) { 
+                console.error(e);
+                alert("Error creating note: " + e.message); 
+            }
+        };
+        
+        window.duplicateCurrentDoc = () => duplicateDocFromSidebar(null, state.docId);
+        window.duplicateDocFromSidebar = async (e, docId) => {
+            if(e) e.stopPropagation();
+            const original = state.docs.find(d => d.id === docId);
+            if(!original) return;
+            if(confirm(`Duplicate "${original.title}"?`)) {
+                try {
+                    const contentCopy = original.content ? JSON.parse(JSON.stringify(original.content)) : ''; 
+                    await db.collection('users').doc(state.user.uid).collection('docs').add({
+                        title: original.title + " (Copy)", content: contentCopy, isFavorite: false, folderId: original.folderId,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch(err) { console.error(err); alert("Error duplicating"); }
+            }
+        };
+
+        quill.on('text-change', (d, o, source) => { if(source === 'user') triggerSave(); });
+        els.title.oninput = () => triggerSave();
+        
+        function triggerSave() {
+            if(!state.docId || state.isGuest) return;
+            els.status.textContent = "Saving...";
+            if(state.saveTimer) clearTimeout(state.saveTimer);
+            state.saveTimer = setTimeout(saveToDb, 1000);
+        }
+
+        async function saveToDb() {
+            if(!state.docId) return;
+            try {
+                const currentContent = JSON.parse(JSON.stringify(quill.getContents()));
+                const updateData = {
+                    title: els.title.value || 'Untitled', content: currentContent,
+                    isFavorite: state.isFav, folderId: els.folderSelect.value || null,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).set(updateData, {merge: true});
+                
+                const activeDoc = state.docs.find(d => d.id === state.docId);
+                if (activeDoc && activeDoc.shareId) {
+                    await db.collection('shared_docs').doc(activeDoc.shareId).update({
+                        t: updateData.title, c: updateData.content, theme: localStorage.getItem('theme') || 'light'
+                    });
                 }
                 els.status.textContent = "Saved";
-                isLocalChange = false;
             } catch(e) { console.error(e); els.status.textContent = "Error"; }
         }
 
-        // --- PRESENCE & CURSORS (THE COOL PART) ---
-        function initPresence(sid) {
-            if(state.unsubPresence) state.unsubPresence();
-            
-            // 1. Send my heartbeat
-            const presDoc = db.collection('shared_docs').doc(sid).collection('presence').doc(state.sessionId);
-            
-            // Update my position on selection change
-            quill.on('selection-change', (range) => {
-                if(range) {
-                    const bounds = quill.getBounds(range.index);
-                    presDoc.set({
-                        u: state.user ? state.user.email : 'Guest',
-                        c: state.myColor,
-                        r: range.index, // Index
-                        t: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    // Simple "Locking" Logic: Reset background colors
-                    quill.formatText(0, quill.getLength(), 'background', false, 'api'); 
+        window.shareCurrentNote = async () => {
+            if(!state.docId) return;
+            const btn = els.shareBtn; const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳</span>...'; btn.disabled = true;
+            try {
+                const activeDoc = state.docs.find(d => d.id === state.docId);
+                let shareId = activeDoc.shareId;
+                if (!shareId) {
+                    const noteData = { 
+                        t: els.title.value, c: JSON.parse(JSON.stringify(quill.getContents())), 
+                        email: state.user.email, ownerId: state.user.uid,
+                        theme: localStorage.getItem('theme') || 'light', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    const docRef = await db.collection('shared_docs').add(noteData);
+                    shareId = docRef.id;
+                    await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({ shareId: shareId });
                 }
-            });
-
-            // 2. Listen to others
-            state.unsubPresence = db.collection('shared_docs').doc(sid).collection('presence').onSnapshot(snap => {
-                els.cursorsLayer.innerHTML = ''; // Clear old cursors
-                
-                snap.forEach(doc => {
-                    if(doc.id === state.sessionId) return; // Skip me
-                    const p = doc.data();
-                    if(!p.r) return;
-
-                    // Calculate position
-                    // We need a try-catch because if content is out of sync, getBounds fails
-                    try {
-                        const bounds = quill.getBounds(p.r);
-                        if(bounds) {
-                            // Draw Cursor
-                            const flag = document.createElement('div');
-                            flag.className = 'cursor-flag';
-                            flag.textContent = p.u.split('@')[0];
-                            flag.style.backgroundColor = p.c;
-                            flag.style.top = (bounds.top - 20) + 'px';
-                            flag.style.left = bounds.left + 'px';
-
-                            const caret = document.createElement('div');
-                            caret.className = 'cursor-caret';
-                            caret.style.backgroundColor = p.c;
-                            caret.style.top = bounds.top + 'px';
-                            caret.style.left = bounds.left + 'px';
-                            caret.style.height = bounds.height + 'px';
-
-                            els.cursorsLayer.appendChild(flag);
-                            els.cursorsLayer.appendChild(caret);
-
-                            // LOCKING: Highlight the line they are on
-                            // Note: This is visual only ("Soft Lock")
-                            const line = quill.getLine(p.r); 
-                            if(line && line[0]) {
-                                // We can add a class to the DOM node directly
-                                // line[0].domNode.classList.add('locked-line-bg'); // Tricky to clear
-                            }
-                        }
-                    } catch(e) {}
-                });
-            });
-        }
-
-        // --- HISTORY LOGGER ---
-        async function logHistory() {
-            if(!state.shareId) return;
-            const user = state.user ? state.user.email : (state.isGuest ? "Guest " + state.sessionId.substr(0,4) : "Anonymous");
-            // Just a simple log
-            await db.collection('shared_docs').doc(state.shareId).collection('history').add({
-                msg: `${user} edited the document`,
-                ts: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-
-        // --- ACCESS REQUEST LOGIC ---
-        window.requestEditAccess = async () => {
-            if(!state.shareId) return;
-            const name = prompt("Enter your name to request access:");
-            if(!name) return;
-            
-            await db.collection('shared_docs').doc(state.shareId).collection('requests').add({
-                name: name,
-                sid: state.sessionId,
-                ts: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Request sent! The owner receives it instantly.");
-        };
-
-        // --- SHARING & MODALS ---
-        window.openShareModal = () => {
-            if(!state.shareId) createShareLink(); // Generate if new
-            else {
-                // Fetch current permission
-                db.collection('shared_docs').doc(state.shareId).get().then(d => {
-                    els.shareSelect.value = d.data().access || 'view';
-                    updateShareLinkUI();
-                    els.shareModal.classList.remove('hidden');
-                    loadRequests(); // Load requests if owner
-                });
-            }
-        };
-        
-        window.closeShareModal = () => els.shareModal.classList.add('hidden');
-
-        async function createShareLink() {
-            // Create shared doc entry
-            const activeDoc = state.docs.find(d => d.id === state.docId);
-            const docRef = await db.collection('shared_docs').add({
-                t: activeDoc.title,
-                c: activeDoc.content,
-                ownerId: state.user.uid,
-                email: state.user.email,
-                access: 'view', // Default
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            state.shareId = docRef.id;
-            await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({ shareId: state.shareId });
-            
-            initPresence(state.shareId); // Start tracking
-            els.infoBtn.classList.remove('hidden'); // Show history button
-            window.openShareModal();
-        }
-
-        window.updateSharePermissions = async () => {
-            const mode = els.shareSelect.value;
-            await db.collection('shared_docs').doc(state.shareId).update({ access: mode });
-            // If switched to 'edit', all guests become editors instantly via snapshot listener
-        };
-
-        function updateShareLinkUI() {
-            const url = `${window.location.origin}${window.location.pathname}?shareId=${state.shareId}`;
-            document.getElementById('share-link-input').value = url;
-        }
-
-        window.copyShareLink = () => {
-            const copyText = document.getElementById("share-link-input");
-            copyText.select();
-            document.execCommand("copy");
-            alert("Link Copied!");
-        };
-
-        function loadRequests() {
-            els.requestsContainer.classList.remove('hidden');
-            if(state.unsubRequests) state.unsubRequests();
-            
-            state.unsubRequests = db.collection('shared_docs').doc(state.shareId).collection('requests').orderBy('ts', 'desc').onSnapshot(snap => {
-                els.requestsList.innerHTML = '';
-                if(snap.empty) {
-                     els.requestsList.innerHTML = '<div class="text-xs text-muted">No pending requests</div>';
-                     els.requestBadge.classList.add('hidden');
-                     return;
+                const url = new URL(window.location.href); url.search = `?shareId=${shareId}`; const urlStr = url.toString();
+                if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
+                    await navigator.share({ title: els.title.value, text: 'Check out this note on ZenDocs', url: urlStr });
+                } else {
+                    await navigator.clipboard.writeText(urlStr); alert("Link Copied!");
                 }
-                
-                els.requestBadge.classList.remove('hidden'); // Red dot
-                snap.forEach(doc => {
-                    const r = doc.data();
-                    const div = document.createElement('div');
-                    div.className = "flex justify-between items-center bg-bg p-2 rounded text-xs";
-                    div.innerHTML = `<span><b>${r.name}</b> wants edit access</span> 
-                    <div class="flex gap-1">
-                        <button onclick="grantAccess('${doc.id}')" class="text-green-600 hover:bg-green-100 px-2 py-1 rounded">Grant (Open Editor)</button>
-                        <button onclick="deleteRequest('${doc.id}')" class="text-red-500">✕</button>
-                    </div>`;
-                    els.requestsList.appendChild(div);
-                });
-            });
-        }
-
-        window.grantAccess = async (reqId) => {
-            // Requirement: "user clicks... owner can give access... anyone with link gets access"
-            // So we switch global mode to Edit
-            if(confirm("This will switch the document to Public Editor mode. Everyone with the link can edit.")) {
-                els.shareSelect.value = 'edit';
-                await updateSharePermissions();
-                await deleteRequest(reqId);
-            }
+            } catch (error) { 
+                // Fix for "Couldn't generate link" on share cancellation
+                if (error.name !== 'AbortError') {
+                    console.error(error); alert("Could not generate link."); 
+                }
+            } 
+            finally { btn.innerHTML = originalText; btn.disabled = false; }
         };
 
-        window.deleteRequest = async (id) => {
-            await db.collection('shared_docs').doc(state.shareId).collection('requests').doc(id).delete();
-        };
-
-        // --- INFO / HISTORY ---
-        window.openInfoModal = () => {
-            els.infoModal.classList.remove('hidden');
-            db.collection('shared_docs').doc(state.shareId).collection('history').orderBy('ts', 'desc').limit(20).get().then(snap => {
-                els.historyList.innerHTML = '';
-                snap.forEach(doc => {
-                    const h = doc.data();
-                    const time = h.ts ? new Date(h.ts.toDate()).toLocaleTimeString() : '';
-                    const d = document.createElement('div');
-                    d.className = "text-xs border-b border-border py-2 text-muted flex justify-between";
-                    d.innerHTML = `<span>${h.msg}</span> <span>${time}</span>`;
-                    els.historyList.appendChild(d);
-                });
-            });
-        }
-
-        // --- STANDARD APP FUNCTIONS (From your original code) ---
-        window.createNewDoc = async () => {
-            const ref = await db.collection('users').doc(state.user.uid).collection('docs').add({
-                title: 'Untitled', content: '', updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            // Select it automatically via onSnapshot
-        };
-
-        window.openDoc = (data) => {
-            state.docId = data.id;
-            state.shareId = data.shareId || null;
-            els.title.value = data.title;
-            els.title.disabled = false;
-            quill.setContents(data.content);
-            quill.enable();
-            els.editorWrapper.classList.remove('opacity-50', 'pointer-events-none');
-            
-            // Highlight active in sidebar
-            document.querySelectorAll('#doc-list > div').forEach(e => e.classList.remove('bg-[#252525]', 'text-white'));
-            const activeEl = document.getElementById(`doc-${data.id}`);
-            if(activeEl) activeEl.classList.add('bg-[#252525]', 'text-white');
-
-            if(state.shareId) {
-                initPresence(state.shareId);
-                els.infoBtn.classList.remove('hidden');
-            } else {
-                els.infoBtn.classList.add('hidden');
-                els.cursorsLayer.innerHTML = '';
-            }
-        };
+        function openLoginForGuest() { els.authScreen.classList.remove('hidden'); els.authBox.classList.remove('opacity-0'); els.authBox.classList.add('animate-fade-in-up'); els.authCancelContainer.classList.remove('hidden'); }
+        function closeLoginForGuest() { els.authScreen.classList.add('hidden'); els.authBox.classList.remove('animate-fade-in-up'); els.authBox.classList.add('opacity-0'); }
+        document.getElementById('auth-form').onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = "Check email or password."); };
+        document.getElementById('signup-btn').onclick = () => { auth.createUserWithEmailAndPassword(els.email.value, els.pass.value).catch(err => els.authError.textContent = err.message); };
+        document.getElementById('logout-btn').onclick = () => { auth.signOut(); window.location.reload(); };
+        window.showResetModal = () => { document.getElementById('reset-modal').classList.remove('hidden'); if(els.email.value) document.getElementById('reset-email').value = els.email.value; };
+        window.sendResetLink = () => { const email = document.getElementById('reset-email').value; if(!email) return alert("Please enter email"); auth.sendPasswordResetEmail(email).then(() => { alert("Link Sent!"); document.getElementById('reset-modal').classList.add('hidden'); }).catch(e => alert(e.message)); };
+        window.createNewFolder = async () => { const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)]; let name = prompt("Folder Name:"); if(!name) return null; try { const ref = await db.collection('users').doc(state.user.uid).collection('folders').add({ name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); return ref.id; } catch(e) { return null; } };
+        window.handleCreateFolderAction = async () => { els.mobileFolderMenu.classList.add('hidden'); const newFolderId = await createNewFolder(); if(newFolderId && state.docId) { await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({folderId: newFolderId}); els.folderSelect.value = newFolderId; els.status.textContent = "Moved to New Folder"; } };
+        window.deleteFolder = async (id) => { if(confirm("Delete folder? Notes move to All Files.")) await db.collection('users').doc(state.user.uid).collection('folders').doc(id).delete(); };
         
-        function renderSidebar() {
-            const list = document.getElementById('doc-list');
-            list.innerHTML = '';
-            state.docs.forEach(d => {
-                const div = document.createElement('div');
-                div.id = `doc-${d.id}`;
-                div.className = "p-3 rounded mb-1 cursor-pointer hover:bg-[#252525] text-gray-400 text-sm truncate transition";
-                div.textContent = d.title || 'Untitled';
-                div.onclick = () => openDoc(d);
-                list.appendChild(div);
-            });
-        }
+        window.deleteCurrentDoc = async () => {
+            if (!state.docId) return;
+        
+            if (confirm("Delete this note?")) {
+                const deletedId = state.docId;
+        
+                try {
+                    // 1. Delete from Database
+                    await db.collection('users').doc(state.user.uid).collection('docs').doc(deletedId).delete();
+        
+                    // 2. Find the next file to open (the previous one in the list)
+                    // We filter out the one we just deleted from the local state
+                    const remainingDocs = state.docs.filter(d => d.id !== deletedId);
+        
+                    if (remainingDocs.length > 0) {
+                        // Since state.docs is already sorted by date, index 0 is the most recent previous file
+                        const nextDoc = remainingDocs[0];
+                        openDoc(nextDoc.id, nextDoc);
+                    } else {
+                        // If no files are left, create a fresh one so the screen is never empty
+                        createNewDoc();
+                    }
+        
+                } catch (e) {
+                    console.error(e);
+                    alert("Error deleting file.");
+                }
+            }
+        };        
+        window.downloadAsWord = () => { const title = els.title.value || "Document"; const css = `<style>@page{size:A4;margin:1in;}body{font-family:'Times New Roman',serif;font-size:11pt;line-height:1.5;}</style>`; const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${title}</title>${css}</head><body>${quill.root.innerHTML}</body></html>`; const blob = new Blob(['\ufeff', html], {type: 'application/msword'}); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = title + ".doc"; a.click(); };
+        window.toggleSidebar = (f) => { const sb = document.getElementById('sidebar'), ov = document.getElementById('mobile-overlay'); if(f===false || !sb.classList.contains('sidebar-closed')) { sb.classList.add('sidebar-closed'); sb.classList.remove('sidebar-open'); ov.classList.add('hidden'); } else { sb.classList.remove('sidebar-closed'); sb.classList.add('sidebar-open'); ov.classList.remove('hidden'); } };
+        window.toggleMobileMenu = () => { els.mobileMenuDropdown.classList.toggle('hidden'); };
+        els.folderSelect.onchange = () => { if(els.folderSelect.value === 'create_new') handleCreateFolderAction(); else triggerSave(); };
+        window.toggleMobileFolderMenu = () => { if(els.mobileFolderMenu.classList.contains('hidden')) { renderMobileFolderList(); els.mobileFolderMenu.classList.remove('hidden'); } else els.mobileFolderMenu.classList.add('hidden'); };
+        function renderMobileFolderList() { els.mobileFolderListItems.innerHTML = ''; const rootBtn = document.createElement('button'); const isRoot = !els.folderSelect.value; rootBtn.className = `w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${isRoot ? 'text-accent font-bold bg-blue-50 dark:bg-gray-800' : 'text-gray-600 dark:text-gray-300'}`; rootBtn.innerHTML = `<span>🏠</span> No Folder`; rootBtn.onclick = () => { setDocFolder(''); }; els.mobileFolderListItems.appendChild(rootBtn); state.folders.forEach(f => { const btn = document.createElement('button'); const isSelected = els.folderSelect.value === f.id; btn.className = `w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${isSelected ? 'text-accent font-bold bg-blue-50 dark:bg-gray-800' : 'text-gray-600 dark:text-gray-300'}`; btn.innerHTML = `<span>${f.emoji}</span> ${f.name}`; btn.onclick = () => { setDocFolder(f.id); }; els.mobileFolderListItems.appendChild(btn); }); }
+        window.setDocFolder = (id) => { els.folderSelect.value = id; triggerSave(); els.mobileFolderMenu.classList.add('hidden'); };
+        window.toggleFavorite = () => { state.isFav = !state.isFav; updateFavIcon(); triggerSave(); renderDocs(); };
+        function updateFavIcon() { const cls = `hidden md:block p-2 rounded-full transition ${state.isFav ? 'text-gold' : 'text-muted hover:text-gold'}`; els.favBtn.className = cls; if(els.mobileFavText) { els.mobileFavText.textContent = state.isFav ? 'Unmark Important' : 'Mark Important'; els.mobileFavIcon.style.color = state.isFav ? '#fbbc04' : 'inherit'; } }
+        window.filterDocs = (f) => { state.activeFilter = f; document.querySelectorAll('#sidebar .bg-white\\/10').forEach(e => e.classList.remove('bg-white/10', 'text-white')); if(f==='all') document.getElementById('filter-all').classList.add('bg-white/10', 'text-white'); else if(f==='fav') document.getElementById('filter-fav').classList.add('bg-white/10', 'text-white'); renderFolders(); renderDocs(); if(window.innerWidth < 768) toggleSidebar(false); };
+        window.focusEditor = () => { if(state.docId) quill.focus(); };
+        document.addEventListener('click', (e) => { const menu = els.mobileMenuDropdown; const btn = e.target.closest('.mobile-menu-container'); if (!menu.classList.contains('hidden') && !btn && !menu.contains(e.target)) menu.classList.add('hidden'); const folderMenu = els.mobileFolderMenu; if(!folderMenu.classList.contains('hidden') && !e.target.closest('.folder-menu-container') && !e.target.closest('[onclick*="toggleMobileFolderMenu"]')) folderMenu.classList.add('hidden'); });
 
-        // --- AUTH FORMS ---
-        document.getElementById('auth-form').onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value).catch(e => document.getElementById('auth-error').textContent = e.message); };
-        document.getElementById('signup-btn').onclick = () => { auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value).catch(e => document.getElementById('auth-error').textContent = e.message); };
-
-        function focusEditor() { if(!els.title.disabled) quill.focus(); }
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('sidebar-closed'); }
-        els.title.oninput = () => { isLocalChange = true; triggerSave(); };
-        function triggerSave() { if(state.saveTimer) clearTimeout(state.saveTimer); state.saveTimer = setTimeout(saveContent, 1000); }
+        initTheme(); 
     </script>
 </body>
 </html>
