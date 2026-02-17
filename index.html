@@ -367,7 +367,7 @@
             user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
             isFav: false, saveTimer: null, firstLoad: true,
             pendingShareId: null, guestUnsubscribe: null, importedUnsubscribe: null, isGuest: false,
-            restorableData: null
+            restorableData: null,
             lastTypeTime: 0 // <--- ADD THIS LINE
         };
 
@@ -661,6 +661,7 @@
                 
                 // ... (Keep existing firstLoad/Share logic here) ...
             });
+        }
 
         async function checkAndHandleDeletedOwner(shareId) {
             els.loadingScreen.classList.remove('hidden');
