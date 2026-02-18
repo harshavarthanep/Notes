@@ -151,6 +151,28 @@
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-closed { transform: translateX(-100%); }
         .sidebar-open { transform: translateX(0); }
+/* --- ADD THIS TO YOUR <style> BLOCK --- */
+
+        /* Fix for Dark Mode Dropdown Menu Visibility */
+        html.dark .ql-picker-options {
+            background-color: #2d2d2d !important;
+            border: 1px solid #404040 !important;
+            color: #e0e0e0 !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Hover effect for items in the dropdown */
+        html.dark .ql-picker-item:hover {
+            color: #1a73e8 !important; /* Blue accent on hover */
+            background-color: #383838;
+        }
+        
+        /* Ensure the selected item is also visible */
+        html.dark .ql-picker-item.ql-selected {
+            color: #1a73e8 !important;
+            font-weight: bold;
+        }
+        
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col font-sans text-text bg-bg transition-colors duration-300">
@@ -345,7 +367,8 @@
             user: null, docId: null, activeFilter: 'all', folders: [], docs: [],
             isFav: false, saveTimer: null, firstLoad: true,
             pendingShareId: null, guestUnsubscribe: null, importedUnsubscribe: null, isGuest: false,
-            restorableData: null
+            restorableData: null,
+            lastTypeTime: 0 // <--- ADD THIS LINE
         };
 
         const els = {
@@ -413,6 +436,25 @@
                 }
             }
         });
+
+        // --- PASTE THE FIX HERE (OUTSIDE the Quill configuration) ---
+
+        // FIX: Close keyboard when opening dropdowns on mobile
+        // We need to wait a split second for Quill to render the toolbar buttons
+        setTimeout(() => {
+            const pickerLabels = document.querySelectorAll('.ql-picker-label');
+            pickerLabels.forEach(label => {
+                label.addEventListener('click', (e) => {
+                    // If on mobile (screen < 850px), hide the keyboard
+                    if (window.innerWidth < 850) {
+                        // This creates a small delay to let the menu open, then kills the keyboard
+                        setTimeout(() => {
+                             if (document.activeElement) document.activeElement.blur(); 
+                        }, 0);
+                    }
+                });
+            });
+        }, 500); // 500ms delay to ensure elements exist
 
         // --- ROBUST MOBILE CHECKBOX FIX (TOUCH API) ---
         const editorEl = document.querySelector('.ql-editor');
@@ -560,16 +602,62 @@
         });
 
         function initData() {
-            if(!state.user) return;
+            if (!state.user) return;
             const uid = state.user.uid;
+
+            // 1. FOLDER LISTENER
             db.collection('users').doc(uid).collection('folders').orderBy('createdAt').onSnapshot(snap => {
                 state.folders = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderFolders(); updateFolderSelect();
-                if(state.docs.length > 0) renderDocs();
+                if (state.docs.length > 0) renderDocs();
             });
+
+            // 2. DOCS LISTENER
             db.collection('users').doc(uid).collection('docs').orderBy('updatedAt', 'desc').onSnapshot(async (snap) => {
+                
+                // Update local list
                 state.docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderDocs();
+
+                // Check for remote deletion
+                if (state.docId && !state.isGuest) {
+                    const stillExists = state.docs.some(d => d.id === state.docId);
+                    if (!stillExists) {
+                        state.docs.length > 0 ? openDoc(state.docs[0].id, state.docs[0]) : createNewDoc();
+                        return;
+                    }
+
+                    // --- REAL-TIME SYNC LOGIC ---
+                    const activeDocData = state.docs.find(d => d.id === state.docId);
+                    if (activeDocData) {
+                        
+                        // A. Title Sync
+                        if (els.title.value !== activeDocData.title && document.activeElement !== els.title) {
+                            els.title.value = activeDocData.title;
+                        }
+
+                        // B. Content Sync
+                        const isTyping = (Date.now() - state.lastTypeTime) < 2000;
+                        
+                        if (!isTyping) {
+                            const currentEditorJson = JSON.stringify(quill.getContents());
+                            const newDbJson = JSON.stringify(activeDocData.content);
+
+                            if (currentEditorJson !== newDbJson) {
+                                const range = quill.getSelection();
+                                quill.setContents(activeDocData.content, 'silent'); 
+                                if (range) quill.setSelection(range);
+                            }
+                        }
+                        
+                        // C. Folder UI Sync
+                        if (activeDocData.folderId === null && els.folderSelect.value !== "") {
+                             els.folderSelect.value = ""; 
+                        }
+                    }
+                }
+                
+                // 3. INITIAL LOAD LOGIC (This was missing!)
                 const shareId = getShareIdFromUrl();
                 if (shareId && state.firstLoad) {
                     state.firstLoad = false;
@@ -586,14 +674,11 @@
                         } else {
                             await checkAndHandleDeletedOwner(shareId);
                         }
-                    } catch(e) {
-                        console.error("Init Error", e);
-                        els.loadingScreen.classList.add('hidden');
-                    }
+                    } catch(e) { console.error(e); els.loadingScreen.classList.add('hidden'); }
                 } 
                 else if (state.firstLoad && !state.docId) {
                     state.firstLoad = false;
-                    els.loadingScreen.classList.add('hidden');
+                    els.loadingScreen.classList.add('hidden'); // This hides the loading screen!
                     state.docs.length > 0 ? openDoc(state.docs[0].id, state.docs[0]) : createNewDoc();
                 }
             });
@@ -811,7 +896,8 @@
             }
         };
 
-        quill.on('text-change', (d, o, source) => { if(source === 'user') triggerSave(); });
+        quill.on('text-change', (d, o, source) => { if(source === 'user') { state.lastTypeTime = Date.now(); // Record the time you typed 
+        triggerSave(); } });
         els.title.oninput = () => triggerSave();
         
         function triggerSave() {
@@ -883,8 +969,41 @@
         window.sendResetLink = () => { const email = document.getElementById('reset-email').value; if(!email) return alert("Please enter email"); auth.sendPasswordResetEmail(email).then(() => { alert("Link Sent!"); document.getElementById('reset-modal').classList.add('hidden'); }).catch(e => alert(e.message)); };
         window.createNewFolder = async () => { const autoEmoji = ['📁','📂','📑','📘','💡','🚀'][Math.floor(Math.random()*6)]; let name = prompt("Folder Name:"); if(!name) return null; try { const ref = await db.collection('users').doc(state.user.uid).collection('folders').add({ name: name, emoji: autoEmoji, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); return ref.id; } catch(e) { return null; } };
         window.handleCreateFolderAction = async () => { els.mobileFolderMenu.classList.add('hidden'); const newFolderId = await createNewFolder(); if(newFolderId && state.docId) { await db.collection('users').doc(state.user.uid).collection('docs').doc(state.docId).update({folderId: newFolderId}); els.folderSelect.value = newFolderId; els.status.textContent = "Moved to New Folder"; } };
-        window.deleteFolder = async (id) => { if(confirm("Delete folder? Notes move to All Files.")) await db.collection('users').doc(state.user.uid).collection('folders').doc(id).delete(); };
-        
+        window.deleteFolder = async (id) => { 
+            if(!confirm("Delete folder? Notes inside will move to 'All Files'.")) return;
+            
+            try {
+                const batch = db.batch();
+                
+                // 1. Delete the Folder
+                const folderRef = db.collection('users').doc(state.user.uid).collection('folders').doc(id);
+                batch.delete(folderRef);
+
+                // 2. Find all notes in this folder and remove their folderId
+                const docsSnap = await db.collection('users').doc(state.user.uid).collection('docs').where('folderId', '==', id).get();
+                
+                docsSnap.forEach(doc => {
+                    const docRef = db.collection('users').doc(state.user.uid).collection('docs').doc(doc.id);
+                    batch.update(docRef, { 
+                        folderId: null, 
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+                    });
+                });
+
+                // 3. Commit all changes at once
+                await batch.commit();
+
+                // 4. Update UI if we are looking at a file in this folder
+                if (state.docId && els.folderSelect.value === id) {
+                    els.folderSelect.value = "";
+                    els.status.textContent = "Folder Deleted";
+                }
+
+            } catch(e) {
+                console.error(e);
+                alert("Error deleting folder");
+            }
+        };        
         window.deleteCurrentDoc = async () => {
             if (!state.docId) return;
         
